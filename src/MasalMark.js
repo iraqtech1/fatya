@@ -1,0 +1,1 @@
+export default {setup(){return {logo:import.meta.env.BASE_URL+'brand/masal-logo.webp'};},template:`<img class="masal-mark" :src="logo" alt="" aria-hidden="true" width="64" height="64" decoding="async" draggable="false"/>`};

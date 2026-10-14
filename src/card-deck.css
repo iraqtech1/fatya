@@ -1,0 +1,90 @@
+/* Compact featured-card hero, with swipe and arrow navigation. */
+.app-shell .hero{min-height:330px;padding-block:20px}
+.app-shell .hero .deck-stage{height:240px}
+.app-shell .hero .deck-card{height:108px;top:calc(50% - 54px);padding:12px 16px;transform:translateY(calc(var(--slot) * 78px + var(--drag-y,0px))) rotate(var(--tilt)) scale(.93)}
+.app-shell .hero .deck-card.deck-current{transform:translateY(var(--drag-y,0px)) rotate(var(--tilt)) scale(1)}
+.app-shell .hero .deck-card strong{font-size:26px}
+@media(max-width:700px){
+ .app-shell .hero{min-height:0;padding:18px 20px 14px}
+ .app-shell .hero .hero-copy h2{font-size:1.6rem;margin:10px 0 8px;line-height:1.45}
+ .app-shell .hero .hero-copy button{margin-top:10px;padding:10px 14px}
+ .app-shell .hero .card-deck{max-width:300px;margin-top:8px}
+ .app-shell .hero .deck-stage{height:210px}
+ .app-shell .hero .deck-card{height:98px;top:calc(50% - 49px);padding:10px 14px;transform:translateY(calc(var(--slot) * 70px + var(--drag-y,0px))) rotate(var(--tilt)) scale(.93)}
+ .app-shell .hero .deck-card.deck-current{transform:translateY(var(--drag-y,0px)) rotate(var(--tilt)) scale(1)}
+ .app-shell .hero .deck-card strong{font-size:25px}
+ .app-shell .hero .deck-controls{margin-top:2px;gap:10px}
+ .app-shell .hero .deck-hint{margin-top:6px!important}
+}
+
+.app-shell .hero .deck-stage{touch-action:none;cursor:grab}
+.app-shell .hero .deck-stage:active{cursor:grabbing}
+
+.app-shell .hero .deck-stage.is-dragging .deck-card{transition:none}
+
+/* صورة البطاقة داخل الكارت المميز — خلفية كاملة مع تدرّج للقراءة */
+.app-shell .hero .deck-card-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;border-radius:inherit}
+.app-shell .hero .deck-card-with-art{overflow:hidden}
+.app-shell .hero .deck-card-with-art::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(255deg,rgba(14,5,9,.9) 6%,rgba(14,5,9,.6) 52%,rgba(14,5,9,.2))}
+.app-shell .hero .deck-card-with-art>span,.app-shell .hero .deck-card-with-art>strong{position:relative;z-index:2;color:#fff}
+.app-shell .hero .deck-card-with-art.deck-white>span,.app-shell .hero .deck-card-with-art.deck-white>strong{color:#fff}
+
+/* Half-height home feature, retaining usable card and swipe controls. */
+.app-shell .hero{min-height:165px;padding:12px 24px;gap:16px}
+.app-shell .hero .hero-copy h2{font-size:1.7rem;margin:8px 0;line-height:1.4}
+.app-shell .hero .deck-stage{height:110px}
+.app-shell .hero .deck-card{height:70px;top:calc(50% - 35px);padding:7px 12px;transform:translateY(calc(var(--slot) * 44px + var(--drag-y,0px))) rotate(var(--tilt)) scale(.93)}
+.app-shell .hero .deck-card.deck-current{transform:translateY(var(--drag-y,0px)) rotate(var(--tilt)) scale(1)}
+.app-shell .hero .deck-card strong{font-size:20px}
+.app-shell .hero .deck-card-top,.app-shell .hero .deck-card-bottom{font-size:8px}
+.app-shell .hero .deck-controls{margin-top:0;gap:8px}
+.app-shell .hero .deck-controls button{width:28px;height:28px;padding:0}
+.app-shell .hero .deck-hint{font-size:8px!important;margin-top:4px!important}
+.app-shell .product-selectable{cursor:pointer}
+.app-shell .product-selectable:focus-visible{outline:2px solid var(--primary,#a21c2d);outline-offset:3px}
+@media(max-width:700px){
+ .app-shell .hero{flex-direction:row;min-height:210px;padding:12px;gap:6px;align-items:center}
+ .app-shell .hero .hero-copy{flex:0 1 38%;min-width:0;width:auto}
+ .app-shell .hero .hero-label{font-size:8px;line-height:1.8}
+ .app-shell .hero .hero-copy h2{font-size:clamp(15px,4vw,21px);margin:8px 0}
+ .app-shell .hero .card-deck{flex:1;min-width:0;width:60%;max-width:300px;margin-top:0}
+ .app-shell .hero .deck-stage{height:130px}
+ .app-shell .hero .deck-controls{gap:4px}
+ .app-shell .hero .deck-controls>span{min-width:0;flex:1;font-size:9px}
+ .app-shell .hero .deck-controls small{font-size:8px}
+ .app-shell .hero .deck-hint{line-height:1.6}
+}
+
+/* Soft separation for selectable storefront cards in both themes. */
+.app-shell{--card-edge:#d7aebc;--card-shadow:0 5px 0 -1px #dcb9c5,0 12px 20px #780f1c30;--card-shadow-raised:0 6px 0 -1px #d5a8b8,0 16px 24px #780f1c3b;--card-edge-active:#b95567}
+.app-shell .brands{padding-top:8px;padding-bottom:24px}
+.app-shell .brands button,.app-shell .product-selectable{background:linear-gradient(145deg,#fff 40%,#fff4f7);border-color:var(--card-edge);border-bottom-width:2px;transform:translateY(-3px);box-shadow:var(--card-shadow);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.app-shell .hero .deck-card{border-color:#edb8c580;box-shadow:0 4px 0 -1px #450913,0 10px 18px #29081366}
+.app-shell .hero .deck-card.deck-current{border-color:#efd394;box-shadow:0 5px 0 -1px #450913,0 14px 24px #29081399,0 0 0 1px #efd39455}
+.app-shell .brands button:focus-visible,.app-shell .product-selectable:focus-visible{border-color:var(--card-edge-active);box-shadow:var(--card-shadow-raised);outline:2px solid var(--card-edge-active);outline-offset:2px}
+.app-shell .brands button:active,.app-shell .product-selectable:active{transform:scale(.98)}
+html[data-theme=dark] .app-shell{--card-edge:#5585a4;--card-shadow:0 5px 0 -1px #07121f,0 12px 22px #0009,0 0 0 1px #82d4f522;--card-shadow-raised:0 6px 0 -1px #07121f,0 16px 26px #000a,0 0 0 1px #82d4f544;--card-edge-active:#82d4f5}
+html[data-theme=dark] .app-shell .brands button,html[data-theme=dark] .app-shell .product-selectable{background:linear-gradient(145deg,#20435d,#102437)!important;border-color:var(--card-edge)!important;box-shadow:var(--card-shadow)}
+html[data-theme=dark] .app-shell .brands .brand-logo{color:#d4eeff!important}
+html[data-theme=dark] .app-shell .hero .deck-card{border-color:#5e9ab980;box-shadow:0 4px 0 -1px #06101c,0 10px 18px #0009}
+html[data-theme=dark] .app-shell .hero .deck-card.deck-current{border-color:#82d4f5;box-shadow:0 5px 0 -1px #06101c,0 14px 24px #000b,0 0 0 1px #82d4f555}
+html[data-theme=dark] .app-shell .brands button:focus-visible,html[data-theme=dark] .app-shell .product-selectable:focus-visible{border-color:var(--card-edge-active)!important;box-shadow:var(--card-shadow-raised)}
+@media(hover:hover) and (pointer:fine){
+ .app-shell .brands button:hover,.app-shell .product-selectable:hover{transform:translateY(-5px);border-color:var(--card-edge-active);box-shadow:var(--card-shadow-raised)}
+ html[data-theme=dark] .app-shell .brands button:hover,html[data-theme=dark] .app-shell .product-selectable:hover{border-color:var(--card-edge-active)!important;box-shadow:var(--card-shadow-raised)}
+}
+@media(prefers-reduced-motion:reduce){.app-shell .brands button,.app-shell .product-selectable{transition:none}.app-shell .brands button:hover,.app-shell .product-selectable:hover{transform:translateY(-3px)}}
+
+/* A simple frame softly separates the whole home feature panel. */
+.app-shell .hero{border:1.5px solid #e6a4af;box-shadow:0 6px 16px #780f1c20;margin-bottom:12px}
+html[data-theme=dark] .app-shell .hero{border-color:#5b9dbf;box-shadow:0 6px 16px #0005}
+
+/* Compact favourite brands with native horizontal scrolling. */
+.app-shell .brands{display:flex;flex-wrap:nowrap;gap:10px;max-width:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#bd788b transparent;padding:8px 3px 20px;-webkit-overflow-scrolling:touch}
+.app-shell .brands button{flex:0 0 92px;min-width:92px;width:92px;height:112px;min-height:0;padding:12px 7px;gap:8px;border-radius:16px;font-size:10px;line-height:1.6;scroll-snap-align:start}
+.app-shell .brands .brand-logo{font-size:17px;line-height:1.2;max-width:100%;overflow-wrap:anywhere}
+.app-shell .brands button>span:last-child{max-width:100%;overflow-wrap:anywhere}
+.app-shell .brands::-webkit-scrollbar{height:4px}.app-shell .brands::-webkit-scrollbar-thumb{background:#bd788b;border-radius:6px}.app-shell .brands::-webkit-scrollbar-track{background:transparent}
+.app-shell .brands:focus-visible{outline:2px solid var(--wine);outline-offset:3px;border-radius:12px}
+html[data-theme=dark] .app-shell .brands{scrollbar-color:#6db7db transparent}html[data-theme=dark] .app-shell .brands::-webkit-scrollbar-thumb{background:#6db7db}
+@media(max-width:700px){.app-shell .brands button{flex-basis:82px;min-width:82px;width:82px;height:100px;padding:10px 6px}.app-shell .brands .brand-logo{font-size:15px}}

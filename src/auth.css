@@ -1,0 +1,36 @@
+.phone-auth{background:#fff;min-height:100svh;min-height:100dvh}
+.phone-auth .auth-panel{padding:28px clamp(28px,5vw,70px) 24px;gap:24px}
+.phone-auth .auth-top{display:flex;align-items:center;justify-content:space-between;min-height:36px;color:var(--muted);font-size:12px}
+.phone-auth .auth-back{margin:0;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--border);border-radius:50%}
+.phone-auth .auth-back svg{transform:none}
+.phone-auth .auth-body{max-width:420px;padding:12px 0 28px}
+.auth-identity{display:flex;flex-direction:column;align-items:center;margin:0 auto 40px;gap:6px}
+.auth-logo{width:140px;height:140px;border-radius:34px;background:linear-gradient(145deg,#fff,#fcf4f6);border:1px solid #f1dfe4;display:grid;place-items:center;box-shadow:0 14px 40px #780f1c08;margin-bottom:8px}
+.auth-logo .masal-mark{width:112px;height:112px;object-fit:contain}
+.auth-identity>strong{color:var(--wine);font-size:23px}
+.auth-identity>span{font-size:9px;letter-spacing:3px;color:#ab7a85}
+.phone-auth .auth-body h1{font-size:30px;line-height:1.5;margin:0 0 12px;color:var(--wine)}
+.phone-auth .auth-intro{margin-bottom:22px;font-size:13px;line-height:2}
+.phone-auth .auth-intro b{display:inline-block;color:var(--wine);margin-top:7px;font-size:16px}
+.phone-auth .auth-form{gap:9px}
+.phone-auth .auth-form label{font-size:14px;margin-top:9px}
+.phone-auth .auth-field{min-height:58px;background:#fff;border:1px solid #dfcbd0;border-radius:12px;color:var(--wine);gap:14px}
+.phone-auth .auth-field input{flex:1;width:100%;font-size:15px;padding:16px 0;outline:none}
+.phone-auth .auth-field input::placeholder{color:#b8a8ad;opacity:1}
+.phone-auth .auth-action{justify-content:center;gap:14px;min-height:58px;border-radius:12px;font-size:16px;margin-top:20px}
+.phone-auth button:disabled{opacity:.5;cursor:not-allowed}
+.phone-auth button:focus-visible{outline:3px solid #d99cac;outline-offset:4px}
+.phone-auth .auth-help{font-size:11px;line-height:1.8}
+.phone-auth .auth-bottom{margin-top:auto}
+.phone-auth .auth-switch{font-size:14px;margin:0 0 24px;color:#57404a}
+.phone-auth .auth-switch button,.auth-edit,.auth-verification button{color:var(--wine);text-decoration:underline;text-underline-offset:5px}
+.auth-edit{font-size:12px;margin-inline-start:10px}
+.auth-verification{font-size:12px;line-height:1.9;text-align:center;margin-top:20px}
+.auth-preview-note{display:grid;gap:5px;margin-top:20px;padding:12px 16px;border-radius:12px;background:#faf4f6;border:1px dashed #dcb5bf;color:#7b4b59;font-size:11px}
+.auth-preview-note strong{color:var(--wine);font-size:12px}
+.auth-preview-note b{font-size:22px;letter-spacing:7px;color:var(--wine)}
+.phone-auth .auth-otp-field input{font-size:25px;letter-spacing:8px;text-align:center;min-width:0}
+.phone-auth .auth-footer{display:block}
+@media(max-width:800px){.phone-auth .auth-panel{max-width:520px;padding:calc(20px + env(safe-area-inset-top,0px)) 24px calc(22px + env(safe-area-inset-bottom,0px));min-height:100svh;min-height:100dvh;gap:22px}.phone-auth .auth-body{padding:8px 0 20px}.phone-auth .auth-identity{margin-bottom:44px}.phone-auth .auth-logo{width:146px;height:146px}.phone-auth .auth-body h1{font-size:28px}.phone-auth .auth-switch{margin-bottom:18px}}
+@media(max-width:360px){.phone-auth .auth-panel{padding-inline:20px}.phone-auth .auth-otp-field input{letter-spacing:6px;font-size:23px}}
+@media(max-height:730px){.phone-auth .auth-identity{margin-bottom:24px}.phone-auth .auth-logo{width:104px;height:104px;border-radius:26px}.phone-auth .auth-logo .masal-mark{width:84px;height:84px}.phone-auth .auth-identity>strong{font-size:19px}.phone-auth .auth-panel{gap:14px}}

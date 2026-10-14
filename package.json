@@ -1,0 +1,31 @@
+{
+  "name": "fatya",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "vite build",
+    "test": "node tests/flows.mjs && node tests/marketing.mjs && node tests/pull-refresh.mjs && node tests/store-session.mjs && node tests/deck-gesture.mjs && node tests/auth-preview.mjs && node tests/slides.mjs && node tests/i18n.mjs && node tests/pagination.mjs && node tests/backend.mjs && node tests/dashboard-dialog.mjs && node tests/preview-settings.mjs",
+    "check": "node scripts/check.mjs",
+    "start": "node --env-file-if-exists=.env server/start.mjs"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "lucide-vue-next": "^0.468.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "vite-plugin-pwa": "^2.0.0"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    }
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

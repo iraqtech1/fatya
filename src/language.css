@@ -1,0 +1,15 @@
+/* Language controls and mirrored storefront layout. */
+
+html[dir=ltr] .app-shell .sidebar{right:auto;left:0;border-left:0;border-right:1px solid var(--border)}
+html[dir=ltr] .app-shell>main{margin-right:0;margin-left:240px}
+html[dir=ltr] .app-shell :is(.sidebar nav button,.account-row,.account-identity p,.deck-card){text-align:left}
+html[dir=ltr] .app-shell .account-switch{margin-right:0;margin-left:auto}
+html[dir=ltr] .app-shell :is(.account-chevron,.account-back>svg,.section-title button>svg,.sidebar nav button>svg:last-child){transform:scaleX(-1)}
+html[dir=ltr] .app-shell .notification-count{right:auto;left:-3px}
+html[dir=ltr] .app-shell .notification-panel{left:auto;right:0}
+html[dir=ltr] .app-shell .close{left:auto;right:16px}
+html[dir=ltr] .app-shell .payment>svg:last-child{margin-right:0;margin-left:auto}
+html[dir=ltr] .phone-auth :is(.auth-action>svg,.auth-back>svg){transform:scaleX(-1)}
+html[dir=ltr] .app-shell .hero-label{white-space:normal}
+html[dir=ltr] .app-shell .hero .deck-hint{font-size:9px!important}
+@media(max-width:700px){html[dir=ltr] .app-shell>main{margin-left:0}.account-language{gap:12px}html[dir=ltr] .app-shell .hero .hero-copy h2{font-size:clamp(14px,3.8vw,20px)}html[dir=ltr] .app-shell .hero .deck-hint{font-size:8px!important}html[dir=ltr] .app-shell .deck-card-bottom span{font-size:7px}html[dir=ltr] .app-shell .masal-cutout-dock button{font-size:clamp(8px,2.3vw,11px)}html[dir=ltr] .app-shell .store-header-brand span{font-size:9px}}

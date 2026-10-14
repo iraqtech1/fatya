@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import {deckSwipeStep} from '../src/deck-gesture.js';
+assert.equal(deckSwipeStep(4,-80),1,'Swipe up shows next card');
+assert.equal(deckSwipeStep(4,80),-1,'Swipe down shows previous card');
+assert.equal(deckSwipeStep(20,15),0,'A tap or small movement does not change cards');
+assert.equal(deckSwipeStep(80,4),1,'Existing horizontal swipes still work');
+assert.equal(deckSwipeStep(-80,4),-1);
+console.log('Vertical and horizontal card swipe checks passed.');
+
+// Exercise the actual handlers: touch capture loss must not cancel a finger swipe.
+const {readFileSync}=await import('node:fs');
+const {runInNewContext}=await import('node:vm');
+const source=readFileSync(new URL('../src/CardDeck.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'').replace('export default','const component=');
+const component=runInNewContext(source+';component',{t:value=>value,language:{value:'ar'},ref:value=>({value}),computed:fn=>({get value(){return fn()}}),onMounted(){},onUnmounted(){},ChevronUp:{},ChevronDown:{},deckSwipeStep});
+const selected=[];
+const deck=component.setup({products:[{id:1},{id:2},{id:3}]},{emit:(...args)=>selected.push(args)});
+const point=(x,y)=>({identifier:1,clientX:x,clientY:y});
+deck.touchDown({touches:[point(100,100)]});
+let prevented=false;
+deck.touchDrag({touches:[point(100,20)],cancelable:true,preventDefault(){prevented=true}});
+assert.equal(deck.style(0)['--drag-y'],'-80px','Cards follow the finger before release');
+assert.equal(prevented,true);
+deck.cancel({pointerType:'touch',target:{},currentTarget:{}});
+deck.touchUp({changedTouches:[point(100,20)]});
+assert.equal(deck.active.value,1,'Native touch swipe survives pointer capture loss');
+deck.select({id:2},1);
+assert.equal(selected.length,0,'Swipe release must not open the purchase dialog');
+deck.touchDown({touches:[point(100,100)]});
+deck.touchUp({changedTouches:[point(100,180)]});
+assert.equal(deck.active.value,0,'Native downward swipe shows the previous card');
+deck.touchDown({touches:[point(100,100)]});
+deck.touchDrag({touches:[point(100,20)],cancelable:true,preventDefault(){}});
+deck.reset();
+deck.touchUp({changedTouches:[point(100,20)]});
+assert.equal(deck.active.value,0,'Cancelled touches must not change cards');
+console.log('Native touch, capture transfer, drag feedback and cancelled gesture checks passed.');

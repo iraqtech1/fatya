@@ -1,0 +1,3 @@
+export const articles=[{id:'digital-commerce',category:'digital',title:'مستقبل التجارة الرقمية في الشرق الأوسط',description:'اكتشف كيف تُغيّر التجارة الرقمية منطقة الشرق الأوسط، من قسائم الألعاب إلى المدفوعات عبر الهاتف، وتعرّف على الاتجاهات التي ترسم مستقبل المعاملات الرقمية.',minutes:5,date:'1970-01-01'}];
+const normalized=value=>value.normalize('NFKD').replace(/[\u064B-\u065F\u0670]/g,'').replace(/[أإآ]/g,'ا').toLowerCase().trim();
+export function filterArticles(items,query,category){const q=normalized(query);return items.filter(a=>(category==='all'||a.category===category)&&normalized(a.title+' '+a.description).includes(q))}

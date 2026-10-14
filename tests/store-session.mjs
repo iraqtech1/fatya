@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import {restoreStoreSession,saveStoreSession} from '../src/store-session.js';
+const values=new Map(),storage={getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};
+assert.equal(restoreStoreSession(storage),null);
+saveStoreSession(storage,{entered:true,user:null,page:'cards',merchant:false});
+assert.equal(restoreStoreSession(storage),null,'Legacy guest entry must return to phone sign-in');
+saveStoreSession(storage,{entered:true,user:{name:'Test',phone:'07000000000',email:'test@example.test',password:'never-save',hash:'never-save'},page:'orders',merchant:true});
+assert.equal(restoreStoreSession(storage).page,'orders');
+assert.equal('merchant' in restoreStoreSession(storage),false,'Legacy merchant session flag is discarded');
+assert.equal(restoreStoreSession(storage).user.name,'Test');
+assert.ok(![...values.values()][0].includes('never-save'),'Credentials must never be persisted');
+saveStoreSession(storage,{entered:false});
+assert.equal(restoreStoreSession(storage),null,'Logout clears restored entry');
+values.set('masal-preview-session-v1','broken json');
+assert.equal(restoreStoreSession(storage),null);
+assert.equal(restoreStoreSession({getItem(){throw Error('blocked')}}),null);
+assert.doesNotThrow(()=>saveStoreSession({setItem(){throw Error('blocked')}},{entered:true,user:null,page:'home'}));
+console.log('Preview session restoration and logout checks passed.');
+
+saveStoreSession(storage,{entered:true,user:{name:'Preview',phone:'',email:'',previewId:'demo-tab'},page:'account'});
+assert.equal(restoreStoreSession(storage).user.previewId,'demo-tab','Direct preview entry survives refresh');

@@ -1,0 +1,1659 @@
+
+/* Fatya palette from the supplied identity guide. Color overrides only; dashboard is excluded by the root attribute. */
+html[data-fatya-store] .payment-preview-tag {
+  background: #f8e7db;
+  color: #8d0021;
+}
+html[data-fatya-store] .payment-order-panel,html[data-fatya-store] .payment-fields-panel,html[data-fatya-store] .payment-preview-card {
+  border: 1px solid #f8e7db;
+  background: #fffaf5a6;
+}
+html[data-fatya-store] .payment-order-panel {
+  background: #fffaf599;
+}
+html[data-fatya-store] .payment-order-panel dt {
+  color: #d08e52;
+}
+html[data-fatya-store] .payment-method-summary {
+  border: 1px solid #f8e7db;
+  background: #fffaf5;
+}
+html[data-fatya-store] .payment-method-summary small {
+  color: #d08e52;
+}
+html[data-fatya-store] .payment-method-summary>svg {
+  color: #8d0021;
+}
+html[data-fatya-store] .payment-preview-brand {
+  background: #fffaf5;
+}
+html[data-fatya-store] .payment-preview-brand.zaincash {
+  background: #320715;
+}
+html[data-fatya-store] .payment-preview-note {
+  color: #a60233;
+}
+html[data-fatya-store] .payment-details-form input {
+  border: 1px solid #e8c8ad;
+  background: #fffaf5;
+  color: #320715;
+}
+html[data-fatya-store] .payment-details-form input:focus {
+  outline: 2px solid #8d0021;
+}
+html[data-fatya-store] .payment-final-total {
+  border-top: 1px solid #f8e7db;
+  color: #8d0021;
+}
+html[data-fatya-store][data-theme=dark] :is(.payment-order-panel,.payment-fields-panel,.payment-preview-card,.payment-method-summary) {
+  background: #320715cc;
+  border-color: #54031c;
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] .payment-preview-tag {
+  background: #54031c;
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] :is(.payment-final-total,.payment-method-summary>svg) {
+  color: #f8e7db;
+  border-color: #54031c;
+}
+html[data-fatya-store][data-theme=dark] :is(.payment-preview-note,.payment-order-panel dt,.payment-method-summary small) {
+  color: #e8c8ad;
+}
+html[data-fatya-store][data-theme=dark] .payment-details-form input {
+  background: #320715;
+  color: #f8e7db;
+  border-color: #54031c;
+}
+html[data-fatya-store][data-theme=dark] .payment-details-form input:focus {
+  outline-color: #e8c8ad;
+}
+html[data-fatya-store] .pagination button {
+  border: 1px solid #e8c8ad;
+  background: #fffaf5;
+  color: #8d0021;
+}
+html[data-fatya-store] .pagination button.active {
+  background: #8d0021;
+  border-color: #8d0021;
+  color: #fffaf5;
+}
+html[data-fatya-store] .pagination-summary {
+  color: #a60233;
+}
+html[data-fatya-store][data-theme=dark] .pagination button {
+  background: #320715;
+  border-color: #54031c;
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] .pagination button.active {
+  background: #54031c;
+  border-color: #e8c8ad;
+  color: #fffaf5;
+}
+html[data-fatya-store][data-theme=dark] .pagination-summary {
+  color: #e8c8ad;
+}
+html[data-fatya-store] {
+  color: #320715;
+  background: #fffaf5;
+  --wine: #8d0021;
+  --muted: #d08e52;
+  --border: #f8e7db;
+}
+html[data-fatya-store] button:focus-visible,html[data-fatya-store] a:focus-visible {
+  outline: 3px solid #d08e52;
+}
+html[data-fatya-store] .sidebar {
+  background: #fffaf5;
+}
+html[data-fatya-store] .brand-mark {
+  color: #fffaf5;
+}
+html[data-fatya-store] .side-label {
+  color: #a58281;
+}
+html[data-fatya-store] .sidebar nav button {
+  color: #d08e52;
+}
+html[data-fatya-store] .sidebar nav button.active {
+  background: #fffaf5;
+}
+html[data-fatya-store] header {
+  background: #fffaf5;
+}
+html[data-fatya-store] .breadcrumb {
+  color: #a58281;
+}
+html[data-fatya-store] .breadcrumb span {
+  color: #54031c;
+}
+html[data-fatya-store] .preview-badge {
+  color: #d08e52;
+  border: 1px solid #f8e7db;
+}
+html[data-fatya-store] .profile svg {
+  background: #fffaf5;
+}
+html[data-fatya-store] .eyebrow {
+  color: #d08e52;
+}
+html[data-fatya-store] .edition {
+  color: #a58281;
+}
+html[data-fatya-store] .hero {
+  background: #54031c;
+  color: #fffaf5;
+}
+html[data-fatya-store] .hero-label {
+  color: #f8e7db;
+}
+html[data-fatya-store] .hero-label span {
+  background: #f8e7db;
+}
+html[data-fatya-store] .hero h2 span {
+  color: #f8e7db;
+}
+html[data-fatya-store] .hero p {
+  color: #e8c8ad;
+}
+html[data-fatya-store] .hero button {
+  background: #fffaf5;
+}
+html[data-fatya-store] .hero-feature {
+  border: 1px solid #d08e5266;
+  background: linear-gradient(130deg,#fffaf512,transparent);
+}
+html[data-fatya-store] .feature-top {
+  color: #e8c8ad;
+}
+html[data-fatya-store] .feature-title {
+  color: #f8e7db;
+}
+html[data-fatya-store] .feature-bottom span {
+  border: 1px solid #e8c8ad4a;
+}
+html[data-fatya-store] .brands button {
+  background: #fffaf5;
+}
+html[data-fatya-store] .brands button:hover {
+  border-color: #a58281;
+}
+html[data-fatya-store] .product {
+  background: #fffaf5;
+}
+html[data-fatya-store] .product:hover {
+  box-shadow: 0 10px 25px #32071509;
+}
+html[data-fatya-store] .product-art {
+  color: #fffaf5;
+}
+html[data-fatya-store] .product-art:after {
+  background: linear-gradient(115deg,transparent 50%,#fffaf513 50%,#fffaf505 80%,transparent 80%);
+}
+html[data-fatya-store] .product-footer button {
+  background: #fffaf5;
+}
+html[data-fatya-store] .product-footer button:hover {
+  color: #fffaf5;
+}
+html[data-fatya-store] footer {
+  color: #a58281;
+}
+html[data-fatya-store] .dot {
+  color: #e8c8ad;
+}
+html[data-fatya-store] .search {
+  background: #fffaf5;
+}
+html[data-fatya-store] .search svg {
+  color: #a58281;
+}
+html[data-fatya-store] input,html[data-fatya-store] textarea {
+  background: #fffaf5;
+  color: #320715;
+}
+html[data-fatya-store] input:focus,html[data-fatya-store] textarea:focus {
+  border-color: #d08e52;
+}
+html[data-fatya-store] .filters button {
+  background: #fffaf5;
+  color: #a60233;
+}
+html[data-fatya-store] .filters button.selected,html[data-fatya-store] .denominations button.selected {
+  color: #fffaf5;
+}
+html[data-fatya-store] .merchant-note {
+  background: #f8e7db;
+}
+html[data-fatya-store] .empty {
+  border: 1px dashed #e8c8ad;
+  background: #fffaf5;
+}
+html[data-fatya-store] .empty>svg {
+  color: #a58281;
+}
+html[data-fatya-store] .primary {
+  color: #fffaf5;
+}
+html[data-fatya-store] .order {
+  background: #fffaf5;
+}
+html[data-fatya-store] .support-form,html[data-fatya-store] .faq {
+  background: #fffaf5;
+}
+html[data-fatya-store] dialog {
+  color: #320715;
+  box-shadow: 0 20px 100px #14030a33;
+}
+html[data-fatya-store] dialog::backdrop {
+  background: #32071580;
+}
+html[data-fatya-store] dialog .close {
+  color: #a58281;
+}
+html[data-fatya-store] .payment {
+  background: #fffaf5;
+}
+html[data-fatya-store] .success>span {
+  background: #f8e7db;
+}
+html[data-fatya-store] .toast {
+  background: #54031c;
+  color: #fffaf5;
+}
+@media(max-width:700px) {
+  html[data-fatya-store] body {
+    background: #fffaf5;
+  }
+  html[data-fatya-store] header {
+    background: #fffaf5;
+  }
+  html[data-fatya-store] .bottom-nav {
+    background: #fffaf59e;
+    border: 1px solid rgba(255,250,245,.85);
+    box-shadow: 0 12px 32px #54031c29,inset 0 1px #fffaf5f2;
+  }
+  html[data-fatya-store] .bottom-nav button {
+    color: #a58281;
+  }
+  html[data-fatya-store] .bottom-nav button .nav-symbol {
+    background: #fffaf5c7;
+    border: 1px solid rgba(255,250,245,.9);
+    box-shadow: 0 4px 10px #54031c21,inset 0 2px 3px #fffaf5f2,inset 0 -3px 5px #54031c0f;
+  }
+  html[data-fatya-store] .bottom-nav button.active {
+    background: #8d00211a;
+  }
+  html[data-fatya-store] .bottom-nav button.active .nav-symbol {
+    background: #8d002124;
+    box-shadow: 0 4px 12px #8d002140,inset 0 2px 3px #fffaf5cc;
+  }
+  html[data-fatya-store] .bottom-nav button:active {
+    background: #8d00212e;
+  }
+  html[data-fatya-store] .bottom-nav button.active:active {
+    background: #8d00213d;
+  }
+  html[data-fatya-store] .bottom-nav button:active .nav-symbol {
+    box-shadow: inset 0 4px 8px #54031c59,0 1px 2px #54031c1a;
+  }
+}
+html[data-fatya-store] .deck-card {
+  background: #54031c;
+  color: #fffaf5;
+  border: 1px solid #f2b46465;
+  box-shadow: 0 8px 30px #3207153d;
+}
+html[data-fatya-store] .deck-card.deck-current {
+  border-color: #e8c8ad;
+}
+html[data-fatya-store] .deck-card.deck-white {
+  background: #fffaf5;
+  color: #8d0021;
+  border-color: #fffaf5;
+}
+html[data-fatya-store] .deck-card:focus-visible {
+  outline: 3px solid #f8e7db;
+}
+html[data-fatya-store] .deck-controls button {
+  border: 1px solid #a5828166;
+  background: #fffaf512;
+  color: #fffaf5;
+}
+html[data-fatya-store] .deck-controls button:hover {
+  background: #fffaf529;
+}
+html[data-fatya-store] .deck-hint {
+  color: #e8c8ad!important;
+}
+html[data-fatya-store] .hero .deck-card {
+  background: #54031c;
+  color: #fffaf5;
+}
+html[data-fatya-store] .hero .deck-card.deck-white {
+  background: #fffaf5;
+  color: #8d0021;
+}
+html[data-fatya-store] .sidebar nav button.active .nav-symbol {
+  background: #fffaf5;
+  box-shadow: 0 0 0 3px #8d00210d,0 4px 12px #8d00211a;
+}
+html[data-fatya-store] .auth-shell {
+  background: #fffaf5;
+}
+html[data-fatya-store] .auth-story {
+  background: radial-gradient(circle at 90% 0,#d08e5245,transparent 50%),#54031c;
+  color: #fffaf5;
+}
+html[data-fatya-store] .auth-kicker {
+  color: #e8c8ad;
+}
+html[data-fatya-store] .auth-story p {
+  color: #e8c8ad;
+}
+html[data-fatya-store] .auth-art>span {
+  background: #fffaf5;
+  box-shadow: 0 20px 45px #14030a50;
+}
+html[data-fatya-store] .auth-art>span:nth-child(2) {
+  background: #8d0021;
+  color: #fffaf5;
+  border: 1px solid #d08e52;
+}
+html[data-fatya-store] .auth-outline {
+  border: 1px solid #f8e7db;
+  background: #fffaf5;
+}
+html[data-fatya-store] .auth-outline:hover {
+  background: #fffaf5;
+}
+html[data-fatya-store] .auth-footer {
+  color: #a58281;
+}
+html[data-fatya-store] .auth-field {
+  background: #fffaf5;
+  color: #a58281;
+}
+html[data-fatya-store] .auth-field:focus-within {
+  border-color: #d08e52;
+  box-shadow: 0 0 0 3px #8d002108;
+}
+html[data-fatya-store] .auth-error {
+  color: #8d0021;
+  background: #fffaf5;
+}
+html[data-fatya-store] .account-access {
+  background: #fffaf5;
+}
+html[data-fatya-store] .pwa-banner {
+  background: #fffaf5;
+  border: 1px solid #f8e7db;
+  box-shadow: 0 10px 40px #54031c1c;
+}
+html[data-fatya-store] .pwa-offline {
+  background: #54031c;
+  color: #fffaf5;
+}
+html[data-fatya-store] .product-art.has-image {
+  background: #fffaf5;
+}
+html[data-fatya-store] .dialog-art {
+  background: #fffaf5;
+}
+html[data-fatya-store] .dialog-art>img {
+  background: #fffaf5;
+}
+html[data-fatya-store] .dialog-gallery button {
+  background: #fffaf5;
+}
+html[data-fatya-store] .product-price {
+  border: 1px solid #e8c8ad;
+  background: #fffaf5;
+  color: #8d0021;
+}
+html[data-fatya-store][data-theme=dark] .product-price {
+  border-color: #8d0021;
+  background: #320715;
+  color: #f8e7db;
+}
+html[data-fatya-store] .support-contact {
+  background: #fffaf5;
+}
+html[data-fatya-store] .support-contact-icon {
+  background: #fffaf5;
+}
+html[data-fatya-store][data-theme=dark] .support-contact {
+  background: linear-gradient(135deg,#320715,#320715);
+  border-color: #54031c;
+  color: #fffaf5;
+}
+html[data-fatya-store][data-theme=dark] .support-contact-icon {
+  background: #320715;
+  color: #f2b464;
+}
+html[data-fatya-store] .category-tiles>button {
+  color: #a60233;
+}
+html[data-fatya-store] .category-tile-icon {
+  border: 1px solid #f8e7db;
+  background: linear-gradient(135deg,#fffaf5cc,#f8e7dbcc);
+  color: #8d0021;
+  box-shadow: 0 3px 10px #54031c07;
+}
+html[data-fatya-store] .category-tiles>button.selected {
+  color: #8d0021;
+}
+html[data-fatya-store] .category-tiles>button.selected .category-tile-icon {
+  background: linear-gradient(135deg,#54031c,#8d0021);
+  border-color: #d08e52;
+  color: #fffaf5;
+  box-shadow: 0 4px 14px #8d002122;
+}
+html[data-fatya-store] .category-tiles>button:hover .category-tile-icon {
+  border-color: #8d0021;
+}
+html[data-fatya-store] .category-result-count {
+  color: #d08e52;
+}
+html[data-fatya-store][data-theme=dark] .category-tiles>button {
+  color: #e8c8ad;
+}
+html[data-fatya-store][data-theme=dark] .category-tile-icon {
+  background: linear-gradient(135deg,#54031ccc,#320715cc);
+  border-color: #54031c;
+  color: #e8c8ad;
+}
+html[data-fatya-store][data-theme=dark] .category-tiles>button.selected {
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] .category-tiles>button.selected .category-tile-icon {
+  background: linear-gradient(135deg,#54031c,#8d0021);
+  border-color: #e8c8ad;
+  color: #fffaf5;
+  box-shadow: 0 4px 14px #14030a33;
+}
+html[data-fatya-store][data-theme=dark] .category-result-count {
+  color: #e8c8ad;
+}
+html[data-fatya-store] .payment-method-grid button {
+  border: 1px solid #e8c8ad;
+  background: #fffaf5;
+  color: #8d0021;
+}
+html[data-fatya-store] .payment-logo {
+  background: #fffaf5;
+}
+html[data-fatya-store] .payment-logo.zaincash {
+  background: #320715;
+}
+html[data-fatya-store] .payment-method-grid button.selected {
+  border-color: #8d0021;
+  background: #fffaf5;
+  box-shadow: 0 0 0 1px #8d0021;
+}
+html[data-fatya-store] .payment-method-grid button:hover,html[data-fatya-store] .payment-method-grid button:focus-visible {
+  border-color: #8d0021;
+}
+html[data-fatya-store][data-theme=dark] .payment-method-grid button {
+  background: #320715cc;
+  border-color: #54031c;
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] .payment-method-grid button.selected {
+  background: #54031c;
+  border-color: #e8c8ad;
+  box-shadow: 0 0 0 1px #e8c8ad;
+}
+html[data-fatya-store] .store-account {
+  background: #fffaf5;
+}
+html[data-fatya-store] .store-account-icon {
+  background: #fffaf5;
+}
+html[data-fatya-store] .app-shell .hero .deck-card-with-art:after {
+  background: linear-gradient(255deg,#14030ae6 6%,#14030a99 52%,#14030a33);
+}
+html[data-fatya-store] .app-shell .hero .deck-card-with-art>span,html[data-fatya-store] .app-shell .hero .deck-card-with-art>strong {
+  color: #fffaf5;
+}
+html[data-fatya-store] .app-shell .hero .deck-card-with-art.deck-white>span,html[data-fatya-store] .app-shell .hero .deck-card-with-art.deck-white>strong {
+  color: #fffaf5;
+}
+html[data-fatya-store] .app-shell .product-selectable:focus-visible {
+  outline: 2px solid var(--primary,#8d0021);
+}
+html[data-fatya-store] .app-shell {
+  --card-edge: #e8c8ad;
+  --card-shadow: 0 5px 0 -1px #e8c8ad,0 12px 20px #54031c30;
+  --card-shadow-raised: 0 6px 0 -1px #e8c8ad,0 16px 24px #54031c3b;
+  --card-edge-active: #d08e52;
+}
+html[data-fatya-store] .app-shell .brands button,html[data-fatya-store] .app-shell .product-selectable {
+  background: linear-gradient(145deg,#fffaf5 40%,#fffaf5);
+}
+html[data-fatya-store] .app-shell .hero .deck-card {
+  border-color: #f8e7db80;
+  box-shadow: 0 4px 0 -1px #320715,0 10px 18px #32071566;
+}
+html[data-fatya-store] .app-shell .hero .deck-card.deck-current {
+  border-color: #e8c8ad;
+  box-shadow: 0 5px 0 -1px #320715,0 14px 24px #32071599,0 0 0 1px #e8c8ad55;
+}
+html[data-fatya-store][data-theme=dark] .app-shell {
+  --card-edge: #a60233;
+  --card-shadow: 0 5px 0 -1px #14030a,0 12px 22px #14030a99,0 0 0 1px #e8c8ad22;
+  --card-shadow-raised: 0 6px 0 -1px #14030a,0 16px 26px #14030aaa,0 0 0 1px #e8c8ad44;
+  --card-edge-active: #e8c8ad;
+}
+html[data-fatya-store][data-theme=dark] .app-shell .brands button,html[data-fatya-store][data-theme=dark] .app-shell .product-selectable {
+  background: linear-gradient(145deg,#54031c,#320715)!important;
+}
+html[data-fatya-store][data-theme=dark] .app-shell .brands .brand-logo {
+  color: #f8e7db!important;
+}
+html[data-fatya-store][data-theme=dark] .app-shell .hero .deck-card {
+  border-color: #d08e5280;
+  box-shadow: 0 4px 0 -1px #14030a,0 10px 18px #14030a99;
+}
+html[data-fatya-store][data-theme=dark] .app-shell .hero .deck-card.deck-current {
+  border-color: #e8c8ad;
+  box-shadow: 0 5px 0 -1px #14030a,0 14px 24px #14030abb,0 0 0 1px #e8c8ad55;
+}
+html[data-fatya-store] .app-shell .hero {
+  border: 1.5px solid #e8c8ad;
+  box-shadow: 0 6px 16px #54031c20;
+}
+html[data-fatya-store][data-theme=dark] .app-shell .hero {
+  border-color: #d08e52;
+  box-shadow: 0 6px 16px #14030a55;
+}
+html[data-fatya-store] .app-shell .brands {
+  scrollbar-color: #d08e52 transparent;
+}
+html[data-fatya-store] .app-shell .brands::-webkit-scrollbar-thumb {
+  background: #d08e52;
+}
+html[data-fatya-store][data-theme=dark] .app-shell .brands {
+  scrollbar-color: #d08e52 transparent;
+}
+html[data-fatya-store][data-theme=dark] .app-shell .brands::-webkit-scrollbar-thumb {
+  background: #d08e52;
+}
+html[data-fatya-store] .pull-refresh {
+  color: #54031c;
+  background: #fffaf5;
+  border: 1px solid #f8e7db;
+  box-shadow: 0 6px 20px #54031c20;
+}
+@media(max-width:700px) {
+  html[data-fatya-store] .app-shell nav.bottom-nav.masal-cutout-dock {
+    --dock-surface: #fffaf5;
+    --dock-bubble-fill: #fffaf5;
+    --dock-bubble-border: #8d0021;
+    --dock-bubble-shadow: #54031c24;
+    --dock-selected: #8d0021;
+    --dock-muted: #a60233;
+    --dock-notch-tint: #fffaf580;
+  }
+  html[data-fatya-store] .masal-cutout-dock .dock-surface {
+    filter: drop-shadow(0 5px 12px #54031c16);
+  }
+  html[data-fatya-store][data-theme=dark] .app-shell nav.bottom-nav.masal-cutout-dock {
+    --dock-surface: #320715;
+    --dock-notch-tint: #32071580;
+    --dock-bubble-fill: #320715;
+    --dock-bubble-border: #e8c8ad;
+    --dock-bubble-shadow: #14030a66;
+    --dock-selected: #f8e7db;
+    --dock-muted: #e8c8ad;
+  }
+  html[data-fatya-store][data-theme=dark] .masal-cutout-dock .dock-surface {
+    filter: drop-shadow(0 6px 14px #14030a55);
+  }
+}
+html[data-fatya-store] .app-shell .store-header {
+  border: 1px solid #fffaf5;
+  background: linear-gradient(120deg,#fffaf5,#fffaf5);
+  box-shadow: 0 8px 26px #54031c0d;
+}
+html[data-fatya-store] .store-header-brand {
+  color: #8d0021;
+}
+html[data-fatya-store] .store-header-brand span {
+  color: #a60233;
+}
+html[data-fatya-store] .store-header .notification-bell {
+  border: 1px solid #f8e7db;
+  background: #fffaf5;
+  color: #8d0021;
+}
+html[data-fatya-store] .notification-count {
+  border: 3px solid #fffaf5;
+  background: #d08e52;
+  color: #320715;
+}
+html[data-fatya-store] .notification-panel {
+  border: 1px solid #f8e7db;
+  background: #fffaf5;
+  color: #54031c;
+  box-shadow: 0 16px 40px #54031c24;
+}
+html[data-fatya-store] .notification-heading button {
+  color: #8d0021;
+}
+html[data-fatya-store] .notification-demo {
+  color: #a60233;
+}
+html[data-fatya-store] .notification-read-all {
+  color: #8d0021;
+}
+html[data-fatya-store] .notification-panel li {
+  background: #fffaf5;
+}
+html[data-fatya-store] .notification-panel li.unread {
+  background: #fffaf5;
+}
+html[data-fatya-store] .notification-dot {
+  background: #8d0021;
+}
+html[data-fatya-store] .notification-panel li p {
+  color: #8d0021;
+}
+html[data-fatya-store] .notification-panel small {
+  color: #a60233;
+}
+html[data-fatya-store][data-theme=dark] .app-shell .store-header {
+  background: linear-gradient(120deg,#320715,#320715)!important;
+  border-color: #54031c!important;
+  box-shadow: 0 8px 26px #14030a44;
+}
+html[data-fatya-store][data-theme=dark] .store-header-brand {
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] .store-header-brand span {
+  color: #e8c8ad;
+}
+html[data-fatya-store][data-theme=dark] .store-header .notification-bell {
+  background: #320715;
+  border-color: #a60233;
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] .notification-count {
+  border-color: #320715;
+  background: #e8c8ad;
+  color: #320715;
+}
+html[data-fatya-store][data-theme=dark] .notification-panel {
+  background: #320715;
+  border-color: #54031c;
+  color: #fffaf5;
+}
+html[data-fatya-store][data-theme=dark] .notification-panel li {
+  background: #320715;
+}
+html[data-fatya-store][data-theme=dark] .notification-panel li.unread {
+  background: #54031c;
+}
+html[data-fatya-store][data-theme=dark] .notification-panel :is(p,small) {
+  color: #e8c8ad;
+}
+html[data-fatya-store][data-theme=dark] .notification-panel button {
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] .notification-dot {
+  background: #e8c8ad;
+}
+html[data-fatya-store] .notification-heading .notification-close {
+  border: 1px solid #e8c8ad;
+  background: #fffaf5;
+  color: #8d0021;
+}
+html[data-fatya-store] .notification-framed {
+  border: 1px solid #e8c8ad;
+  background: #fffaf5;
+  color: #8d0021;
+}
+html[data-fatya-store] .notification-item-arrow {
+  border: 1px solid #f8e7db;
+  background: #fffaf5;
+  color: #8d0021;
+}
+html[data-fatya-store] .notification-item:hover {
+  background: #8d002109;
+}
+html[data-fatya-store] .notification-detail {
+  border: 1px solid #f8e7db;
+  background: #fffaf5;
+}
+html[data-fatya-store] .notification-detail p {
+  color: #8d0021;
+}
+html[data-fatya-store][data-theme=dark] .notification-heading .notification-close {
+  background: #320715;
+  border-color: #8d0021;
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] :is(.notification-framed,.notification-item-arrow,.notification-detail) {
+  background: #320715;
+  border-color: #54031c;
+  color: #f8e7db;
+}
+html[data-fatya-store] .phone-auth {
+  background: #fffaf5;
+}
+html[data-fatya-store] .auth-logo {
+  background: linear-gradient(145deg,#fffaf5,#fffaf5);
+  border: 1px solid #f8e7db;
+  box-shadow: 0 14px 40px #54031c08;
+}
+html[data-fatya-store] .auth-identity>span {
+  color: #a58281;
+}
+html[data-fatya-store] .phone-auth .auth-field {
+  background: #fffaf5;
+  border: 1px solid #f8e7db;
+}
+html[data-fatya-store] .phone-auth .auth-field input::placeholder {
+  color: #a58281;
+}
+html[data-fatya-store] .phone-auth button:focus-visible {
+  outline: 3px solid #e8c8ad;
+}
+html[data-fatya-store] .phone-auth .auth-switch {
+  color: #54031c;
+}
+html[data-fatya-store] .auth-preview-note {
+  background: #fffaf5;
+  border: 1px dashed #e8c8ad;
+  color: #8d0021;
+}
+html[data-fatya-store] .account-identity>span {
+  background: #fffaf5;
+}
+html[data-fatya-store] .account-row {
+  background: linear-gradient(115deg,#fffaf59e,#fffaf573);
+  box-shadow: 0 4px 16px #54031c06;
+}
+html[data-fatya-store] .account-row-icon {
+  background: #f8e7dbb3;
+}
+html[data-fatya-store] .account-switch {
+  background: #a58281;
+}
+html[data-fatya-store] .account-switch i {
+  background: #fffaf5;
+}
+html[data-fatya-store] .account-panel {
+  background: #fffaf5;
+}
+html[data-fatya-store][data-theme=dark] :is(.account-row,.account-panel) {
+  background: linear-gradient(135deg,#320715,#320715);
+  border-color: #54031c;
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] .account-row {
+  background: linear-gradient(135deg,#320715b8,#32071599);
+  border-color: #54031c;
+}
+html[data-fatya-store][data-theme=dark] :is(.account-row-icon,.account-identity>span) {
+  background: #54031c;
+  color: #e8c8ad;
+}
+html[data-fatya-store] .account-language-picker {
+  color: #8d0021;
+}
+html[data-fatya-store] .account-language-picker select {
+  border: 1px solid #e8c8ad;
+  background: #fffaf5;
+  color: #8d0021;
+  box-shadow: 0 2px 6px #54031c08;
+}
+html[data-fatya-store] .account-language-picker select:focus-visible {
+  border-color: #8d0021;
+  box-shadow: 0 0 0 3px #d08e5240;
+}
+html[data-fatya-store] .account-language-picker select:hover {
+  border-color: #8d0021;
+}
+html[data-fatya-store][data-theme=dark] .account-language-picker {
+  color: #e8c8ad;
+}
+html[data-fatya-store][data-theme=dark] .account-language-picker select {
+  background: #320715!important;
+  border-color: #54031c!important;
+  color: #f8e7db!important;
+}
+html[data-fatya-store][data-theme=dark] .account-language-picker select:focus-visible {
+  border-color: #e8c8ad!important;
+  box-shadow: 0 0 0 3px #e8c8ad26;
+}
+html[data-fatya-store] .searchable-filter summary {
+  border: 1px solid #e8c8ad;
+  background: #fffaf5;
+  color: #8d0021;
+}
+html[data-fatya-store] .searchable-filter summary:focus-visible {
+  outline: 3px solid #d08e52;
+}
+html[data-fatya-store] .searchable-filter-panel {
+  background: #fffaf5;
+  border: 1px solid #e8c8ad;
+  box-shadow: 0 10px 28px #32071526;
+}
+html[data-fatya-store] .searchable-filter-options button {
+  color: #54031c;
+}
+html[data-fatya-store] .searchable-filter-options button:hover,html[data-fatya-store] .searchable-filter-options button[aria-pressed=true] {
+  background: #f8e7db;
+}
+html[data-fatya-store] .searchable-filter-options p {
+  color: #8d0021;
+}
+html[data-fatya-store][data-theme=dark] .searchable-filter summary,html[data-fatya-store][data-theme=dark] .searchable-filter-panel {
+  background: #320715;
+  border-color: #54031c;
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] .searchable-filter-options button,html[data-fatya-store][data-theme=dark] .searchable-filter-options p {
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] .searchable-filter-options button:hover,html[data-fatya-store][data-theme=dark] .searchable-filter-options button[aria-pressed=true] {
+  background: #54031c;
+}
+html[data-fatya-store] .ticket-history>article {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ticket-reply {
+  background: #fffaf5;
+}
+html[data-fatya-store] .banner-slider {
+  border: 1px solid #f8e7db;
+  background: #fffaf5;
+}
+html[data-fatya-store] .banner-controls {
+  border: 1px solid rgba(141,0,33,.18);
+  background: #fffaf54d;
+  box-shadow: 0 2px 10px #3207151f;
+}
+html[data-fatya-store] .banner-controls>button {
+  color: #8d0021;
+  background: #fffaf5;
+}
+html[data-fatya-store] .banner-dots button:after {
+  background: #e8c8ad;
+}
+html[data-fatya-store] .banner-dots button.active:after {
+  background: #8d0021;
+}
+html[data-fatya-store] .banner-slider button:focus-visible,html[data-fatya-store] .slider-manager button:focus-visible {
+  outline: 2px solid #8d0021;
+}
+html[data-fatya-store] .slider-manager>p {
+  color: #a60233;
+}
+html[data-fatya-store] .slider-upload:focus-within {
+  outline: 2px solid #8d0021;
+}
+html[data-fatya-store] .slider-image-list article {
+  border: 1px solid #f8e7db;
+}
+html[data-fatya-store] .slider-image-list img {
+  background: #fffaf5;
+}
+html[data-fatya-store] .banner-controls {
+  background: #fffaf58c;
+}
+html[data-fatya-store] .banner-dots button:after {
+  background: #a58281;
+}
+html[data-fatya-store] .banner-dots button.active:after {
+  background: #8d0021;
+}
+html[data-fatya-store][data-theme=dark] .banner-controls {
+  background: #320715b3;
+}
+html[data-fatya-store][data-theme=dark] .banner-dots button:after {
+  background: #a60233;
+}
+html[data-fatya-store][data-theme=dark] .banner-dots button.active:after {
+  background: #e8c8ad;
+}
+html[data-fatya-store] .masal-orbit-ring {
+  border: 1px solid #fffaf523;
+}
+html[data-fatya-store] .ring-three {
+  background: #fffaf504;
+}
+html[data-fatya-store] .masal-orbit-logo {
+  background: linear-gradient(140deg,#fffaf51c,#fffaf505);
+  border: 1px solid #e8c8ad75;
+  box-shadow: 0 12px 35px #32071530,0 0 45px #d08e5212;
+}
+html[data-fatya-store] .masal-orbit-item {
+  background: #fffaf5;
+  color: #8d0021;
+  border: 1px solid #fffaf5ad;
+  box-shadow: 0 8px 22px #32071526;
+}
+html[data-fatya-store] .orbit-card {
+  background: #f8e7db;
+  color: #54031c;
+}
+html[data-fatya-store] .orbit-game {
+  background: #f8e7db;
+}
+html[data-fatya-store] .theme-toggle {
+  border: 1px solid #f8e7db;
+  background: #fffaf5;
+  color: #8d0021;
+}
+html[data-fatya-store] .theme-toggle:focus-visible {
+  outline: 2px solid #d08e52;
+}
+html[data-fatya-store][data-theme=dark] body,html[data-fatya-store][data-theme=dark] #masal-content {
+  background: #14030a;
+  color: #fffaf5;
+}
+html[data-fatya-store][data-theme=dark] :is(.app-shell,.phone-auth) {
+  background: radial-gradient(ellipse at 85% 5%,#54031c3b,transparent 55%),linear-gradient(145deg,#14030a,#320715 60%,#320715);
+  color: #fffaf5;
+}
+html[data-fatya-store][data-theme=dark] :is(.sidebar,header,.auth-panel) {
+  background: #320715e8!important;
+  border-color: #54031c!important;
+  color: #fffaf5;
+}
+html[data-fatya-store][data-theme=dark] :is(.product,.brands button,.order,.support-form,.faq,.store-account,.ticket-history article,.empty,.auth-logo) {
+  background: linear-gradient(135deg,#320715,#320715)!important;
+  border-color: #54031c!important;
+  color: #fffaf5;
+  box-shadow: 0 8px 24px #14030a55;
+}
+html[data-fatya-store][data-theme=dark] :is(.hero,.auth-story) {
+  background: linear-gradient(135deg,#14030a,#54031c,#54031c)!important;
+  color: #fffaf5;
+  border-color: #8d0021;
+}
+html[data-fatya-store][data-theme=dark] :is(h1,h2,h3,.auth-body h1,.auth-identity strong) {
+  color: #f8e7db!important;
+}
+html[data-fatya-store][data-theme=dark] :is(.muted,.auth-intro,.auth-help,.auth-step,.auth-switch,.slider-storage-note,.slider-manager>p,.breadcrumb,.breadcrumb span,.auth-footer) {
+  color: #e8c8ad;
+}
+html[data-fatya-store][data-theme=dark] :is(input,textarea,select,.auth-field,.search) {
+  background: #14030a!important;
+  border-color: #54031c!important;
+  color: #fffaf5!important;
+}
+html[data-fatya-store][data-theme=dark] input::placeholder,html[data-fatya-store][data-theme=dark] textarea::placeholder {
+  color: #a58281!important;
+}
+html[data-fatya-store][data-theme=dark] :is(.auth-field) {
+  color: #e8c8ad;
+}
+html[data-fatya-store][data-theme=dark] :is(.primary) {
+  background: linear-gradient(135deg,#8d0021,#8d0021)!important;
+  color: #fffaf5!important;
+  border-color: #d08e52;
+}
+html[data-fatya-store][data-theme=dark] :is(.hero button) {
+  background: #8d0021;
+  color: #fffaf5;
+}
+html[data-fatya-store][data-theme=dark] :is(.theme-toggle,.account-access,.filters button,.auth-preview-note) {
+  background: #320715!important;
+  border-color: #54031c!important;
+  color: #f8e7db!important;
+}
+html[data-fatya-store][data-theme=dark] :is(.sidebar nav button.active,.filters button.selected,.denominations button.selected) {
+  background: #54031c;
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] :is(.store-account-icon) {
+  background: #54031c;
+  color: #e8c8ad;
+}
+html[data-fatya-store][data-theme=dark] :is(details) {
+  border-color: #54031c;
+  color: #fffaf5;
+}
+html[data-fatya-store][data-theme=dark] :is(dialog) {
+  background: #320715;
+  color: #fffaf5;
+  border-color: #54031c;
+}
+html[data-fatya-store][data-theme=dark] :is(.banner-slider,.banner-controls,.slider-image-list article) {
+  background: #320715;
+  border-color: #54031c;
+}
+html[data-fatya-store][data-theme=dark] .banner-controls>button {
+  background: #54031c;
+  color: #e8c8ad;
+}
+html[data-fatya-store][data-theme=dark] .banner-dots button.active:after {
+  background: #f2b464;
+}
+html[data-fatya-store][data-theme=dark] .app-shell nav.bottom-nav {
+  --dock-accent: #e8c8ad;
+  --dock-ink: #e8c8ad;
+  background: linear-gradient(105deg,#320715ed,#320715ee);
+  border-color: #54031c;
+  box-shadow: 0 8px 26px #14030a77;
+}
+html[data-fatya-store][data-theme=dark] .app-shell nav.bottom-nav .nav-symbol {
+  background: #320715;
+  border-color: #8d0021;
+}
+html[data-fatya-store][data-theme=dark] .app-shell nav.bottom-nav button.active {
+  background: #54031c;
+  color: #f8e7db;
+}
+html[data-fatya-store][data-theme=dark] .app-shell nav.bottom-nav button.active .nav-symbol {
+  background: #54031c;
+  color: #e8c8ad;
+  box-shadow: 0 5px 15px #14030a44;
+}
+html[data-fatya-store][data-theme=dark] .app-shell nav.bottom-nav button.nav-primary .nav-symbol {
+  background: linear-gradient(145deg,#a60233,#8d0021);
+  color: #fffaf5;
+  border-color: #d08e52;
+  box-shadow: 0 7px 15px #14030a55;
+}
+html[data-fatya-store][data-theme=dark] :is(.sidebar nav button,.profile,.slider-image-list article) {
+  color: #f8e7db!important;
+}
+html[data-fatya-store][data-theme=dark] :is(.side-label,.preview-badge,.eyebrow,.edition,footer,.dot,.deck-hint,.auth-kicker,.auth-story p,.auth-identity>span,.order small,.product-footer small,.product-info .muted,.account-access small) {
+  color: #e8c8ad!important;
+}
+html[data-fatya-store][data-theme=dark] :is(.sidebar nav button.active,.sidebar nav button:hover) {
+  background: #54031c!important;
+  color: #f8e7db!important;
+}
+html[data-fatya-store][data-theme=dark] :is(.search>svg,.profile svg,.product-footer button,.auth-back,.auth-switch,dialog .close) {
+  color: #e8c8ad!important;
+}
+html[data-fatya-store][data-theme=dark] :is(.profile svg,.product-footer button,.payment) {
+  background: #320715!important;
+  border-color: #54031c!important;
+}
+html[data-fatya-store][data-theme=dark] :is(.auth-error) {
+  background: #320715!important;
+  color: #f8e7db!important;
+  border-color: #8d0021;
+}
+html[data-fatya-store][data-theme=dark] :is(.theme-toggle) {
+  border: 1px solid #d08e52!important;
+  box-shadow: 0 0 0 1px #d08e5224,0 0 12px #d08e5228,0 8px 24px #14030a55!important;
+}
+html[data-fatya-store][data-theme=dark] :is(.theme-toggle):is(:hover,:focus-visible) {
+  border-color: #e8c8ad!important;
+  box-shadow: 0 0 0 1px #e8c8ad55,0 0 18px #d08e5250,0 8px 24px #14030a55!important;
+}
+html[data-fatya-store][data-theme=dark] .banner-controls {
+  background: #3207158c;
+  border-color: #e8c8ad66;
+}
+html[data-fatya-store] .app-shell dialog>.close {
+  border: 1px solid #e8c8ad;
+  background: #fffaf5;
+  color: #8d0021;
+}
+html[data-fatya-store] .app-shell dialog>.close:hover {
+  background: #f8e7db;
+}
+html[data-fatya-store] .app-shell dialog>.close:focus-visible {
+  outline: 2px solid #8d0021;
+}
+html[data-fatya-store][data-theme=dark] .app-shell dialog>.close {
+  background: #320715;
+  border-color: #8d0021;
+  color: #f8e7db!important;
+}
+html[data-fatya-store][data-theme=dark] .app-shell dialog>.close:hover {
+  background: #54031c;
+}
+html[data-fatya-store] .theme-scene {
+  filter: drop-shadow(0 2px 3px #54031c20);
+}
+html[data-fatya-store] .theme-scene-sky {
+  fill: #e8c8ad;
+  stroke: #d08e52;
+}
+html[data-fatya-store] .theme-scene-hill-back {
+  fill: #d08e52;
+}
+html[data-fatya-store] .theme-scene-hill-front {
+  fill: #54031c;
+}
+html[data-fatya-store] .theme-scene-orb-disc {
+  fill: #e8c8ad;
+  stroke: #f8e7db;
+}
+html[data-fatya-store] .theme-scene.night .theme-scene-sky {
+  fill: #320715;
+  stroke: #d08e52;
+}
+html[data-fatya-store] .theme-scene.night .theme-scene-hill-back {
+  fill: #54031c;
+}
+html[data-fatya-store] .theme-scene.night .theme-scene-hill-front {
+  fill: #320715;
+}
+html[data-fatya-store] .theme-scene.night .theme-scene-orb-disc {
+  fill: #fffaf5;
+  stroke: #f8e7db;
+}
+html[data-fatya-store] .theme-toggle.theme-scenic-toggle {
+  background: #fffaf5;
+}
+html[data-fatya-store] .masal-splash {
+  background: radial-gradient(ellipse at 50% 45%,#8d0021,#54031c 60%,#320715);
+  color: #fffaf5;
+}
+html[data-fatya-store] .splash-glow {
+  background: radial-gradient(circle,#d08e5214,transparent 66%);
+}
+html[data-fatya-store] .splash-logo {
+  filter: drop-shadow(0 12px 22px #14030a40);
+}
+html[data-fatya-store] .splash-wordmark>span {
+  color: #e8c8ad;
+}
+html[data-fatya-store] .splash-line {
+  background: linear-gradient(90deg,transparent,#d08e52,transparent);
+}
+html[data-fatya-store] .splash-symbols>span {
+  color: #e8c8ad;
+}
+html[data-fatya-store] .splash-skip {
+  border: 1px solid #fffaf520;
+  color: #f8e7db;
+  background: #fffaf508;
+}
+html[data-fatya-store] .splash-skip:focus-visible {
+  outline: 2px solid #d08e52;
+}
+html[data-fatya-store] .ms-site {
+  --ms-primary: #8d0021;
+  --ms-light: #d08e52;
+  --ms-pale: #f8e7db;
+  --ms-pink: #fffaf5;
+  --ms-text: #320715;
+  --ms-border: #f8e7db;
+  --ms-muted: #a60233;
+  --ms-shadow: 0 20px 25px -5px rgb(156 49 73/.1);
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-soft {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-glass {
+  background: #fffaf522;
+  color: #fffaf5;
+  border: 1px solid #fffaf533;
+}
+html[data-fatya-store] .ms-button {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-button:hover {
+  background: #54031c;
+  border-color: #54031c;
+}
+html[data-fatya-store] .ms-brand>span {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-nav {
+  color: #fffaf5;
+  border-bottom: 1px solid #fffaf522;
+  background: #fffaf511;
+}
+html[data-fatya-store] .ms-nav .router-link-active:not(.ms-brand):not(.ms-button) {
+  background: #fffaf522;
+}
+html[data-fatya-store] .ms-nav .ms-nav-cta {
+  background: #fffaf5;
+  border-color: #fffaf5;
+}
+html[data-fatya-store] .ms-dropdown-panel {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-nav.ms-scrolled,html[data-fatya-store] .ms-nav.ms-open {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-scrolled .ms-nav-cta {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-hero {
+  background: linear-gradient(180deg,#8d0021,#d08e52 55%,#fffaf5);
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-hero h1 em {
+  color: #f8e7db;
+}
+html[data-fatya-store] .ms-hero p {
+  color: #fffaf5;
+  text-shadow: 0 1px 4px #54031c22;
+}
+html[data-fatya-store] .ms-hero .ms-button:not(.ms-outline) {
+  background: #fffaf5;
+  border-color: #fffaf5;
+}
+html[data-fatya-store] .ms-hero .ms-outline,html[data-fatya-store] .ms-cta .ms-outline,html[data-fatya-store] .ms-story .ms-outline {
+  color: #fffaf5;
+  border-color: #fffaf5;
+}
+html[data-fatya-store] .ms-hero .ms-outline:hover,html[data-fatya-store] .ms-cta .ms-outline:hover,html[data-fatya-store] .ms-story .ms-outline:hover {
+  background: #fffaf522;
+}
+html[data-fatya-store] .ms-hero .ms-stat strong,html[data-fatya-store] .ms-story .ms-stat strong {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-hero .ms-stat>span,html[data-fatya-store] .ms-story .ms-stat>span {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-floating>span {
+  background: #fffaf522;
+  border: 1px solid #fffaf533;
+  box-shadow: 0 8px 30px #8d002120;
+  color: #fffaf599;
+}
+html[data-fatya-store] .ms-card {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-card:hover {
+  box-shadow: 0 24px 36px -8px #8d002122;
+}
+html[data-fatya-store] .ms-services .ms-icon {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-story {
+  background: linear-gradient(130deg,#54031c,#8d0021 50%,#d08e52);
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-story p {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-story .ms-button:not(.ms-outline),html[data-fatya-store] .ms-cta .ms-button:not(.ms-outline) {
+  background: #fffaf5;
+  border-color: #fffaf5;
+}
+html[data-fatya-store] .ms-team-art {
+  border: 8px solid #fffaf520;
+  background: linear-gradient(150deg,#320715,#54031c);
+}
+html[data-fatya-store] .ms-art-caption {
+  background: #fffaf515;
+  border: 1px solid #fffaf525;
+}
+html[data-fatya-store] .ms-art-tag {
+  background: #fffaf520;
+}
+html[data-fatya-store] .ms-year {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-timeline-card {
+  background: #fffaf5;
+  box-shadow: 0 4px 15px #8d002105;
+}
+html[data-fatya-store] .ms-cta {
+  background: linear-gradient(to left,#d08e52,#8d0021);
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-cta .ms-section-heading p {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-cta .ms-badge {
+  background: #fffaf522;
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-partner-icons .ms-card {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-partner-icons .ms-card p {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-partner-icons .ms-icon {
+  background: #fffaf522;
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-phone {
+  background: #fffaf5;
+  border: 7px solid #320715;
+}
+html[data-fatya-store] .ms-phone-notch {
+  background: #320715;
+}
+html[data-fatya-store] .ms-phone-screen {
+  background: linear-gradient(135deg,#8d0021,#d08e52);
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-phone-screen p {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-phone-icons span {
+  background: #fffaf533;
+}
+html[data-fatya-store] .ms-phone-lines i {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-phone-orbit {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-footer {
+  background: linear-gradient(130deg,#54031c,#8d0021);
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-footer .ms-brand>span {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-available i {
+  background: #8d0021;
+}
+html[data-fatya-store] .ms-copyright {
+  border-top: 1px solid #fffaf525;
+}
+@media(min-width:1200px) {
+  html[data-fatya-store] .ms-hero {
+    background: linear-gradient(135deg,#8d0021,#d08e52 55%,#fffaf5);
+  }
+}
+@media(max-width:800px) {
+  html[data-fatya-store] .ms-nav nav {
+    background: #fffaf5;
+  }
+}
+html[data-fatya-store] .ms-app-head .ms-icon {
+  background: linear-gradient(135deg,#8d0021,#d08e52);
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-steps li>span {
+  background: linear-gradient(135deg,#8d0021,#d08e52);
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-contact-card {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-contact-card>.ms-icon {
+  background: linear-gradient(135deg,#8d0021,#d08e52);
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-modal {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-modal::backdrop {
+  background: #32071599;
+}
+html[data-fatya-store] .ms-modal input,html[data-fatya-store] .ms-modal select,html[data-fatya-store] .ms-modal textarea {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-search-field {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-filter {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-filter-menu {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-article-art {
+  background: linear-gradient(135deg,#54031c,#d08e52,#fffaf5);
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-article-art:before,html[data-fatya-store] .ms-article-art:after {
+  border: 1px solid #fffaf544;
+}
+html[data-fatya-store] .ms-skip {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-app-stats>.ms-stat {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-site .ms-nav nav a:hover {
+  background: #fffaf522;
+}
+html[data-fatya-store] .ms-site .ms-glass {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-site .ms-hero h1 em {
+  text-shadow: 0 1px 1px #54031c40;
+}
+html[data-fatya-store] .ms-site .ms-hero .ms-stat strong,html[data-fatya-store] .ms-site .ms-hero .ms-stat>span {
+  color: #54031c;
+}
+html[data-fatya-store] .ms-site .ms-hero h1 em {
+  color: #fffaf5;
+  text-shadow: 0 2px 10px #54031c33;
+}
+html[data-fatya-store] {
+  --wine: #8d0021;
+  --border: #f8e7db;
+  color: #320715;
+  background: #fffaf5;
+}
+html[data-fatya-store] .brand-mark {
+  background: linear-gradient(135deg,#54031c,#8d0021);
+  box-shadow: 0 6px 18px #54031c18;
+}
+html[data-fatya-store] .hero,html[data-fatya-store] .auth-story {
+  background: linear-gradient(135deg,#54031c,#8d0021 62%,#d08e52);
+}
+html[data-fatya-store] .ms-site {
+  --ms-primary: #8d0021;
+  --ms-light: #d08e52;
+}
+html[data-fatya-store] .ms-site .ms-hero {
+  background: linear-gradient(180deg,#54031c,#8d0021 48%,#f2b464 80%,#fffaf5);
+}
+html[data-fatya-store] .ms-site .ms-hero h1 em {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-site .ms-hero .ms-stat strong,html[data-fatya-store] .ms-site .ms-hero .ms-stat>span {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-site .ms-hero .ms-stats {
+  border: 1px solid #fffaf522;
+  background: #54031c38;
+}
+html[data-fatya-store] .ms-site .ms-brand>span {
+  background: linear-gradient(135deg,#54031c,#8d0021);
+}
+html[data-fatya-store] .ms-site .ms-footer {
+  background: linear-gradient(135deg,#54031c,#8d0021);
+}
+@media(min-width:1200px) {
+  html[data-fatya-store] .ms-site .ms-hero {
+    background: linear-gradient(135deg,#54031c,#8d0021 48%,#f2b464 80%,#fffaf5);
+  }
+}
+html[data-fatya-store] {
+  --masal-app-background: radial-gradient(ellipse at 95% 5%,#8d002114,transparent 58%),radial-gradient(ellipse at 5% 95%,#d08e5220,transparent 55%),linear-gradient(145deg,#fffaf5 0%,#fffaf5 48%,#fffaf5 100%);
+}
+html[data-fatya-store] .app-shell>main>header,html[data-fatya-store] .app-shell>.sidebar {
+  background: #fffaf5ec;
+}
+@media(max-width:700px) {
+  html[data-fatya-store] {
+    background: #fffaf5;
+  }
+  html[data-fatya-store] .app-shell .bottom-nav {
+    background: #fffaf59e;
+    border: 1px solid rgba(255,250,245,.85);
+    box-shadow: 0 12px 32px #54031c29,inset 0 1px #fffaf5f2;
+  }
+}
+html[data-fatya-store] .ms-acquisition-intro {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-quote {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-tabs {
+  background: #fffaf5;
+}
+html[data-fatya-store] .ms-tabs button.selected {
+  color: #fffaf5;
+}
+html[data-fatya-store] .ms-about-stats {
+  background: linear-gradient(130deg,#fffaf5,white,var(--ms-pink));
+}
+html[data-fatya-store] .ms-leader-front,html[data-fatya-store] .ms-leader-back {
+  background: #fffaf5;
+}
+html[data-fatya-store] {
+  --wine: #a60233;
+  --border: #e8c8ad;
+  --muted: #80676d;
+  --fatya-gold: #d08e52;
+  color: #54031c;
+  background: #fffaf5;
+  --masal-app-background: radial-gradient(ellipse at 95% 5%,#a6023314,transparent 58%),radial-gradient(ellipse at 5% 95%,#d08e5220,transparent 55%),linear-gradient(145deg,#fffaf5 0%,#f8e7db 48%,#fff4e3 100%);
+}
+html[data-fatya-store][data-theme=dark] :is(body,#masal-content) {
+  background: #14030a;
+  color: #fffaf5;
+}
+html[data-fatya-store][data-theme=dark] :is(.app-shell,.phone-auth) {
+  background: radial-gradient(ellipse at 85% 5%,#a602333b,transparent 55%),linear-gradient(145deg,#14030a,#320715 60%,#54031c);
+  color: #fffaf5;
+}
+html[data-fatya-store] .store-brand-mark {
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 12px;
+}
+html[data-fatya-store] .auth-logo .store-brand-mark {
+  width: 112px;
+  height: 112px;
+}
+html[data-fatya-store] .store-header-brand>.store-brand-mark {
+  width: 52px;
+  height: 52px;
+}
+html[data-fatya-store] .brand-mark>.store-brand-mark {
+  width: 44px;
+  height: 44px;
+}
+html[data-fatya-store] .splash-logo>.store-brand-mark {
+  width: 100%;
+  height: 100%;
+}
+html[data-fatya-store] .auth-logo {
+  background: #14030a!important;
+  border-color: #d08e52!important;
+}
+html[data-fatya-store] .theme-scene.night .theme-scene-sky {
+  fill: #54031c;
+  stroke: #d08e52;
+}
+html[data-fatya-store] .theme-scene.night .theme-scene-hill-back {
+  fill: #8d0021;
+}
+html[data-fatya-store] .theme-scene.night .theme-scene-hill-front {
+  fill: #14030a;
+}
+html[data-fatya-store] .theme-scene.night .theme-scene-orb-disc {
+  fill: #fffaf5;
+  stroke: #f2b464;
+}
+/* Contrast and accents: gold is an accent; form text remains burgundy. */
+html[data-fatya-store]:not([data-theme=dark]) .sidebar nav button {
+  color: #80676d;
+}
+html[data-fatya-store]:not([data-theme=dark]) .sidebar nav button.active {
+  color: #a60233;
+}
+html[data-fatya-store]:not([data-theme=dark]) :is(.auth-field,.search,input,textarea,select) {
+  border-color: #e8c8ad;
+}
+html[data-fatya-store] .notification-bell.has-unread {
+  animation-name: fatya-notification-glow;
+}
+@keyframes fatya-notification-glow {
+  0%,100% {
+    box-shadow: 0 0 0 0 #a6023300;
+  }
+  50% {
+    box-shadow: 0 0 0 5px #a6023312,0 0 18px #d08e5255;
+  }
+}
+html[data-fatya-store][data-theme=dark] .notification-bell.has-unread {
+  animation-name: fatya-night-notification-glow;
+}
+@keyframes fatya-night-notification-glow {
+  0%,100% {
+    box-shadow: 0 0 0 0 #d08e5200;
+  }
+  50% {
+    box-shadow: 0 0 0 5px #d08e521a,0 0 18px #d08e5244;
+  }
+}
+html[data-fatya-store] .theme-scene-night {
+  fill: #fffaf5;
+}
+html[data-fatya-store] .theme-scene-craters {
+  fill: #d08e52;
+}
+html[data-fatya-store] .ms-brand .store-brand-mark {
+  width: 42px;
+  height: 42px;
+}
+html[data-fatya-store] .ms-stage .store-brand-mark {
+  width: 64px;
+  height: 64px;
+}
+html[data-fatya-store] .ms-phone-screen .store-brand-mark {
+  width: 76px;
+  height: 76px;
+}
+html[data-fatya-store]:not([data-theme=dark]) .category-result-count {
+  color: #80676d;
+}
+html[data-fatya-store][data-theme=dark] .category-result-count {
+  color: #d9b6be;
+}
+html[data-fatya-store][data-theme=dark] {
+  color-scheme: dark;
+  --wine: #f2b464;
+  --border: #773044;
+  --muted: #d9b6be;
+  color: #fffaf5;
+  background: #14030a;
+}
+
+/* The information site uses light content surfaces even when the store is dark. */
+html[data-fatya-store][data-theme] .ms-site :is(h1,h2,h3){color:#54031c!important}
+html[data-fatya-store][data-theme] .ms-site :is(.ms-hero,.ms-footer,.ms-phone-screen) :is(h1,h2,h3){color:#fffaf5!important}
+
+/* A gentle vertical burgundy fade, keeping the existing corner waves. */
+html[data-fatya-store][data-theme=dark] {
+  --fatya-night-background: radial-gradient(ellipse at 85% 5%,#a6023314,transparent 55%),linear-gradient(180deg,#20050f 0%,#320715 52%,#4a0920 100%);
+}
+html[data-fatya-store][data-theme=dark] :is(body,#masal-content,.app-shell,.phone-auth) {
+  background: var(--fatya-night-background);
+  background-attachment: fixed;
+}
+html[data-fatya-store][data-theme=dark] .app-shell>.sidebar {
+  background: linear-gradient(180deg,#20050f 0%,#320715 52%,#4a0920 100%)!important;
+}
+html[data-fatya-store][data-theme=dark] .app-shell :is(.product,.brands button,.order,.support-form,.faq,.store-account,.ticket-history article,.empty) {
+  background: linear-gradient(180deg,#2e0613 0%,#410a1c 100%)!important;
+}
+html[data-fatya-store][data-theme=dark] .app-shell .store-header {
+  background: linear-gradient(180deg,#290612 0%,#380919 100%)!important;
+}
+
+/* Slightly richer daytime backdrop; the night palette stays unchanged. */
+html[data-fatya-store]:not([data-theme=dark]) {
+  --masal-app-background: radial-gradient(ellipse at 95% 5%,#a602331a,transparent 58%),radial-gradient(ellipse at 5% 95%,#d08e5229,transparent 55%),linear-gradient(145deg,#f6e7dc 0%,#eed2ce 48%,#ecd5b6 100%);
+  background: #f2dfd2;
+}
+html[data-fatya-store]:not([data-theme=dark]) :is(body,#masal-content,.app-shell,.phone-auth) {
+  background: var(--masal-app-background);
+  background-attachment: fixed;
+}
+html[data-fatya-store]:not([data-theme=dark]) .app-shell>.sidebar {
+  background: linear-gradient(180deg,#f6e7dc,#efdbca);
+}

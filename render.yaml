@@ -1,0 +1,32 @@
+# Paid service and persistent disk: review costs in Render before applying.
+services:
+  - type: web
+    name: masal
+    runtime: node
+    plan: starter
+    branch: main
+    numInstances: 1
+    buildCommand: npm ci --include=dev && npm run check && npm test && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: masal-data
+      mountPath: /var/data/masal
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: VITE_DATA_MODE
+        value: connected
+      - key: DB_PATH
+        value: /var/data/masal/masal.sqlite
+      - key: ADMIN_USER
+        value: masal
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DEV_OTP
+        value: false

@@ -1,0 +1,54 @@
+:root{--wine:#a21c2d;--border:#eed6d9;color:#291215;background:#fff9f9}
+.brand-mark,.admin-brand>span{background:linear-gradient(135deg,#780f1c,#b82c3e);border-radius:12px;box-shadow:0 6px 18px #780f1c18}
+.brand-mark svg,.admin-brand>span svg{width:30px;height:30px}
+.hero,.auth-story{background:linear-gradient(135deg,#640d18 0%,#9a1b2c 62%,#c64d5a 100%)}
+.admin-hero{background:linear-gradient(125deg,#780f1c,#a21c2d 70%,#cc5260)}
+.ms-site{font-family:'Cairo',sans-serif;font-weight:700;--ms-primary:#a21c2d;--ms-light:#cc5260}
+.ms-site button,.ms-site input,.ms-site textarea,.ms-site select,.ms-site h1,.ms-site h2,.ms-site h3,.ms-site .ms-modal{font-family:'Cairo',sans-serif;font-weight:700}
+.ms-site .ms-hero{background:linear-gradient(180deg,#780f1c 0%,#a21c2d 48%,#d9858e 80%,#fff 100%)}
+.ms-site .ms-hero h1 em{color:#ffe5e6}
+.ms-site .ms-hero .ms-stat strong,.ms-site .ms-hero .ms-stat>span{color:white}
+.ms-site .ms-hero .ms-stats{width:fit-content;margin:32px auto 0;padding:18px 28px;border:1px solid #fff2;border-radius:18px;background:#780f1c38;backdrop-filter:blur(8px)}
+.ms-site .ms-brand>span{width:42px;height:42px;background:linear-gradient(135deg,#640d18,#b82c3e)}
+.ms-brand small{display:block;font-size:8px;letter-spacing:3px;line-height:1.1;direction:ltr;font-weight:700;opacity:.65}
+.ms-brand svg{width:30px;height:30px}.ms-stage>svg{width:64px;height:64px}
+.ms-site .ms-footer{background:linear-gradient(135deg,#640d18,#9a1b2c)}
+@media(min-width:1200px){.ms-site .ms-hero{background:linear-gradient(135deg,#640d18 0%,#a21c2d 48%,#d9858e 80%,#fff 100%)}}
+@media(max-width:560px){.ms-site .ms-hero .ms-stats{gap:16px;padding:14px 16px}.ms-site .ms-hero h1{font-size:36px}}
+
+/* Soft corner gradients inspired by Wasl, in Masal's burgundy and gold. */
+:root{--masal-app-background:radial-gradient(ellipse at 95% 5%,#a21c2d14,transparent 58%),radial-gradient(ellipse at 5% 95%,#e9bd5b20,transparent 55%),linear-gradient(145deg,#fffafb 0%,#f7e9ee 48%,#fff7e9 100%)}
+body{background:var(--masal-app-background);background-attachment:fixed}
+.auth-shell,.app-shell{min-height:100dvh;background:var(--masal-app-background);background-attachment:fixed}
+.auth-panel,.app-shell>.content,.app-shell>main{background:transparent}
+.app-shell>main>header,.app-shell>.sidebar{background:#ffffffec}
+
+/* Keep mobile cards aligned and account for iPhone safe areas once. */
+@media(max-width:700px){
+ :root{--mobile-safe-bottom:min(env(safe-area-inset-bottom,0px),34px)}
+ html{background:#fff8f5}
+ .auth-shell,.app-shell{background-attachment:scroll}
+ .app-shell>main>header{height:calc(72px + env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px);padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+ .app-shell .content{padding:18px max(16px,env(safe-area-inset-right,0px)) calc(96px + var(--mobile-safe-bottom)) max(16px,env(safe-area-inset-left,0px))}
+ .app-shell .product-grid{gap:12px;align-items:stretch}
+ .app-shell .product{display:flex;flex-direction:column;padding:8px;border-radius:17px;min-width:0}
+ .app-shell .product-art{height:auto;aspect-ratio:1.6;flex-shrink:0}
+ .app-shell .product-info{display:flex;flex-direction:column;flex:1;padding:12px 4px 4px;gap:5px}
+ .app-shell .product-info h3{font-size:14px;line-height:1.7;min-height:24px;margin:0}
+ .app-shell .product-info>.muted{font-size:11px;line-height:1.8}
+ .app-shell .product-footer{margin-top:auto;padding-top:14px;align-items:center;gap:6px}
+ .app-shell .product-footer>span{line-height:1.7}
+ .app-shell .product-footer button{width:36px;height:36px;flex-shrink:0}
+ .app-shell .bottom-nav{padding:8px max(10px,env(safe-area-inset-right,0px)) 8px max(10px,env(safe-area-inset-left,0px));background:rgba(255,255,255,.62);backdrop-filter:blur(22px) saturate(1.6);-webkit-backdrop-filter:blur(22px) saturate(1.6);border:1px solid rgba(255,255,255,.85);border-radius:26px;box-shadow:0 12px 32px rgba(88,40,52,.16),inset 0 1px 0 rgba(255,255,255,.95)}
+ .app-shell .bottom-nav button{flex:1;min-width:0;min-height:56px;padding:6px 4px;gap:4px;font-size:11px}
+ .app-shell .bottom-nav .nav-symbol{width:30px;height:30px}
+ .app-shell .content>footer{padding:20px 0 14px;line-height:1.7}
+ .auth-panel{padding-top:max(28px,env(safe-area-inset-top,0px));padding-bottom:max(24px,env(safe-area-inset-bottom,0px))}
+ .app-shell dialog{padding-bottom:calc(24px + var(--mobile-safe-bottom))}
+}
+
+/* Slightly smaller headings and card text. */
+.auth-body h1{font-size:30px}
+.app-shell h1{font-size:29px}
+.app-shell .hero-copy h2{font-size:2.5rem}
+@media(max-width:700px){.auth-body h1{font-size:26px}.app-shell h1{font-size:26px}.app-shell .hero-copy h2{font-size:1.8rem}.app-shell .product-art strong{font-size:23px}.app-shell .product-info h3{font-size:13px}.app-shell .section-title h2{font-size:16px}.app-shell .product-footer b{font-size:13px}}
