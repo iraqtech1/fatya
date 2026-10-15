@@ -1721,3 +1721,17 @@ html[data-fatya-store] #app .phone-auth .auth-field input:autofill{
   -webkit-text-fill-color:var(--auth-input-ink)!important;
   caret-color:var(--auth-input-ink);
 }
+
+/* The login logo stays unframed; its tagline always occupies one line. */
+html[data-fatya-store] #app .phone-auth .auth-logo{
+  border:0!important;
+  outline:none!important;
+  background:transparent!important;
+}
+html[data-fatya-store] #app .phone-auth .auth-identity>span{
+  display:block;
+  width:max-content;
+  max-width:100%;
+  white-space:nowrap;
+  letter-spacing:3px;
+}
