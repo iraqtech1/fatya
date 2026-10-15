@@ -1706,7 +1706,7 @@ html[data-fatya-store] .app-shell nav.bottom-nav.masal-cutout-dock button:is(.ac
 html[data-fatya-store] .masal-cutout-dock .dock-notch-blur{display:none!important}
 
 /* The outer field is the focus frame; keep native autofill the same colour. */
-html[data-fatya-store] .phone-auth{--auth-input-surface:#5a1930;--auth-input-ink:#fffaf5}
+html[data-fatya-store] .phone-auth{--auth-input-surface:var(--field-surface);--auth-input-ink:var(--field-ink)}
 html[data-fatya-store] #app .phone-auth .auth-field input,
 html[data-fatya-store] #app .phone-auth .auth-field input:focus-visible{
   outline:none!important;
@@ -1735,22 +1735,24 @@ html[data-fatya-store] #app .phone-auth .auth-identity>span{
   letter-spacing:3px;
 }
 
-/* Consistent burgundy fields throughout the customer app, in both themes. */
+/* Burgundy field surfaces belong to dark mode; light mode keeps warm ivory. */
+html[data-fatya-store]{--field-surface:#fffaf5;--field-ink:#54031c;--field-muted:#92757d;--field-caret:#a60233;--field-scheme:light}
+html[data-fatya-store][data-theme=dark]{--field-surface:#5a1930;--field-ink:#fffaf5;--field-muted:#e8c8ad;--field-caret:#f2c66f;--field-scheme:dark}
 html[data-fatya-store] #app :is(input:not([type=checkbox],[type=radio],[type=range],[type=file],[type=hidden],[type=button],[type=submit],[type=reset],[type=image],[type=color]),textarea,select,.auth-field,.search,.account-language-picker){
-  background:#5a1930!important;
-  color:#fffaf5!important;
-  caret-color:#f2c66f;
-  color-scheme:dark;
+  background:var(--field-surface)!important;
+  color:var(--field-ink)!important;
+  caret-color:var(--field-caret);
+  color-scheme:var(--field-scheme);
 }
 html[data-fatya-store] #app :is(input,textarea)::placeholder{
-  color:#e8c8ad!important;
+  color:var(--field-muted)!important;
   opacity:1;
 }
-html[data-fatya-store] #app :is(.auth-field,.search) :is(svg,button){color:#e8c8ad!important}
+html[data-fatya-store] #app :is(.auth-field,.search) :is(svg,button){color:var(--field-muted)!important}
 html[data-fatya-store] #app :is(input,textarea):-webkit-autofill,
 html[data-fatya-store] #app :is(input,textarea):autofill{
-  -webkit-box-shadow:0 0 0 1000px #5a1930 inset!important;
-  box-shadow:0 0 0 1000px #5a1930 inset!important;
-  -webkit-text-fill-color:#fffaf5!important;
-  caret-color:#f2c66f;
+  -webkit-box-shadow:0 0 0 1000px var(--field-surface) inset!important;
+  box-shadow:0 0 0 1000px var(--field-surface) inset!important;
+  -webkit-text-fill-color:var(--field-ink)!important;
+  caret-color:var(--field-caret);
 }
