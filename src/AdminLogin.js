@@ -10,7 +10,7 @@ export default {
     const username=ref(''),password=ref(''),visible=ref(false),error=ref(''),busy=ref(false);
     async function submit(){
       if(busy.value)return;busy.value=true;error.value='';
-      try{if(connected)await api('/admin/login',{username:username.value.trim(),password:password.value});else if(username.value.trim()!=='masal'||password.value!=='masal')throw Error('اسم المستخدم أو الباسورد غير صحيح.');password.value='';emit('login');}catch(e){error.value=e.message;}finally{busy.value=false;}
+      try{if(connected)await api('/admin/login',{username:username.value.trim(),password:password.value});else if(username.value.trim()!=='iraq'||password.value!=='Iraq@2026!')throw Error('اسم المستخدم أو الباسورد غير صحيح.');password.value='';emit('login');}catch(e){error.value=e.message;}finally{busy.value=false;}
     }
     return {username,password,visible,error,busy,submit};
   },
