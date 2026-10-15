@@ -5,8 +5,9 @@ import {ref} from 'vue/dist/vue.esm-bundler.js';
 import {UserRoundPen,ShieldCheck,Info,LogOut,Moon,Languages,ChevronDown,ChevronLeft,ArrowRight,User} from 'lucide-vue-next';
 import {dark} from './ThemeToggle.js';
 import './account.css';
+import DeveloperAbout from './DeveloperAbout.js';
 export default {
-  components:{ThemeScene,UserRoundPen,ShieldCheck,Info,LogOut,Moon,Languages,ChevronDown,ChevronLeft,ArrowRight,User},
+  components:{DeveloperAbout,ThemeScene,UserRoundPen,ShieldCheck,Info,LogOut,Moon,Languages,ChevronDown,ChevronLeft,ArrowRight,User},
   props:{user:Object,error:String},emits:['save','logout'],
   setup(props,{emit}){
     const view=ref('menu'),name=ref(''),email=ref('');
@@ -27,6 +28,6 @@ export default {
   <template v-else><button class="account-back" @click="view='menu'"><ArrowRight :size="18"/> {{t("العودة إلى حسابي")}}</button>
   <form v-if="view==='edit'" class="account-panel" @submit.prevent="save"><h2>{{t("الملف الشخصي")}}</h2><label>{{t("الاسم الكامل")}}<input v-model="name" required minlength="2" maxlength="80" autocomplete="name"/></label><label>{{t("رقم الهاتف")}}<input :value="user.phone" :placeholder="t(&quot;غير مضاف&quot;)" readonly dir="ltr"/></label><p class="muted">{{user.previewId?t("رقم الهاتف غير مضاف إلى حسابك."):t("رقم الهاتف مرتبط بتوثيق حسابك.")}}</p><label>{{t("البريد الإلكتروني")}} <small>{{t("(اختياري)")}}</small><input v-model="email" type="email" maxlength="254" autocomplete="email" dir="ltr"/></label><p v-if="error" class="auth-error" role="alert">{{t(error)}}</p><button class="primary wide">{{t("حفظ التعديلات")}}</button></form>
   <article v-if="view==='privacy'" class="account-panel account-information"><h2>{{t("الخصوصية والشروط")}}</h2><p v-if="store.settings.privacyText" class="account-custom-text" dir="auto">{{store.settings.privacyText}}</p><template v-else><p>{{t("بيانات حسابك تُستخدم لعرض ملفك وطلباتك وتذاكر الدعم داخل التطبيق.")}}</p><p>{{t("تُحفظ جلسة الدخول في هذا التبويب، وتُحفظ تفضيلات المظهر على جهازك. تسجيل الخروج يمسح جلسة الدخول.")}}</p></template></article>
-  <article v-if="view==='about'" class="account-panel account-information"><h2>{{t("حول التطبيق")}}</h2><p v-if="store.settings.aboutText" class="account-custom-text" dir="auto">{{store.settings.aboutText}}</p><template v-else><p>{{t("فاتيا — بطاقات الرصيد والألعاب والاشتراكات الرقمية في مكان واحد.")}}</p><p>{{t("تصفّح البطاقات، تابع مشترياتك، وتواصل مع الدعم من داخل التطبيق.")}}</p></template></article></template>
+  <article v-if="view==='about'" class="account-panel account-information"><h2>{{t("حول التطبيق")}}</h2><p v-if="store.settings.aboutText" class="account-custom-text" dir="auto">{{store.settings.aboutText}}</p><template v-else><p>{{t("فاتيا — بطاقات الرصيد والألعاب والاشتراكات الرقمية في مكان واحد.")}}</p><p>{{t("تصفّح البطاقات، تابع مشترياتك، وتواصل مع الدعم من داخل التطبيق.")}}</p></template><DeveloperAbout/></article></template>
   </section>`
 };
