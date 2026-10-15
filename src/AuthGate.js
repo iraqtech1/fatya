@@ -7,8 +7,9 @@ import {ChevronRight,User,Smartphone,Mail,ShieldCheck,ArrowLeft,LockKeyhole,Eye,
 import StoreBrandMark from './StoreBrandMark.js';
 import {createPreviewAuth,createPreviewUser,normalizePhone} from './auth-preview.js';
 import './auth.css';
+import {withPreviewAccount} from './preview-account.js';
 
-export const auth=connected?createRemoteAuth():createPreviewAuth();
+export const auth=connected?createRemoteAuth():withPreviewAccount(createPreviewAuth());
 export default {
   components:{ChevronRight,User,Smartphone,Mail,ShieldCheck,ArrowLeft,LockKeyhole,Eye,EyeOff,StoreBrandMark},
   props:{request:Number},
