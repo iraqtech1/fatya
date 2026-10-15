@@ -1706,8 +1706,7 @@ html[data-fatya-store] .app-shell nav.bottom-nav.masal-cutout-dock button:is(.ac
 html[data-fatya-store] .masal-cutout-dock .dock-notch-blur{display:none!important}
 
 /* The outer field is the focus frame; keep native autofill the same colour. */
-html[data-fatya-store] .phone-auth{--auth-input-surface:#fffaf5;--auth-input-ink:#54031c}
-html[data-fatya-store][data-theme=dark] .phone-auth{--auth-input-surface:#14030a;--auth-input-ink:#fffaf5}
+html[data-fatya-store] .phone-auth{--auth-input-surface:#5a1930;--auth-input-ink:#fffaf5}
 html[data-fatya-store] #app .phone-auth .auth-field input,
 html[data-fatya-store] #app .phone-auth .auth-field input:focus-visible{
   outline:none!important;
@@ -1736,14 +1735,22 @@ html[data-fatya-store] #app .phone-auth .auth-identity>span{
   letter-spacing:3px;
 }
 
-/* Warm burgundy support fields belong to the store's dark palette. */
-html[data-fatya-store][data-theme=dark] #app .support-form :is(input,textarea){
+/* Consistent burgundy fields throughout the customer app, in both themes. */
+html[data-fatya-store] #app :is(input:not([type=checkbox],[type=radio],[type=range],[type=file],[type=hidden],[type=button],[type=submit],[type=reset],[type=image],[type=color]),textarea,select,.auth-field,.search,.account-language-picker){
   background:#5a1930!important;
   color:#fffaf5!important;
   caret-color:#f2c66f;
   color-scheme:dark;
 }
-html[data-fatya-store][data-theme=dark] #app .support-form :is(input,textarea)::placeholder{
+html[data-fatya-store] #app :is(input,textarea)::placeholder{
   color:#e8c8ad!important;
   opacity:1;
+}
+html[data-fatya-store] #app :is(.auth-field,.search) :is(svg,button){color:#e8c8ad!important}
+html[data-fatya-store] #app :is(input,textarea):-webkit-autofill,
+html[data-fatya-store] #app :is(input,textarea):autofill{
+  -webkit-box-shadow:0 0 0 1000px #5a1930 inset!important;
+  box-shadow:0 0 0 1000px #5a1930 inset!important;
+  -webkit-text-fill-color:#fffaf5!important;
+  caret-color:#f2c66f;
 }
