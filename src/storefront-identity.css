@@ -1696,3 +1696,11 @@ html[data-fatya-store] :is(button,a,input,select,textarea):focus-visible{
   outline:2px solid var(--fatya-frame);
   outline-offset:3px;
 }
+
+/* Keep dock selection as a gold circle, without a filled tile or blurred halo. */
+html[data-fatya-store] .app-shell nav.bottom-nav.masal-cutout-dock button,
+html[data-fatya-store] .app-shell nav.bottom-nav.masal-cutout-dock button:is(.active,:hover,:active,:focus){
+  background:transparent!important;
+  box-shadow:none!important;
+}
+html[data-fatya-store] .masal-cutout-dock .dock-notch-blur{display:none!important}
