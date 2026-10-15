@@ -26,3 +26,10 @@
 .masal-splash.is-reduced .splash-chest-shell{clip-path:none}.masal-splash.is-reduced :is(.splash-chest-cards,.splash-chest-front,.splash-orbit-ring){display:none}
 @media(prefers-reduced-motion:reduce){.splash-chest-shell{clip-path:none}.splash-chest-cards,.splash-chest-front,.splash-orbit-ring{display:none}}
 @media(max-width:360px){.splash-scene{height:420px}.splash-symbols>span{transform:rotate(calc(var(--i)*72deg)) translateY(-145px) rotate(calc(var(--i)*-72deg))}}
+
+/* Keep the compact intro and phone sign-in identity visually grouped. */
+.splash-scene{scale:.84}
+@media(max-width:800px){
+  .phone-auth .auth-identity .auth-logo{width:112px;height:100px;margin-bottom:2px;align-items:end}
+  html[data-fatya-store] .phone-auth .auth-logo .store-brand-mark{width:112px;height:112px;transform:translateY(12px)}
+}

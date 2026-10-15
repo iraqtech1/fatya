@@ -14,7 +14,7 @@ function apply(){
  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',isDashboard?(activeDark?'#09131f':'#a21c2d'):(activeDark?'#14030a':'#a60233'));
  const base=import.meta.env.BASE_URL;
  document.querySelector('link[rel="icon"]')?.setAttribute('href',base+'favicon.png');
- document.querySelector('link[rel="apple-touch-icon"]')?.setAttribute('href',base+'icons/apple-touch-icon.png');
+ document.querySelector('link[rel="apple-touch-icon"]')?.setAttribute('href',base+'icons/apple-touch-v2.png');
 }
 apply();
 for(const [state,key] of [[dark,'masal-theme'],[dashboardDark,'masal-dashboard-theme']])watch(state,()=>{apply();try{localStorage.setItem(key,state.value?'dark':'light');}catch{}},{flush:'sync'});
