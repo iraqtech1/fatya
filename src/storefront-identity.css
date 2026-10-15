@@ -1662,3 +1662,37 @@ html[data-fatya-store]:not([data-theme=dark]) .app-shell>.sidebar {
 html[data-fatya-store] .store-brand-mark{border-radius:0;background:transparent}
 html[data-fatya-store] .auth-logo{background:transparent!important;border-color:transparent!important;box-shadow:none!important}
 html[data-fatya-store] .splash-logo{width:min(72vw,330px);height:min(72vw,330px)}
+
+/* One gold frame treatment across the store, without raised shadows. */
+html[data-fatya-store]{--border:#d6ad60;--fatya-frame:#d6ad60}
+html[data-fatya-store] #app *,
+html[data-fatya-store] #app *::before,
+html[data-fatya-store] #app *::after{
+  border-color:var(--fatya-frame)!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+html[data-fatya-store] :is(.app-shell,.phone-auth,dialog){
+  --card-edge:var(--fatya-frame);
+  --card-edge-active:var(--fatya-frame);
+  --card-shadow:none;
+  --card-shadow-raised:none;
+  --dock-bubble-border:var(--fatya-frame);
+  --dock-bubble-shadow:transparent;
+}
+html[data-fatya-store] :is(.product-art,.product-art img,.banner-slider,.deck-card,.brands button,.product-selectable,.store-header,.bottom-nav){
+  border:1px solid var(--fatya-frame)!important;
+}
+html[data-fatya-store] .product-art img{box-sizing:border-box}
+html[data-fatya-store] :is(.dock-surface,.theme-scene,.splash-logo){filter:none!important}
+html[data-fatya-store] .notification-bell.has-unread{animation:none}
+html[data-fatya-store] .app-shell nav.bottom-nav.masal-cutout-dock{
+  border:1px solid var(--fatya-frame)!important;
+  border-radius:30px;
+  box-sizing:border-box;
+}
+html[data-fatya-store] .dock-body{stroke:var(--fatya-frame);stroke-width:1px}
+html[data-fatya-store] :is(button,a,input,select,textarea):focus-visible{
+  outline:2px solid var(--fatya-frame);
+  outline-offset:3px;
+}
