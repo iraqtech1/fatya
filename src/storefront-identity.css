@@ -1735,3 +1735,15 @@ html[data-fatya-store] #app .phone-auth .auth-identity>span{
   white-space:nowrap;
   letter-spacing:3px;
 }
+
+/* Warm burgundy support fields belong to the store's dark palette. */
+html[data-fatya-store][data-theme=dark] #app .support-form :is(input,textarea){
+  background:#5a1930!important;
+  color:#fffaf5!important;
+  caret-color:#f2c66f;
+  color-scheme:dark;
+}
+html[data-fatya-store][data-theme=dark] #app .support-form :is(input,textarea)::placeholder{
+  color:#e8c8ad!important;
+  opacity:1;
+}
