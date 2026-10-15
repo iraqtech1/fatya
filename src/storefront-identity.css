@@ -1657,3 +1657,8 @@ html[data-fatya-store]:not([data-theme=dark]) :is(body,#masal-content,.app-shell
 html[data-fatya-store]:not([data-theme=dark]) .app-shell>.sidebar {
   background: linear-gradient(180deg,#f6e7dc,#efdbca);
 }
+
+/* Let the artwork alpha show through every brand placement. */
+html[data-fatya-store] .store-brand-mark{border-radius:0;background:transparent}
+html[data-fatya-store] .auth-logo{background:transparent!important;border-color:transparent!important;box-shadow:none!important}
+html[data-fatya-store] .splash-logo{width:min(72vw,330px);height:min(72vw,330px)}

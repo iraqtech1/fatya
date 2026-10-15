@@ -13,8 +13,8 @@ function apply(){
  document.documentElement.dataset.theme=activeDark?'dark':'light';
  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',isDashboard?(activeDark?'#09131f':'#a21c2d'):(activeDark?'#14030a':'#a60233'));
  const base=import.meta.env.BASE_URL;
- document.querySelector('link[rel="icon"]')?.setAttribute('href',base+(isDashboard?'favicon.png':'brand/fatya-app-icon.png'));
- document.querySelector('link[rel="apple-touch-icon"]')?.setAttribute('href',base+(isDashboard?'icons/apple-touch-icon.png':'brand/fatya-app-icon.png'));
+ document.querySelector('link[rel="icon"]')?.setAttribute('href',base+'favicon.png');
+ document.querySelector('link[rel="apple-touch-icon"]')?.setAttribute('href',base+'icons/apple-touch-icon.png');
 }
 apply();
 for(const [state,key] of [[dark,'masal-theme'],[dashboardDark,'masal-dashboard-theme']])watch(state,()=>{apply();try{localStorage.setItem(key,state.value?'dark':'light');}catch{}},{flush:'sync'});
