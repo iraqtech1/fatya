@@ -1704,3 +1704,20 @@ html[data-fatya-store] .app-shell nav.bottom-nav.masal-cutout-dock button:is(.ac
   box-shadow:none!important;
 }
 html[data-fatya-store] .masal-cutout-dock .dock-notch-blur{display:none!important}
+
+/* The outer field is the focus frame; keep native autofill the same colour. */
+html[data-fatya-store] .phone-auth{--auth-input-surface:#fffaf5;--auth-input-ink:#54031c}
+html[data-fatya-store][data-theme=dark] .phone-auth{--auth-input-surface:#14030a;--auth-input-ink:#fffaf5}
+html[data-fatya-store] #app .phone-auth .auth-field input,
+html[data-fatya-store] #app .phone-auth .auth-field input:focus-visible{
+  outline:none!important;
+  border:0!important;
+  background:transparent!important;
+}
+html[data-fatya-store] #app .phone-auth .auth-field input:-webkit-autofill,
+html[data-fatya-store] #app .phone-auth .auth-field input:autofill{
+  -webkit-box-shadow:0 0 0 1000px var(--auth-input-surface) inset!important;
+  box-shadow:0 0 0 1000px var(--auth-input-surface) inset!important;
+  -webkit-text-fill-color:var(--auth-input-ink)!important;
+  caret-color:var(--auth-input-ink);
+}
