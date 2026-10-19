@@ -1,95 +1,95 @@
-/* Local dark palette preview: charcoal glass, olive depth and focused lime accents. */
+/* Local dark palette preview: deep petrol glass and luminous mint-lime accents. */
 html:root[data-theme=dark]{
   color-scheme:dark;
-  --wine:#c5ed68;--muted:#a4ad98;--border:#d5e6b526;
-  --fatya-ink:#f3f6ed;--fatya-muted:#a4ad98;--fatya-line:#d5e6b526;
-  --fatya-frame:#d5e6b526;--fatya-card-edge:#d5e6b526;--fatya-card-edge-active:#b8e936;
-  --field-surface:#12170f;--field-ink:#f3f6ed;--field-muted:#8f9b82;--field-caret:#b8e936;
-  --masal-app-background:radial-gradient(ellipse at 90% 3%,#607c192c,transparent 48%),radial-gradient(ellipse at 5% 88%,#5e761d22,transparent 46%),#070a05;
+  --wine:#c2f69a;--muted:#8ea9a2;--border:#a1d5c226;
+  --fatya-ink:#eef7f3;--fatya-muted:#8ea9a2;--fatya-line:#a1d5c226;
+  --fatya-frame:#a1d5c226;--fatya-card-edge:#a1d5c226;--fatya-card-edge-active:#b6ff55;
+  --field-surface:#0a2022;--field-ink:#eef7f3;--field-muted:#7d9994;--field-caret:#b6ff55;
+  --masal-app-background:radial-gradient(ellipse at 90% 3%,#226f5f2c,transparent 48%),radial-gradient(ellipse at 5% 88%,#4c9b6022,transparent 46%),#021011;
   --fatya-night-background:var(--masal-app-background);
-  background:#070a05;color:#f3f6ed;
-  scrollbar-color:#3c482d #0b0f08;
+  background:#021011;color:#eef7f3;
+  scrollbar-color:#33584f #031416;
 }
-html:root[data-theme=dark] body,html:root[data-theme=dark] #masal-content{background:#070a05!important;color:#f3f6ed}
-html:root[data-theme=dark] #app :is(.app-shell,.admin-shell,.phone-auth,.masal-login){background:var(--masal-app-background)!important;color:#f3f6ed!important}
-html:root[data-theme=dark] #app .admin-shell{--admin-wine:#c5ed68;--admin-dark:#f3f6ed;--admin-rose:#b8e93615;--admin-border:#d5e6b526;--admin-muted:#a4ad98}
-html:root[data-theme=dark] #app :is(.sidebar,.admin-sidebar,.admin-header,.store-header){background:#0b0f09ed!important;color:#f3f6ed!important;border-color:#d5e6b51c!important;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
-html:root[data-theme=dark] #app :is(.auth-panel,.masal-login-form-panel){background:transparent!important;color:#f3f6ed!important}
+html:root[data-theme=dark] body,html:root[data-theme=dark] #masal-content{background:#021011!important;color:#eef7f3}
+html:root[data-theme=dark] #app :is(.app-shell,.admin-shell,.phone-auth,.masal-login){background:var(--masal-app-background)!important;color:#eef7f3!important}
+html:root[data-theme=dark] #app .admin-shell{--admin-wine:#c2f69a;--admin-dark:#eef7f3;--admin-rose:#b6ff5515;--admin-border:#a1d5c226;--admin-muted:#8ea9a2}
+html:root[data-theme=dark] #app :is(.sidebar,.admin-sidebar,.admin-header,.store-header){background:#031416ed!important;color:#eef7f3!important;border-color:#a1d5c21c!important;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+html:root[data-theme=dark] #app :is(.auth-panel,.masal-login-form-panel){background:transparent!important;color:#eef7f3!important}
 html:root[data-theme=dark] #app :is(.product,.brands button,.order,.support-form,.faq,.store-account,.ticket-history article,.empty,.account-row,.account-panel,.archive-order,.admin-panel,.admin-stats>button,.admin-mini-stats>div,.admin-overview-events,.admin-stat-heading,.admin-import-panel,.payment-order-panel,.payment-fields-panel,.payment-preview-card,.payment-method-summary,.masal-login-frame){
-  background:linear-gradient(125deg,#22281bd9,#12170fe8)!important;
-  border:1px solid #d5e6b526!important;color:#f3f6ed!important;
+  background:linear-gradient(125deg,#10292bd9,#0a2022e8)!important;
+  border:1px solid #a1d5c226!important;color:#eef7f3!important;
   box-shadow:inset 0 1px 0 #ffffff05,0 12px 32px #00000024!important;
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
 }
 html:root[data-theme=dark] #app :is(.hero,.admin-hero,.auth-story,.masal-login-art){
-  background:radial-gradient(ellipse at 94% 0%,#9fc82d32,transparent 62%),linear-gradient(120deg,#0b1106,#26390b)!important;
-  border:1px solid #c5ed6833!important;color:#f5f8ef!important;
+  background:radial-gradient(ellipse at 94% 0%,#72ba5932,transparent 62%),linear-gradient(120deg,#03191a,#133b31)!important;
+  border:1px solid #c2f69a33!important;color:#f5f8ef!important;
 }
-html:root[data-theme=dark] #app :is(.hero p,.admin-hero p,.auth-story p){color:#c3cdb3!important}
-html:root[data-theme=dark] #app :is(h1,h2,h3,.admin-panel-title h2,.admin-stat-heading h2,.account-identity h2){color:#f3f6ed!important}
-html:root[data-theme=dark] #app :is(.muted,.auth-intro,.auth-help,.auth-step,.auth-switch,.auth-footer,.admin-footer,.admin-header span,.admin-header b,.admin-eyebrow,.admin-nav-label,.admin-stat-heading small,.admin-table-wrap small,.archive-heading p,.archive-order-title small,.archive-details dt,.account-information p,.account-identity p){color:#a4ad98!important}
-html:root[data-theme=dark] #app :is(.admin-stats strong,.admin-stats b,.total strong,.payment-final-total strong,.payment-amount-row strong){color:#e4f5c1!important}
-html:root[data-theme=dark] #app :is(.primary,.admin-primary,.masal-login-submit,.payment-confirm,.card-purchase-dialog .primary,.payment-preview .primary){background:#b8e936!important;color:#142005!important;border:1px solid #b8e936!important;box-shadow:0 4px 20px #9ac53014!important}
-html:root[data-theme=dark] #app :is(.primary,.admin-primary,.masal-login-submit):hover{background:#c9f35e!important}
-html:root[data-theme=dark] #app :is(.admin-hero button,.hero button){background:#b8e936!important;color:#142005!important}
-html:root[data-theme=dark] #app :is(.admin-hero a,.admin-secondary,.admin-signout,.admin-row-action,.admin-stat-close,.admin-catalog-tabs button,.filters button,.account-back,.account-access){background:#c4dd9410!important;color:#d2e5b4!important;border-color:#d5e6b52e!important}
-html:root[data-theme=dark] #app :is(.admin-sidebar nav button,.sidebar nav button){color:#a4ad98!important}
-html:root[data-theme=dark] #app :is(.admin-sidebar nav button.active,.sidebar nav button.active,.admin-catalog-tabs button.active,.filters button.selected,.pagination button.active){background:#b8e9361f!important;color:#d0f58a!important;border-color:#b8e93655!important;box-shadow:inset -3px 0 #b8e936!important}
-html:root[data-theme=dark] #app :is(.admin-stats>button.is-selected,.admin-stats>button:hover){background:linear-gradient(120deg,#29381b,#182210)!important;border-color:#b8e93680!important}
-html:root[data-theme=dark] #app :is(.admin-brand,.admin-health,.admin-info-box,.admin-session-note,.admin-status,.status,.archive-status,.archive-count){background:#b8e93612!important;color:#c5ed68!important;border-color:#d5e6b526!important}
-html:root[data-theme=dark] #app :is(.account-row-icon,.account-identity>span,.archive-icon,.archive-card-icon,.admin-stats>button>div svg,.store-account-icon,.admin-import-icon){background:#b8e93612!important;color:#c5ed68!important;border-color:#b8e93626!important}
-html:root[data-theme=dark] #app :is(input,textarea,select,.auth-field,.masal-login-field,.search,.admin-search,.archive-search,.account-language-picker select){background:#12170f!important;color:#f3f6ed!important;border-color:#d5e6b533!important;caret-color:#b8e936}
-html:root[data-theme=dark] #app :is(input,textarea)::placeholder{color:#8f9b82!important}
+html:root[data-theme=dark] #app :is(.hero p,.admin-hero p,.auth-story p){color:#afcbc0!important}
+html:root[data-theme=dark] #app :is(h1,h2,h3,.admin-panel-title h2,.admin-stat-heading h2,.account-identity h2){color:#eef7f3!important}
+html:root[data-theme=dark] #app :is(.muted,.auth-intro,.auth-help,.auth-step,.auth-switch,.auth-footer,.admin-footer,.admin-header span,.admin-header b,.admin-eyebrow,.admin-nav-label,.admin-stat-heading small,.admin-table-wrap small,.archive-heading p,.archive-order-title small,.archive-details dt,.account-information p,.account-identity p){color:#8ea9a2!important}
+html:root[data-theme=dark] #app :is(.admin-stats strong,.admin-stats b,.total strong,.payment-final-total strong,.payment-amount-row strong){color:#e5f9eb!important}
+html:root[data-theme=dark] #app :is(.primary,.admin-primary,.masal-login-submit,.payment-confirm,.card-purchase-dialog .primary,.payment-preview .primary){background:#b6ff55!important;color:#10240d!important;border:1px solid #b6ff55!important;box-shadow:0 4px 20px #9ac53014!important}
+html:root[data-theme=dark] #app :is(.primary,.admin-primary,.masal-login-submit):hover{background:#ceff8e!important}
+html:root[data-theme=dark] #app :is(.admin-hero button,.hero button){background:#b6ff55!important;color:#10240d!important}
+html:root[data-theme=dark] #app :is(.admin-hero a,.admin-secondary,.admin-signout,.admin-row-action,.admin-stat-close,.admin-catalog-tabs button,.filters button,.account-back,.account-access){background:#80c8b210!important;color:#c4dfd5!important;border-color:#a1d5c22e!important}
+html:root[data-theme=dark] #app :is(.admin-sidebar nav button,.sidebar nav button){color:#8ea9a2!important}
+html:root[data-theme=dark] #app :is(.admin-sidebar nav button.active,.sidebar nav button.active,.admin-catalog-tabs button.active,.filters button.selected,.pagination button.active){background:#b6ff551f!important;color:#c5ff9f!important;border-color:#b6ff5555!important;box-shadow:inset -3px 0 #b6ff55!important}
+html:root[data-theme=dark] #app :is(.admin-stats>button.is-selected,.admin-stats>button:hover){background:linear-gradient(120deg,#1b3a30,#0a2424)!important;border-color:#b6ff5580!important}
+html:root[data-theme=dark] #app :is(.admin-brand,.admin-health,.admin-info-box,.admin-session-note,.admin-status,.status,.archive-status,.archive-count){background:#b6ff5512!important;color:#c2f69a!important;border-color:#a1d5c226!important}
+html:root[data-theme=dark] #app :is(.account-row-icon,.account-identity>span,.archive-icon,.archive-card-icon,.admin-stats>button>div svg,.store-account-icon,.admin-import-icon){background:#b6ff5512!important;color:#c2f69a!important;border-color:#b6ff5526!important}
+html:root[data-theme=dark] #app :is(input,textarea,select,.auth-field,.masal-login-field,.search,.admin-search,.archive-search,.account-language-picker select){background:#0a2022!important;color:#eef7f3!important;border-color:#a1d5c233!important;caret-color:#b6ff55}
+html:root[data-theme=dark] #app :is(input,textarea)::placeholder{color:#7d9994!important}
 html:root[data-theme=dark] #app :is(.auth-field,.masal-login-field,.search,.archive-search) input{background:transparent!important;border-color:transparent!important;box-shadow:none!important}
-html:root[data-theme=dark] #app :is(input,textarea,select):focus-visible{outline:2px solid #b8e93688;outline-offset:2px}
-html:root[data-theme=dark] #app :is(.admin-table-wrap th,.admin-table-wrap td,.archive-details,.archive-details dl>div,details,.payment-final-total){border-color:#d5e6b51f!important}
-html:root[data-theme=dark] #app .admin-table-wrap th{background:#151c10!important;color:#b8c4a7!important}
-html:root[data-theme=dark] #app .admin-table-wrap td{background:transparent!important;color:#e2e8d8!important}
-html:root[data-theme=dark] #app .admin-table-wrap tbody tr:hover{background:#b8e93608!important}
-html:root[data-theme=dark] #app :is(.admin-card-cell>img,.admin-image-empty,.admin-denom-image-editor>img){background:#e5ebdc!important;border-color:#d5e6b52e!important}
-html:root[data-theme=dark] #app :is(.product-art,.category-tile-icon,.brands button,.brand-avatar,.deck-card){border-color:#d5e6b52e!important}
-html:root[data-theme=dark] #app .category-tile-icon{background:linear-gradient(135deg,#29331c,#151c10)!important;color:#c5ed68!important}
-html:root[data-theme=dark] #app .category-tiles>button.selected .category-tile-icon{background:#b8e936!important;color:#142005!important;border-color:#b8e936!important}
-html:root[data-theme=dark] #app :is(.product-price,.category-result-count,.slider-count,.denominations button){background:#b8e93612!important;color:#d3e8b4!important;border-color:#d5e6b533!important}
-html:root[data-theme=dark] #app .card-purchase-dialog .denominations button.selected{background:#b8e936!important;color:#142005!important;border-color:#b8e936!important}
-html:root[data-theme=dark] #app :is(dialog,.admin-dialog){background:#11160ff5!important;color:#f3f6ed!important;border-color:#d5e6b533!important;box-shadow:0 28px 80px #0008!important;backdrop-filter:blur(24px)}
-html:root[data-theme=dark] #app dialog::backdrop{background:#030600a8;backdrop-filter:blur(8px)}
-html:root[data-theme=dark] #app .payment-method-grid button{background:#151d10!important;color:#e2e8d8!important;border-color:#d5e6b533!important}
-html:root[data-theme=dark] #app .payment-method-grid button[aria-pressed=true]{background:#b8e936!important;color:#142005!important;border-color:#c5ed68!important}
-html:root[data-theme=dark] #app .card-purchase-dialog .stepper{background:#151d10!important}
-html:root[data-theme=dark] #app .payment-selection-indicator{border-color:#738552!important}
-html:root[data-theme=dark] #app [aria-pressed=true] .payment-selection-indicator{background:#142005!important;color:#effbd9!important}
-html:root[data-theme=dark] #app .app-shell nav.bottom-nav{background:#0d120be8!important;border-color:#d5e6b52e!important;backdrop-filter:blur(24px);box-shadow:0 -8px 32px #0003!important}
-html:root[data-theme=dark] #app :is(.dock-body,.dock-surface){fill:#0d120bf2!important;stroke:#d5e6b52e!important}
-html:root[data-theme=dark] #app .dock-bubble{background:#b8e936!important;border-color:#17200d!important;color:#142005!important}
-html:root[data-theme=dark] #app :is(.bottom-nav button,.dock-item){color:#919f82!important}
-html:root[data-theme=dark] #app :is(.bottom-nav button.active,.dock-item.active){color:#c5ed68!important}
-html:root[data-theme=dark] #app .nav-progress-ring{stroke:#b8e936!important}
+html:root[data-theme=dark] #app :is(input,textarea,select):focus-visible{outline:2px solid #b6ff5588;outline-offset:2px}
+html:root[data-theme=dark] #app :is(.admin-table-wrap th,.admin-table-wrap td,.archive-details,.archive-details dl>div,details,.payment-final-total){border-color:#a1d5c21f!important}
+html:root[data-theme=dark] #app .admin-table-wrap th{background:#0c2426!important;color:#a1bcb3!important}
+html:root[data-theme=dark] #app .admin-table-wrap td{background:transparent!important;color:#dbece4!important}
+html:root[data-theme=dark] #app .admin-table-wrap tbody tr:hover{background:#b6ff5508!important}
+html:root[data-theme=dark] #app :is(.admin-card-cell>img,.admin-image-empty,.admin-denom-image-editor>img){background:#e5f1ea!important;border-color:#a1d5c22e!important}
+html:root[data-theme=dark] #app :is(.product-art,.category-tile-icon,.brands button,.brand-avatar,.deck-card){border-color:#a1d5c22e!important}
+html:root[data-theme=dark] #app .category-tile-icon{background:linear-gradient(135deg,#17392f,#0c2426)!important;color:#c2f69a!important}
+html:root[data-theme=dark] #app .category-tiles>button.selected .category-tile-icon{background:#b6ff55!important;color:#10240d!important;border-color:#b6ff55!important}
+html:root[data-theme=dark] #app :is(.product-price,.category-result-count,.slider-count,.denominations button){background:#b6ff5512!important;color:#c2e3d2!important;border-color:#a1d5c233!important}
+html:root[data-theme=dark] #app .card-purchase-dialog .denominations button.selected{background:#b6ff55!important;color:#10240d!important;border-color:#b6ff55!important}
+html:root[data-theme=dark] #app :is(dialog,.admin-dialog){background:#071b1ef5!important;color:#eef7f3!important;border-color:#a1d5c233!important;box-shadow:0 28px 80px #0008!important;backdrop-filter:blur(24px)}
+html:root[data-theme=dark] #app dialog::backdrop{background:#010b0ca8;backdrop-filter:blur(8px)}
+html:root[data-theme=dark] #app .payment-method-grid button{background:#091f22!important;color:#dbece4!important;border-color:#a1d5c233!important}
+html:root[data-theme=dark] #app .payment-method-grid button[aria-pressed=true]{background:#b6ff55!important;color:#10240d!important;border-color:#c2f69a!important}
+html:root[data-theme=dark] #app .card-purchase-dialog .stepper{background:#091f22!important}
+html:root[data-theme=dark] #app .payment-selection-indicator{border-color:#527d6a!important}
+html:root[data-theme=dark] #app [aria-pressed=true] .payment-selection-indicator{background:#10240d!important;color:#efffeb!important}
+html:root[data-theme=dark] #app .app-shell nav.bottom-nav{background:#04181ae8!important;border-color:#a1d5c22e!important;backdrop-filter:blur(24px);box-shadow:0 -8px 32px #0003!important}
+html:root[data-theme=dark] #app :is(.dock-body,.dock-surface){fill:#04181af2!important;stroke:#a1d5c22e!important}
+html:root[data-theme=dark] #app .dock-bubble{background:#b6ff55!important;border-color:#0b2b22!important;color:#10240d!important}
+html:root[data-theme=dark] #app :is(.bottom-nav button,.dock-item){color:#8fa9a0!important}
+html:root[data-theme=dark] #app :is(.bottom-nav button.active,.dock-item.active){color:#c2f69a!important}
+html:root[data-theme=dark] #app .nav-progress-ring{stroke:#b6ff55!important}
 html:root[data-theme=dark] #app .archive-status.is-cancelled{color:#ffb3a2!important;background:#e96b5120!important}
 html:root[data-theme=dark] #app :is(.auth-error,.admin-error){background:#3a1b15!important;color:#ffb3a2!important;border-color:#e96b5144!important}
-html:root[data-theme=dark] #app :is(.notification-panel,.notification-detail,.notification-item){background:#141b10f5!important;color:#f3f6ed!important;border-color:#d5e6b526!important;backdrop-filter:blur(22px)}
-html:root[data-theme=dark] #app .notification-item.unread{background:#253216!important}
-html:root[data-theme=dark] #app :is(.notification-bell,.notification-close,.notification-back,.notification-read-all){background:#b8e9360f!important;color:#d0e6af!important;border-color:#d5e6b526!important}
-html:root[data-theme=dark] #app :is(.notification-count,.notification-dot){background:#b8e936!important;color:#142005!important}
-html:root[data-theme=dark] #app .theme-scene.night .theme-scene-sky{fill:#1c2a0b;stroke:#c5ed6855}
-html:root[data-theme=dark] #app .theme-scene.night .theme-scene-hill-back{fill:#425825}
-html:root[data-theme=dark] #app .theme-scene.night .theme-scene-hill-front{fill:#2a3d18}
-html:root[data-theme=dark] #app :is(.admin-panel-title,.admin-ranking,.admin-ticket,.admin-settings-summary>div:not(.admin-panel-title)){border-color:#d5e6b51f!important}
+html:root[data-theme=dark] #app :is(.notification-panel,.notification-detail,.notification-item){background:#081e21f5!important;color:#eef7f3!important;border-color:#a1d5c226!important;backdrop-filter:blur(22px)}
+html:root[data-theme=dark] #app .notification-item.unread{background:#1a352b!important}
+html:root[data-theme=dark] #app :is(.notification-bell,.notification-close,.notification-back,.notification-read-all){background:#b6ff550f!important;color:#bfe6d4!important;border-color:#a1d5c226!important}
+html:root[data-theme=dark] #app :is(.notification-count,.notification-dot){background:#b6ff55!important;color:#10240d!important}
+html:root[data-theme=dark] #app .theme-scene.night .theme-scene-sky{fill:#123228;stroke:#c2f69a55}
+html:root[data-theme=dark] #app .theme-scene.night .theme-scene-hill-back{fill:#31614d}
+html:root[data-theme=dark] #app .theme-scene.night .theme-scene-hill-front{fill:#1c4538}
+html:root[data-theme=dark] #app :is(.admin-panel-title,.admin-ranking,.admin-ticket,.admin-settings-summary>div:not(.admin-panel-title)){border-color:#a1d5c21f!important}
 html:root[data-theme=dark] #app .admin-health{background:transparent!important}
-html:root[data-theme=dark] #app :is(.admin-health-icon,.admin-empty>svg,.admin-supplier-icon,.notification-framed,.notification-item-arrow){background:#b8e93612!important;color:#c5ed68!important;border-color:#d5e6b526!important}
+html:root[data-theme=dark] #app :is(.admin-health-icon,.admin-empty>svg,.admin-supplier-icon,.notification-framed,.notification-item-arrow){background:#b6ff5512!important;color:#c2f69a!important;border-color:#a1d5c226!important}
 html:root[data-theme=dark] #app .admin-health em{background:#d6bb5020!important;color:#dfcb83!important}
-html:root[data-theme=dark] #app .admin-category-bars i{background:#c5ed6817!important;border-color:#d5e6b51f!important}
-html:root[data-theme=dark] #app .admin-category-bars i>span{background:linear-gradient(90deg,#648b23,#b8e936)!important}
+html:root[data-theme=dark] #app .admin-category-bars i{background:#c2f69a17!important;border-color:#a1d5c21f!important}
+html:root[data-theme=dark] #app .admin-category-bars i>span{background:linear-gradient(90deg,#42a783,#b6ff55)!important}
 html:root[data-theme=dark] #app .admin-status.warning{background:#d6bb5020!important;color:#dfcb83!important}
-html:root[data-theme=dark] #app :is(.admin-status.muted,.admin-table-wrap small,.admin-event small,.notification-detail p,.notification-item p){color:#a4ad98!important}
-html:root[data-theme=dark] #app .banner-controls{background:#0b1108d9!important;border:1px solid #d5e6b526!important;backdrop-filter:blur(12px)}
+html:root[data-theme=dark] #app :is(.admin-status.muted,.admin-table-wrap small,.admin-event small,.notification-detail p,.notification-item p){color:#8ea9a2!important}
+html:root[data-theme=dark] #app .banner-controls{background:#041719d9!important;border:1px solid #a1d5c226!important;backdrop-filter:blur(12px)}
 html:root[data-theme=dark] #app .banner-dots button{background:transparent!important}
-html:root[data-theme=dark] #app .banner-dots button:after{background:#82956b99!important}
-html:root[data-theme=dark] #app .banner-dots button.active:after{background:#b8e936!important}
-html:root[data-theme=dark] #app :is(.searchable-filter summary,.searchable-filter-panel){background:#151d10f5!important;color:#e2e8d8!important;border-color:#d5e6b533!important;backdrop-filter:blur(20px)}
-html:root[data-theme=dark] #app .searchable-filter-options button{color:#d5dfc8!important}
-html:root[data-theme=dark] #app .searchable-filter-options button:is(:hover,[aria-pressed=true]){background:#b8e9361f!important;color:#d0f58a!important}
-html:root[data-theme=dark] #app :is(.admin-sidebar nav,.admin-table-wrap,.searchable-filter-options){scrollbar-width:thin;scrollbar-color:#3c482d transparent}
+html:root[data-theme=dark] #app .banner-dots button:after{background:#7caa9999!important}
+html:root[data-theme=dark] #app .banner-dots button.active:after{background:#b6ff55!important}
+html:root[data-theme=dark] #app :is(.searchable-filter summary,.searchable-filter-panel){background:#091f22f5!important;color:#dbece4!important;border-color:#a1d5c233!important;backdrop-filter:blur(20px)}
+html:root[data-theme=dark] #app .searchable-filter-options button{color:#bfd8cf!important}
+html:root[data-theme=dark] #app .searchable-filter-options button:is(:hover,[aria-pressed=true]){background:#b6ff551f!important;color:#c5ff9f!important}
+html:root[data-theme=dark] #app :is(.admin-sidebar nav,.admin-table-wrap,.searchable-filter-options){scrollbar-width:thin;scrollbar-color:#33584f transparent}
 /* The separate information website retains its established light theme. */
 html:root[data-theme=dark] #app .ms-site :is(h1,h2,h3){color:#034037!important}
 html:root[data-theme=dark] #app .ms-site :is(.ms-hero,.ms-footer,.ms-phone-screen) :is(h1,h2,h3){color:#f7faf4!important}

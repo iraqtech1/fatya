@@ -37,6 +37,7 @@ import './fatya-identity.css';
 import './auth-login.css';
 import './payment-selection.css';
 import './dark-botanical.css';
+import './nav-motion-preview.css';
 const app=createApp({
 components:{StoreBrandMark,PaymentMethods,PaymentPreview,PagedList,StoreHeader,MobileDock,AccountPage,PullToRefresh,SplashIntro,BannerSlider,MarketingSite,Dashboard,PwaControls,AuthGate,NavIcon,CardDeck,Home,Grid2X2,ShoppingBag,Headphones,Phone,Search,ChevronLeft,X,Check,Copy,CreditCard,Gamepad2,Smartphone,Layers,User,Plus,Minus,ShieldCheck,SlidersHorizontal,Ticket,ArrowUpRight,Signal,Wifi},
 setup(){

@@ -12,7 +12,8 @@ export default {
   template:`<nav class="bottom-nav masal-cutout-dock" :aria-label="t(&quot;التنقل الرئيسي&quot;)">
     <span class="dock-notch-blur" :style="{left:center}" aria-hidden="true"></span>
     <svg class="dock-surface" width="100%" height="100%" aria-hidden="true"><defs><mask :id="maskId" maskUnits="userSpaceOnUse" x="0" y="-80" width="100%" height="180"><rect width="100%" height="100%" fill="white"/><circle :style="{cx:center}" cy="0" fill="black" class="dock-notch"/></mask></defs><rect width="100%" height="100%" rx="30" class="dock-body" :mask="'url(#'+maskId+')'"/></svg>
-    <span class="dock-bubble" :style="{left:center}" aria-hidden="true"><Transition name="dock-icon" mode="out-in"><component :is="icons[selected.icon]" :key="selected.id" :size="23"/></Transition></span>
+    <span class="dock-bubble" :style="{left:center}" aria-hidden="true"><span class="dock-arrival" :key="selected.id"><component :is="icons[selected.icon]" :size="23"/></span></span>
+    <span class="dock-active-trail" :style="{left:center}" aria-hidden="true"></span>
     <button v-for="item in items" :key="item.id" :class="{active:page===item.id}" :aria-current="page===item.id?'page':undefined" @click="$emit('navigate',item.id)"><component :is="icons[item.icon]" :size="21" class="dock-idle-icon"/><span>{{t(item.label)}}</span></button>
   </nav>`
 };

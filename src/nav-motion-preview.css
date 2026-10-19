@@ -1,0 +1,53 @@
+/* Local navbar motion preview: floating selection, delayed label and a soft trail. */
+.dock-active-trail{display:none}
+.dock-arrival{display:grid;place-items:center;width:100%;height:100%}
+@media(max-width:700px){
+  html:root[data-theme] #app .app-shell nav.bottom-nav.masal-cutout-dock{
+    --motion-surface:#f7faf4f2;--motion-edge:#45826590;--motion-accent:#7dbc30;--motion-ink:#034037;--motion-muted:#60796c;--motion-halo:#7dbc3038;
+    height:64px;padding:0;border-radius:22px;background:var(--motion-surface)!important;
+    border:1.5px solid var(--motion-edge)!important;box-shadow:0 10px 30px #00000014!important;
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  }
+  html:root[data-theme=dark] #app .app-shell nav.bottom-nav.masal-cutout-dock{
+    --motion-surface:#04181aeb;--motion-edge:#a1d5c26b;--motion-accent:#b6ff55;--motion-ink:#10240d;--motion-muted:#8fa9a0;--motion-halo:#b6ff5538;
+  }
+  html:root[data-theme] #app .masal-cutout-dock :is(.dock-surface,.dock-notch-blur){display:none!important}
+  html:root[data-theme] #app .masal-cutout-dock .dock-bubble{
+    width:44px;height:44px;top:-14px;background:transparent!important;border:0!important;
+    box-shadow:none!important;color:var(--motion-ink)!important;
+    transition:left .5s cubic-bezier(.22,.8,.25,1);will-change:left;
+  }
+  html:root[data-theme] #app .masal-cutout-dock .dock-arrival{
+    border-radius:50%;background:var(--motion-accent);border:2px solid var(--motion-ink)!important;
+    box-shadow:0 0 0 3px var(--motion-halo),0 6px 20px #00000030!important;transform-origin:50% 80%;
+    animation:fatya-dock-arrive .65s cubic-bezier(.2,.7,.3,1) both;
+  }
+  html:root[data-theme] #app .masal-cutout-dock .dock-arrival svg{stroke-width:2.2}
+  html:root[data-theme] #app .masal-cutout-dock .dock-active-trail{
+    display:block;position:absolute;bottom:4px;left:10%;width:20px;height:3px;border-radius:99px;
+    background:var(--motion-accent);box-shadow:0 -3px 14px #7dbc3050!important;z-index:3;
+    transform:translateX(-50%);transition:left .5s cubic-bezier(.22,.8,.25,1);pointer-events:none;
+  }
+  html:root[data-theme] #app .app-shell nav.bottom-nav.masal-cutout-dock button{
+    position:relative;min-height:62px;display:flex;align-items:center;justify-content:center;padding:0;
+    color:var(--motion-muted)!important;border-radius:20px;gap:0;
+  }
+  html:root[data-theme] #app .masal-cutout-dock .dock-idle-icon{
+    position:absolute;top:10px;opacity:1;transform:translateY(0) scale(1);
+    transition:opacity .15s,transform .3s cubic-bezier(.2,.7,.3,1);
+  }
+  html:root[data-theme] #app .masal-cutout-dock button.active .dock-idle-icon{opacity:0;transform:translateY(-16px) scale(.75)}
+  html:root[data-theme] #app .masal-cutout-dock button>span{
+    position:absolute;bottom:10px;font-size:10px;line-height:1.6;white-space:nowrap;
+    color:var(--motion-muted);opacity:1;transform:translateY(0);transition:color .2s;
+  }
+  html:root[data-theme] #app .masal-cutout-dock button.active>span{
+    color:var(--motion-accent);opacity:1;transform:translateY(0);
+    transition:opacity .25s .15s,transform .3s .12s cubic-bezier(.2,.7,.3,1);
+  }
+  html:root[data-theme] #app .masal-cutout-dock button:focus-visible{outline:2px solid var(--motion-accent);outline-offset:3px}
+}
+@keyframes fatya-dock-arrive{0%{opacity:.6;transform:translateY(13px) scale(.72,.82)}40%{opacity:1;transform:translateY(-10px) scale(1.12,.9)}65%{transform:translateY(2px) scale(.96,1.06)}83%{transform:translateY(-3px) scale(1.03,.98)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){
+  html:root[data-theme] #app .masal-cutout-dock :is(.dock-bubble,.dock-active-trail,.dock-arrival,.dock-idle-icon,button>span){animation:none!important;transition:none!important;will-change:auto}
+}
