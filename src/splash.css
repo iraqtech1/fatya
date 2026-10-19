@@ -28,7 +28,7 @@
 .masal-splash .splash-skip{position:absolute;bottom:max(26px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);border:1px solid #7dbc3066;border-radius:24px;padding:8px 24px;background:#ffffff05;color:#d4e7d8;font-size:12px}
 .splash-skip:focus-visible{outline:2px solid #c3ee4c;outline-offset:5px}
 @keyframes fatya-seed-merge{0%{opacity:0;transform:translateY(var(--seed-start)) scale(.5)}25%{opacity:1;transform:translateY(var(--seed-start)) scale(1)}75%{opacity:1;transform:translateY(0) scale(1.2)}100%{opacity:0;transform:translateY(0) scale(.2)}}
-@keyframes fatya-reveal-pulse{0%{opacity:0;scale:.1}20%{opacity:.9;scale:.35}100%{opacity:0;scale:1.8}}
+@keyframes fatya-reveal-pulse{0%{opacity:0;scale:.1}20%{opacity:.9;scale:.35}100%{opacity:.45;scale:1.8;background:transparent}}
 @keyframes fatya-spark-out{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}20%{opacity:.85}75%{opacity:.4}100%{opacity:0;transform:translate(calc(-50% + cos(var(--spark-angle))*155px),calc(-50% + sin(var(--spark-angle))*155px)) rotate(110deg) scale(.6)}}
 @keyframes fatya-brand-reveal{0%{opacity:0;transform:translateY(12px) scale(.55) rotate(-9deg)}65%{opacity:1;transform:translateY(-2px) scale(1.035) rotate(1deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
 @keyframes fatya-symbol-spread{0%{--splash-symbol-radius:0;opacity:0}25%,72%{--splash-symbol-radius:1;opacity:1}100%{--splash-symbol-radius:1.08;opacity:0}}
