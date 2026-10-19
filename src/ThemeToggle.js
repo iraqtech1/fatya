@@ -7,14 +7,14 @@ try{dark.value=localStorage.getItem('masal-theme')==='dark';}catch{}
 try{dashboardDark.value=localStorage.getItem('masal-dashboard-theme')==='dark';}catch{}
 function apply(){
  const isDashboard=location.hash.startsWith('#/admin');
- // Keep the storefront palette and identity out of every dashboard route.
+ // Scope storefront treatments while sharing the green identity across both apps.
  document.documentElement.toggleAttribute('data-fatya-store',!isDashboard);
  const activeDark=isDashboard?dashboardDark.value:dark.value;
  document.documentElement.dataset.theme=activeDark?'dark':'light';
- document.querySelector('meta[name="theme-color"]')?.setAttribute('content',isDashboard?(activeDark?'#09131f':'#a21c2d'):(activeDark?'#14030a':'#a60233'));
+ document.querySelector('meta[name="theme-color"]')?.setAttribute('content',isDashboard?(activeDark?'#061a14':'#034037'):(activeDark?'#061a14':'#0a8b61'));
  const base=import.meta.env.BASE_URL;
- document.querySelector('link[rel="icon"]')?.setAttribute('href',base+'favicon.png');
- document.querySelector('link[rel="apple-touch-icon"]')?.setAttribute('href',base+'icons/apple-touch-v2.png');
+ document.querySelector('link[rel="icon"]')?.setAttribute('href',base+'favicon-green.png');
+ document.querySelector('link[rel="apple-touch-icon"]')?.setAttribute('href',base+'icons/apple-touch-green.png');
 }
 apply();
 for(const [state,key] of [[dark,'masal-theme'],[dashboardDark,'masal-dashboard-theme']])watch(state,()=>{apply();try{localStorage.setItem(key,state.value?'dark':'light');}catch{}},{flush:'sync'});

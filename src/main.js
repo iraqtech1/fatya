@@ -32,6 +32,7 @@ import {store,connection,refreshStore,CATEGORIES,upsertCustomer,createOrder,crea
 import {restoreStoreSession,saveStoreSession} from './store-session.js';
 router.afterEach(()=>applyLanguage());
 import './storefront-identity.css';
+import './fatya-identity.css';
 const app=createApp({
 components:{StoreBrandMark,PaymentPreview,PagedList,StoreHeader,MobileDock,AccountPage,PullToRefresh,SplashIntro,BannerSlider,MarketingSite,Dashboard,PwaControls,AuthGate,NavIcon,CardDeck,Home,Grid2X2,ShoppingBag,Headphones,Phone,Search,ChevronLeft,X,Check,Copy,CreditCard,Gamepad2,Smartphone,Layers,User,Plus,Minus,ShieldCheck,SlidersHorizontal,Ticket,ArrowUpRight,Signal,Wifi},
 setup(){

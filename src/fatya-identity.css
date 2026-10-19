@@ -1,0 +1,73 @@
+/* Fatya green identity. Palette and type from the supplied visual identity guide. */
+@font-face{font-family:'Readex Pro';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/readex-pro-400.ttf') format('truetype')}
+@font-face{font-family:'Readex Pro';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/readex-pro-500.ttf') format('truetype')}
+@font-face{font-family:'Readex Pro';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/readex-pro-600.ttf') format('truetype')}
+@font-face{font-family:'Readex Pro';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/readex-pro-700.ttf') format('truetype')}
+:root{
+ --fatya-green:#034037;--fatya-emerald:#0a8b61;--fatya-lime:#7dbc30;
+ --fatya-lime-light:#c3ee4c;--fatya-night:#061a14;--fatya-forest:#023b33;
+ --fatya-surface:#f7faf4;--fatya-ink:#034037;--fatya-muted:#526f62;
+ --fatya-line:#bfd1b6;--wine:var(--fatya-green);
+ font-family:'Readex Pro',sans-serif;font-weight:400;
+}
+body{font-weight:400}
+button,input,textarea,select{font-weight:500}
+h1,h2,h3,strong,b{font-weight:700}
+.admin-shell,.ms-site{font-weight:400}
+.admin-shell{--admin-wine:var(--fatya-green);--admin-dark:var(--fatya-forest);--admin-rose:#e5efdf;--admin-border:var(--fatya-line);--admin-muted:var(--fatya-muted)}
+html[data-fatya-store]{--wine:var(--fatya-green);--muted:var(--fatya-muted);--border:var(--fatya-line);--fatya-frame:#a5bc86;--field-surface:#f7faf4;--field-ink:#034037;--field-muted:#60796c;--field-caret:#0a8b61}
+html[data-fatya-store]:not([data-theme=dark]){
+ --masal-app-background:radial-gradient(ellipse at 95% 5%,#0a8b6118,transparent 58%),radial-gradient(ellipse at 5% 95%,#7dbc3020,transparent 55%),linear-gradient(145deg,#f5f8ef 0%,#e1eee3 48%,#edf3dc 100%);
+ background:#e5efdf;color:var(--fatya-ink);
+}
+html[data-fatya-store]:not([data-theme=dark]) .app-shell>.sidebar{background:linear-gradient(180deg,#f5f8ef,#e5efdf)}
+html[data-fatya-store] :is(.hero,.auth-story),.admin-shell .admin-hero,.masal-login-art{
+ background:radial-gradient(ellipse at 90% 0%,#7dbc302b,transparent 58%),linear-gradient(135deg,#023b33 0%,#034037 48%,#0a8b61 100%);
+}
+html[data-fatya-store] :is(.hero h2 span,.hero-label),.admin-hero .admin-eyebrow{color:#c3ee4c}
+html[data-fatya-store] .hero p{color:#d4e7d8}
+html[data-fatya-store] .primary,.admin-primary,.masal-login-submit{background:linear-gradient(115deg,#034037,#0a8b61);color:#fff}
+html[data-fatya-store] .auth-action.primary{font-weight:600}
+html[data-fatya-store] .auth-identity>span{color:#526f62}
+html[data-fatya-store] .phone-auth .auth-logo{width:152px;height:152px;align-items:center;margin-bottom:8px}
+html[data-fatya-store] .phone-auth .auth-logo .store-brand-mark{width:142px;height:150px;transform:none}
+html[data-fatya-store] .phone-auth .auth-identity>strong{display:none}
+html[data-fatya-store] .auth-identity{gap:10px}
+/* Keep the official F visible at small sizes instead of shrinking the full wordmark. */
+.brand-mark,.admin-brand>span,.masal-login-brand>span{overflow:hidden}
+.brand-mark>.store-brand-mark,.admin-brand>span .masal-mark,.masal-login-brand .masal-mark{width:100%;height:100%;object-fit:contain;border-radius:inherit}
+.masal-login-orbit .masal-mark{width:100%;height:100%;object-fit:contain;border-radius:24px}
+html[data-fatya-store] .splash-logo{width:min(62vw,270px);height:min(66vw,290px)}
+.masal-splash{background:radial-gradient(ellipse at 50% 40%,#0a8b6138,transparent 65%),linear-gradient(145deg,#061a14,#023b33)}
+.masal-splash .brand-full{filter:brightness(0) invert(1);opacity:.96}
+.masal-splash .splash-wordmark{display:none}
+/* Maintain separate stored day/night preferences with one shared brand palette. */
+html[data-theme=dark]{--fatya-ink:#f2f7ef;--fatya-muted:#a4c1b2;--fatya-line:#275347;--wine:#c3ee4c;--muted:#a4c1b2;--border:#275347}
+html[data-fatya-store][data-theme=dark]{
+ --wine:#c3ee4c;--muted:#a4c1b2;--border:#275347;--fatya-frame:#496631;
+ --field-surface:#103d31;--field-ink:#f2f7ef;--field-muted:#a4c1b2;--field-caret:#c3ee4c;
+ --fatya-night-background:radial-gradient(ellipse at 85% 5%,#0a8b6114,transparent 55%),linear-gradient(180deg,#061a14 0%,#092c23 52%,#034037 100%);
+}
+html[data-theme=dark] .admin-shell{--admin-wine:#c3ee4c;--admin-dark:#f2f7ef;--admin-rose:#103d31;--admin-border:#275347;--admin-muted:#a4c1b2}
+html[data-theme=dark] :is(.primary,.admin-primary,.masal-login-submit){background:linear-gradient(115deg,#034037,#0a8b61)!important;color:#fff!important;border-color:#7dbc30}
+html[data-fatya-store][data-theme=dark] .app-shell>.sidebar{background:linear-gradient(180deg,#061a14,#092c23 52%,#034037)!important}
+html[data-fatya-store][data-theme=dark] .app-shell :is(.product,.brands button,.order,.support-form,.faq,.store-account,.ticket-history article,.empty){background:linear-gradient(180deg,#0b2e25,#103d31)!important}
+html[data-fatya-store][data-theme=dark] .app-shell .store-header{background:linear-gradient(180deg,#08271f,#10372c)!important}
+html[data-theme=dark] .phone-auth .brand-full{filter:brightness(0) invert(1)}
+html[data-theme=dark] .phone-auth .auth-identity>span{color:#a4c1b2}
+html[data-fatya-store] :is(button,a,input,select,textarea):focus-visible{outline-color:#7dbc30}
+html[data-fatya-store] .theme-scene.night .theme-scene-sky{fill:#034037;stroke:#7dbc30}
+html[data-fatya-store] .theme-scene.night .theme-scene-hill-back{fill:#0a8b61}
+html[data-fatya-store] .theme-scene.night .theme-scene-hill-front{fill:#061a14}
+html[data-fatya-store] .theme-scene.night .theme-scene-orb-disc{fill:#f2f7ef;stroke:#c3ee4c}
+@media(max-height:730px){html[data-fatya-store] .phone-auth .auth-logo{width:116px;height:122px}html[data-fatya-store] .phone-auth .auth-logo .store-brand-mark{width:112px;height:118px}}
+/* Secondary text must stay readable on the frosted daytime surfaces. */
+html:not([data-theme=dark]) .admin-shell :is(.admin-stats small,.admin-stats>button>div,.admin-nav-label,.admin-header>div>span,.admin-table-wrap small,.admin-health small,.admin-hero>div>span){color:#526f62}
+html:not([data-theme=dark]) .admin-shell .admin-hero>div>span{color:#c5ddcf}
+html:not([data-theme=dark]) .admin-shell .admin-health em{background:#e5efdf;color:#446b20}
+html:not([data-theme=dark]) .admin-sidebar nav button{color:#526f62}
+html:not([data-theme=dark]) .admin-sidebar nav button.active{color:#034037}
+/* Avoid the browser's blue autofill rectangle inside the dashboard fields. */
+.masal-login-field{--login-field:#fff;--login-ink:#034037}
+html[data-theme=dark] .masal-login-field{--login-field:#0c2d23;--login-ink:#f2f7ef}
+.masal-login-field input:-webkit-autofill{box-shadow:0 0 0 1000px var(--login-field) inset!important;-webkit-text-fill-color:var(--login-ink)!important;caret-color:var(--login-ink)}

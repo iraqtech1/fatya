@@ -41,7 +41,7 @@
 .app-shell .hero .deck-controls button{width:28px;height:28px;padding:0}
 .app-shell .hero .deck-hint{font-size:8px!important;margin-top:4px!important}
 .app-shell .product-selectable{cursor:pointer}
-.app-shell .product-selectable:focus-visible{outline:2px solid var(--primary,#a21c2d);outline-offset:3px}
+.app-shell .product-selectable:focus-visible{outline:2px solid var(--primary,#034037);outline-offset:3px}
 @media(max-width:700px){
  .app-shell .hero{flex-direction:row;min-height:210px;padding:12px;gap:6px;align-items:center}
  .app-shell .hero .hero-copy{flex:0 1 38%;min-width:0;width:auto}
@@ -56,18 +56,18 @@
 }
 
 /* Soft separation for selectable storefront cards in both themes. */
-.app-shell{--card-edge:#d7aebc;--card-shadow:0 5px 0 -1px #dcb9c5,0 12px 20px #780f1c30;--card-shadow-raised:0 6px 0 -1px #d5a8b8,0 16px 24px #780f1c3b;--card-edge-active:#b95567}
+.app-shell{--card-edge:#b1d4c9;--card-shadow:0 5px 0 -1px #bcd9d0,0 12px 20px #023b3330;--card-shadow-raised:0 6px 0 -1px #abd2c6,0 16px 24px #023b333b;--card-edge-active:#5db297}
 .app-shell .brands{padding-top:8px;padding-bottom:24px}
-.app-shell .brands button,.app-shell .product-selectable{background:linear-gradient(145deg,#fff 40%,#fff4f7);border-color:var(--card-edge);border-bottom-width:2px;transform:translateY(-3px);box-shadow:var(--card-shadow);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
-.app-shell .hero .deck-card{border-color:#edb8c580;box-shadow:0 4px 0 -1px #450913,0 10px 18px #29081366}
-.app-shell .hero .deck-card.deck-current{border-color:#efd394;box-shadow:0 5px 0 -1px #450913,0 14px 24px #29081399,0 0 0 1px #efd39455}
+.app-shell .brands button,.app-shell .product-selectable{background:linear-gradient(145deg,#fff 40%,#f5fefb);border-color:var(--card-edge);border-bottom-width:2px;transform:translateY(-3px);box-shadow:var(--card-shadow);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.app-shell .hero .deck-card{border-color:#bce9db80;box-shadow:0 4px 0 -1px #0e4030,0 10px 18px #0a271e66}
+.app-shell .hero .deck-card.deck-current{border-color:#cbef94;box-shadow:0 5px 0 -1px #0e4030,0 14px 24px #0a271e99,0 0 0 1px #cbef9455}
 .app-shell .brands button:focus-visible,.app-shell .product-selectable:focus-visible{border-color:var(--card-edge-active);box-shadow:var(--card-shadow-raised);outline:2px solid var(--card-edge-active);outline-offset:2px}
 .app-shell .brands button:active,.app-shell .product-selectable:active{transform:scale(.98)}
-html[data-theme=dark] .app-shell{--card-edge:#5585a4;--card-shadow:0 5px 0 -1px #07121f,0 12px 22px #0009,0 0 0 1px #82d4f522;--card-shadow-raised:0 6px 0 -1px #07121f,0 16px 26px #000a,0 0 0 1px #82d4f544;--card-edge-active:#82d4f5}
-html[data-theme=dark] .app-shell .brands button,html[data-theme=dark] .app-shell .product-selectable{background:linear-gradient(145deg,#20435d,#102437)!important;border-color:var(--card-edge)!important;box-shadow:var(--card-shadow)}
-html[data-theme=dark] .app-shell .brands .brand-logo{color:#d4eeff!important}
-html[data-theme=dark] .app-shell .hero .deck-card{border-color:#5e9ab980;box-shadow:0 4px 0 -1px #06101c,0 10px 18px #0009}
-html[data-theme=dark] .app-shell .hero .deck-card.deck-current{border-color:#82d4f5;box-shadow:0 5px 0 -1px #06101c,0 14px 24px #000b,0 0 0 1px #82d4f555}
+html[data-theme=dark] .app-shell{--card-edge:#5b9e88;--card-shadow:0 5px 0 -1px #091d16,0 12px 22px #0009,0 0 0 1px #90e7ca22;--card-shadow-raised:0 6px 0 -1px #091d16,0 16px 26px #000a,0 0 0 1px #90e7ca44;--card-edge-active:#90e7ca}
+html[data-theme=dark] .app-shell .brands button,html[data-theme=dark] .app-shell .product-selectable{background:linear-gradient(145deg,#255847,#133429)!important;border-color:var(--card-edge)!important;box-shadow:var(--card-shadow)}
+html[data-theme=dark] .app-shell .brands .brand-logo{color:#dcf7ee!important}
+html[data-theme=dark] .app-shell .hero .deck-card{border-color:#65b29880;box-shadow:0 4px 0 -1px #081a14,0 10px 18px #0009}
+html[data-theme=dark] .app-shell .hero .deck-card.deck-current{border-color:#90e7ca;box-shadow:0 5px 0 -1px #081a14,0 14px 24px #000b,0 0 0 1px #90e7ca55}
 html[data-theme=dark] .app-shell .brands button:focus-visible,html[data-theme=dark] .app-shell .product-selectable:focus-visible{border-color:var(--card-edge-active)!important;box-shadow:var(--card-shadow-raised)}
 @media(hover:hover) and (pointer:fine){
  .app-shell .brands button:hover,.app-shell .product-selectable:hover{transform:translateY(-5px);border-color:var(--card-edge-active);box-shadow:var(--card-shadow-raised)}
@@ -76,15 +76,15 @@ html[data-theme=dark] .app-shell .brands button:focus-visible,html[data-theme=da
 @media(prefers-reduced-motion:reduce){.app-shell .brands button,.app-shell .product-selectable{transition:none}.app-shell .brands button:hover,.app-shell .product-selectable:hover{transform:translateY(-3px)}}
 
 /* A simple frame softly separates the whole home feature panel. */
-.app-shell .hero{border:1.5px solid #e6a4af;box-shadow:0 6px 16px #780f1c20;margin-bottom:12px}
-html[data-theme=dark] .app-shell .hero{border-color:#5b9dbf;box-shadow:0 6px 16px #0005}
+.app-shell .hero{border:1.5px solid #a9e1cf;box-shadow:0 6px 16px #023b3320;margin-bottom:12px}
+html[data-theme=dark] .app-shell .hero{border-color:#63b89b;box-shadow:0 6px 16px #0005}
 
 /* Compact favourite brands with native horizontal scrolling. */
-.app-shell .brands{display:flex;flex-wrap:nowrap;gap:10px;max-width:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#bd788b transparent;padding:8px 3px 20px;-webkit-overflow-scrolling:touch}
+.app-shell .brands{display:flex;flex-wrap:nowrap;gap:10px;max-width:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#7db8a5 transparent;padding:8px 3px 20px;-webkit-overflow-scrolling:touch}
 .app-shell .brands button{flex:0 0 92px;min-width:92px;width:92px;height:112px;min-height:0;padding:12px 7px;gap:8px;border-radius:16px;font-size:10px;line-height:1.6;scroll-snap-align:start}
 .app-shell .brands .brand-logo{font-size:17px;line-height:1.2;max-width:100%;overflow-wrap:anywhere}
 .app-shell .brands button>span:last-child{max-width:100%;overflow-wrap:anywhere}
-.app-shell .brands::-webkit-scrollbar{height:4px}.app-shell .brands::-webkit-scrollbar-thumb{background:#bd788b;border-radius:6px}.app-shell .brands::-webkit-scrollbar-track{background:transparent}
+.app-shell .brands::-webkit-scrollbar{height:4px}.app-shell .brands::-webkit-scrollbar-thumb{background:#7db8a5;border-radius:6px}.app-shell .brands::-webkit-scrollbar-track{background:transparent}
 .app-shell .brands:focus-visible{outline:2px solid var(--wine);outline-offset:3px;border-radius:12px}
-html[data-theme=dark] .app-shell .brands{scrollbar-color:#6db7db transparent}html[data-theme=dark] .app-shell .brands::-webkit-scrollbar-thumb{background:#6db7db}
+html[data-theme=dark] .app-shell .brands{scrollbar-color:#75d3b4 transparent}html[data-theme=dark] .app-shell .brands::-webkit-scrollbar-thumb{background:#75d3b4}
 @media(max-width:700px){.app-shell .brands button{flex-basis:82px;min-width:82px;width:82px;height:100px;padding:10px 6px}.app-shell .brands .brand-logo{font-size:15px}}

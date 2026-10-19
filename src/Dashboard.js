@@ -84,7 +84,7 @@ export default {
     const categorySales=computed(()=>CATEGORIES.map(name=>({name,total:store.orders.filter(o=>o.status==='مكتمل'&&store.products.find(p=>p.id===o.productId)?.category===name).reduce((s,o)=>s+o.price,0)})));
     const topProducts=computed(()=>store.products.map(p=>({...p,sold:store.orders.filter(o=>o.productId===p.id&&o.status==='مكتمل').reduce((s,o)=>s+o.quantity,0)})).sort((a,b)=>b.sold-a.sold).slice(0,5));
     async function show(type,item){draftRevision=connection.revision;formError.value='';modal.value=type;
-      if(type==='product')draft.value=item?JSON.parse(JSON.stringify(item)):{name:'',en:'',category:CATEGORIES[0]||'',color:'#9b4a66',tag:'بطاقة جديدة',unit:'د.ع',image:'',active:true,values:[5000],prices:[5250],stock:[0],denomImages:[''],manufacturerId:'',supplierCompanyId:''};
+      if(type==='product')draft.value=item?JSON.parse(JSON.stringify(item)):{name:'',en:'',category:CATEGORIES[0]||'',color:'#0a8b61',tag:'بطاقة جديدة',unit:'د.ع',image:'',active:true,values:[5000],prices:[5250],stock:[0],denomImages:[''],manufacturerId:'',supplierCompanyId:''};
       else if(type==='company')draft.value=item?{...item}:{name:'',role:'manufacturer',active:true};
       else if(type==='category')draft.value=item?{...item}:{name:'',en:'',icon:'Layers',active:true};
       else if(type==='customer')draft.value=item?{...item,password:''}:{name:'',phone:'',email:'',password:'',kind:'فرد',active:true,discount:0};

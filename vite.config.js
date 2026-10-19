@@ -8,16 +8,16 @@ export default defineConfig({
   plugins: [VitePWA({
     registerType: 'autoUpdate',
     injectRegister: false,
-    includeAssets: ['favicon.png', 'brand/*', 'icons/*.png', 'fonts/*.ttf'],
+    includeAssets: ['favicon-green.png', 'brand/*', 'icons/*.png', 'fonts/*.ttf'],
     manifest: {
       id: './', name: 'فاتيا — بطاقاتك الرقمية', short_name: 'فاتيا',
       description: 'بطاقات الرصيد والألعاب والبطاقات العالمية بمكان واحد.',
       lang: 'ar', dir: 'rtl', start_url: './', scope: './',
-      display: 'standalone', background_color: '#14030a', theme_color: '#a60233',
+      display: 'standalone', background_color: '#061a14', theme_color: '#0a8b61',
       icons: [
-        {src: 'icons/install-192-v2.png', sizes: '192x192', type: 'image/png', purpose: 'any'},
-        {src: 'icons/install-512-v2.png', sizes: '512x512', type: 'image/png', purpose: 'any'},
-        {src: 'icons/install-512-v2.png', sizes: '512x512', type: 'image/png', purpose: 'maskable'},
+        {src: 'icons/install-192-green.png', sizes: '192x192', type: 'image/png', purpose: 'any'},
+        {src: 'icons/install-512-green.png', sizes: '512x512', type: 'image/png', purpose: 'any'},
+        {src: 'icons/install-512-green.png', sizes: '512x512', type: 'image/png', purpose: 'maskable'},
       ],
     },
     workbox: {

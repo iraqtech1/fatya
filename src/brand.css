@@ -1,23 +1,23 @@
-:root{--wine:#a21c2d;--border:#eed6d9;color:#291215;background:#fff9f9}
-.brand-mark,.admin-brand>span{background:linear-gradient(135deg,#780f1c,#b82c3e);border-radius:12px;box-shadow:0 6px 18px #780f1c18}
+:root{--wine:#034037;--border:#d8ece6;color:#142721;background:#f9fffd}
+.brand-mark,.admin-brand>span{background:linear-gradient(135deg,#023b33,#277d62);border-radius:12px;box-shadow:0 6px 18px #023b3318}
 .brand-mark svg,.admin-brand>span svg{width:30px;height:30px}
-.hero,.auth-story{background:linear-gradient(135deg,#640d18 0%,#9a1b2c 62%,#c64d5a 100%)}
-.admin-hero{background:linear-gradient(125deg,#780f1c,#a21c2d 70%,#cc5260)}
-.ms-site{font-family:'Cairo',sans-serif;font-weight:700;--ms-primary:#a21c2d;--ms-light:#cc5260}
-.ms-site button,.ms-site input,.ms-site textarea,.ms-site select,.ms-site h1,.ms-site h2,.ms-site h3,.ms-site .ms-modal{font-family:'Cairo',sans-serif;font-weight:700}
-.ms-site .ms-hero{background:linear-gradient(180deg,#780f1c 0%,#a21c2d 48%,#d9858e 80%,#fff 100%)}
-.ms-site .ms-hero h1 em{color:#ffe5e6}
+.hero,.auth-story{background:linear-gradient(135deg,#061a14 0%,#1a684f 62%,#56bd9c 100%)}
+.admin-hero{background:linear-gradient(125deg,#023b33,#034037 70%,#5bc3a2)}
+.ms-site{font-family:'Readex Pro',sans-serif;font-weight:700;--ms-primary:#034037;--ms-light:#5bc3a2}
+.ms-site button,.ms-site input,.ms-site textarea,.ms-site select,.ms-site h1,.ms-site h2,.ms-site h3,.ms-site .ms-modal{font-family:'Readex Pro',sans-serif;font-weight:700}
+.ms-site .ms-hero{background:linear-gradient(180deg,#023b33 0%,#034037 48%,#8bd3bc 80%,#fff 100%)}
+.ms-site .ms-hero h1 em{color:#e7fdf6}
 .ms-site .ms-hero .ms-stat strong,.ms-site .ms-hero .ms-stat>span{color:white}
-.ms-site .ms-hero .ms-stats{width:fit-content;margin:32px auto 0;padding:18px 28px;border:1px solid #fff2;border-radius:18px;background:#780f1c38;backdrop-filter:blur(8px)}
-.ms-site .ms-brand>span{width:42px;height:42px;background:linear-gradient(135deg,#640d18,#b82c3e)}
+.ms-site .ms-hero .ms-stats{width:fit-content;margin:32px auto 0;padding:18px 28px;border:1px solid #fff2;border-radius:18px;background:#023b3338;backdrop-filter:blur(8px)}
+.ms-site .ms-brand>span{width:42px;height:42px;background:linear-gradient(135deg,#061a14,#277d62)}
 .ms-brand small{display:block;font-size:8px;letter-spacing:3px;line-height:1.1;direction:ltr;font-weight:700;opacity:.65}
 .ms-brand svg{width:30px;height:30px}.ms-stage>svg{width:64px;height:64px}
-.ms-site .ms-footer{background:linear-gradient(135deg,#640d18,#9a1b2c)}
-@media(min-width:1200px){.ms-site .ms-hero{background:linear-gradient(135deg,#640d18 0%,#a21c2d 48%,#d9858e 80%,#fff 100%)}}
+.ms-site .ms-footer{background:linear-gradient(135deg,#061a14,#1a684f)}
+@media(min-width:1200px){.ms-site .ms-hero{background:linear-gradient(135deg,#061a14 0%,#034037 48%,#8bd3bc 80%,#fff 100%)}}
 @media(max-width:560px){.ms-site .ms-hero .ms-stats{gap:16px;padding:14px 16px}.ms-site .ms-hero h1{font-size:36px}}
 
-/* Soft corner gradients inspired by Wasl, in Masal's burgundy and gold. */
-:root{--masal-app-background:radial-gradient(ellipse at 95% 5%,#a21c2d14,transparent 58%),radial-gradient(ellipse at 5% 95%,#e9bd5b20,transparent 55%),linear-gradient(145deg,#fffafb 0%,#f7e9ee 48%,#fff7e9 100%)}
+/* Soft corner gradients inspired by Wasl, in Fatya's forest green and lime. */
+:root{--masal-app-background:radial-gradient(ellipse at 95% 5%,#03403714,transparent 58%),radial-gradient(ellipse at 5% 95%,#b0e95b20,transparent 55%),linear-gradient(145deg,#fafffd 0%,#eaf6f2 48%,#f6fdeb 100%)}
 body{background:var(--masal-app-background);background-attachment:fixed}
 .auth-shell,.app-shell{min-height:100dvh;background:var(--masal-app-background);background-attachment:fixed}
 .auth-panel,.app-shell>.content,.app-shell>main{background:transparent}
@@ -26,7 +26,7 @@ body{background:var(--masal-app-background);background-attachment:fixed}
 /* Keep mobile cards aligned and account for iPhone safe areas once. */
 @media(max-width:700px){
  :root{--mobile-safe-bottom:min(env(safe-area-inset-bottom,0px),34px)}
- html{background:#fff8f5}
+ html{background:#f6fefc}
  .auth-shell,.app-shell{background-attachment:scroll}
  .app-shell>main>header{height:calc(72px + env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px);padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
  .app-shell .content{padding:18px max(16px,env(safe-area-inset-right,0px)) calc(96px + var(--mobile-safe-bottom)) max(16px,env(safe-area-inset-left,0px))}

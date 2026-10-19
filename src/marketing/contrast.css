@@ -1,4 +1,4 @@
 /* The lower half of the required hero fades to white: keep statistics readable. */
-.ms-site .ms-hero .ms-stat strong,.ms-site .ms-hero .ms-stat>span{color:#780f1c}
-.ms-site .ms-hero h1 em{color:#f9e8e9;text-shadow:0 2px 10px #780f1c33}
+.ms-site .ms-hero .ms-stat strong,.ms-site .ms-hero .ms-stat>span{color:#023b33}
+.ms-site .ms-hero h1 em{color:#e9f8f3;text-shadow:0 2px 10px #023b3333}
 .ms-hero-compact .ms-actions:empty{display:none}
