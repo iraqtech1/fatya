@@ -39,8 +39,9 @@ export default {
       <div class="splash-launch-glow"></div>
       <div class="splash-logo">
         <svg class="splash-logo-color" viewBox="0 0 536 567" fill="none" aria-hidden="true"><defs><clipPath id="fatya-splash-lid"><path d="M116 119C116 91 128 71 151 63L325 14Q337 10 349 15L414 36Q424 40 424 49L424 65L348 87L337 89L337 91L285 106L212 128L116 155Z"/></clipPath><mask id="fatya-splash-body" maskUnits="userSpaceOnUse" x="0" y="0" width="536" height="567" mask-type="luminance"><rect width="536" height="567" fill="white"/><path d="M116 119C116 91 128 71 151 63L325 14Q337 10 349 15L414 36Q424 40 424 49L424 65L348 87L337 89L337 91L285 106L212 128L116 155Z" fill="black"/></mask><linearGradient id="fatya-pocket" x1="250" y1="40" x2="270" y2="140" gradientUnits="userSpaceOnUse"><stop stop-color="#020e0b"/><stop offset="1" stop-color="#0a4b36"/></linearGradient></defs><path class="splash-box-interior" d="M116 119C116 91 128 71 151 63L325 14Q337 10 349 15L414 36Q424 40 424 49L424 65L348 87L337 89L337 91L285 106L212 128L116 155Z" fill="url(#fatya-pocket)" stroke="#0a8b61" stroke-width="2"/><image :href="logo" width="536" height="567" mask="url(#fatya-splash-body)"/><g class="splash-box-lid"><image :href="logo" width="536" height="567" clip-path="url(#fatya-splash-lid)"/></g></svg>
-        <img class="splash-logo-lettering" :src="logo" alt="" width="536" height="567" draggable="false"/>
+        <svg class="splash-logo-lettering" viewBox="0 0 536 567" aria-hidden="true"><defs><filter id="fatya-original-wordmark" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="-.69 0 0 0 .828 -.236 0 0 0 .853 -1.30 0 0 0 .826 0 0 0 1 0"/></filter></defs><image :href="logo" width="536" height="567" filter="url(#fatya-original-wordmark)"/></svg>
       </div>
+      <div class="splash-card-orbit">
       <div v-for="(card,i) in cards" :key="card.theme" class="splash-flight" :style="{'--card-index':i}">
         <div class="splash-card" :class="'splash-gift-'+card.theme">
           <span class="splash-gift-caption">GIFT CARD</span>
@@ -48,6 +49,7 @@ export default {
           <component v-else :is="card.icon" class="splash-gift-icon" :size="23" :stroke-width="1.7"/>
           <span class="splash-gift-brand">{{card.brand}}</span><span class="splash-gift-value">{{card.value}}</span>
         </div>
+      </div>
       </div>
       <div class="splash-caption"><span>بطاقاتك، بمكان واحد</span><i></i></div>
     </div>
