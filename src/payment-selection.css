@@ -1,0 +1,29 @@
+/* Keep checkout selection distinct from the general frosted surfaces. */
+html[data-fatya-store] #app .payment-method-grid button{
+  display:grid;grid-template-columns:48px minmax(0,1fr) 18px;gap:6px;align-items:center;
+  min-height:66px;padding:10px 8px;border:1.5px solid #458265!important;border-radius:14px;
+  background:#f4f9f1;color:#034037;font-size:12px;transition:background .18s,border-color .18s;
+}
+html[data-fatya-store] #app .payment-method-grid button[aria-pressed=true]{background:#9bd43b;color:#034037;border:2px solid #034037!important}
+html[data-fatya-store] #app .payment-selection-indicator{display:grid;place-items:center;width:18px;height:18px;border:1.5px solid #799a72!important;border-radius:50%;background:transparent}
+html[data-fatya-store] #app [aria-pressed=true] .payment-selection-indicator{background:#034037;border-color:#034037!important;color:#f4f9f1}
+html[data-fatya-store] #app .payment-logo{display:grid;place-items:center;flex:0 0 48px;width:48px;height:40px;padding:5px;border-radius:9px;background:#fff;overflow:hidden}
+html[data-fatya-store] #app .payment-logo img{width:28px;height:28px;max-width:none;max-height:none;object-fit:contain}
+html[data-fatya-store] #app .payment-logo.zaincash{background:#320715}
+html[data-fatya-store] #app .payment-logo.zaincash img{width:40px;height:28px}
+html[data-fatya-store] #app .payment-method-summary{gap:12px;min-height:80px;align-items:center;padding:14px 16px}
+html[data-fatya-store] #app .payment-preview-brand{flex:0 0 58px;display:grid;place-items:center;width:58px;height:48px;padding:8px;border-radius:12px;background:#fff;overflow:hidden}
+html[data-fatya-store] #app .payment-preview-brand img{display:block;flex:none;width:32px;height:32px;max-width:100%;max-height:100%;object-fit:contain}
+html[data-fatya-store] #app .payment-preview-brand.zaincash{background:#320715}
+html[data-fatya-store] #app .payment-preview-brand.zaincash img{width:48px;height:28px}
+html[data-fatya-store] #app .payment-method-summary>div{min-width:0;line-height:1.8}
+html[data-fatya-store] #app :is(.card-purchase-dialog .primary,.payment-preview .primary){min-height:48px;border-radius:14px;background:#9bd43b!important;color:#034037!important;border:1px solid #9bd43b!important}
+html[data-fatya-store] #app :is(.card-purchase-dialog .primary,.payment-preview .primary):hover{background:#afe552!important}
+html[data-fatya-store] #app .card-purchase-dialog .denominations button.selected{background:#9bd43b!important;color:#034037!important;border:2px solid #034037!important}
+html[data-fatya-store] #app .card-purchase-dialog .stepper{gap:8px;padding:4px;background:#f4f9f1}
+html[data-fatya-store] #app .card-purchase-dialog .stepper button{width:32px;height:32px;border-radius:8px;background:#7dbc301c}
+html[data-fatya-store][data-theme=dark] #app .payment-method-grid button{background:#103d31;color:#f4f9f1;border-color:#84b84b!important}
+html[data-fatya-store][data-theme=dark] #app .payment-method-grid button[aria-pressed=true]{background:#9bd43b;color:#034037;border-color:#c3ee4c!important}
+html[data-fatya-store][data-theme=dark] #app .card-purchase-dialog .stepper{background:#103d31}
+@media(max-width:360px){html[data-fatya-store] #app .payment-method-grid button{grid-template-columns:1fr 20px;gap:5px;padding:8px}html[data-fatya-store] #app .payment-logo{grid-column:1;justify-self:center}html[data-fatya-store] #app .payment-method-grid button>span[dir=ltr]{grid-column:1;grid-row:2}html[data-fatya-store] #app .payment-selection-indicator{grid-column:2;grid-row:1/3}}
+@media(prefers-reduced-motion:reduce){html[data-fatya-store] #app .payment-method-grid button{transition:none}}

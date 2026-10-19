@@ -293,5 +293,14 @@ export default {
   "تم الرد": "Replied",
   "قيد التنفيذ": "Processing",
   "تم التسليم": "Delivered",
-  "عارض صور": "slideshow"
+  "عارض صور": "slideshow",
+  "ارشيف الطلبات": "Order archive",
+  "رقم الطلب": "Order number",
+  "طريقة الدفع": "Payment method",
+  "كل طلباتك السابقة وتفاصيل بطاقاتك، بمكان واحد.": "Your past orders and card details, all in one place.",
+  "أرشيفك بانتظار أول بطاقة": "Your archive awaits your first card",
+  "بعد الشراء، تلقى طلبك هنا وتگدر ترجع لتفاصيله بأي وقت.": "After a purchase, find your order here and revisit its details anytime.",
+  "البحث في ارشيف الطلبات": "Search order archive",
+  "ابحث باسم البطاقة أو رقم الطلب": "Search by card name or order number",
+  "ماكو طلبات مطابقة للبحث.": "No orders match your search."
 };
