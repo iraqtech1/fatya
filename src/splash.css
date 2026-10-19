@@ -4,44 +4,54 @@
 .ms-stage>.masal-mark{width:70px;height:70px}
 .masal-splash{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,#0a8b612c,transparent 65%),linear-gradient(145deg,#061a14,#023b33);color:#fff;overflow:hidden;isolation:isolate;transition:opacity .26s ease,visibility .26s ease}
 .masal-splash.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
-.masal-splash .splash-scene{--orbit-x:clamp(125px,37vw,185px);--orbit-y:clamp(140px,38vw,185px);position:relative;width:min(94vw,460px);height:min(108vw,480px);scale:1;animation:none;display:grid;place-items:center}
+.masal-splash .splash-scene{--orbit-x:clamp(96px,29vw,180px);--orbit-y:clamp(168px,44vw,210px);position:relative;width:min(94vw,460px);height:min(108vw,480px);scale:1;animation:none;display:grid;place-items:center}
 .masal-splash .splash-logo{position:relative;width:clamp(176px,52vw,240px);height:auto;aspect-ratio:536/567;z-index:2;animation:fatya-logo-arrive .65s cubic-bezier(.16,1,.3,1) both}
 .splash-logo-color,.splash-logo-lettering{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain}
-.masal-splash .splash-logo-color{filter:none;opacity:1}
+.masal-splash .splash-logo-color{filter:none;opacity:1;overflow:visible}
 .masal-splash .splash-logo-lettering{clip-path:inset(59.5% 0 0);filter:brightness(0) invert(1);opacity:.97}
-.masal-splash .splash-glow{position:absolute;width:min(110vw,720px);aspect-ratio:1;background:radial-gradient(circle,#0a8b612e,transparent 66%);border-radius:50%;animation:fatya-ambient 4.2s ease both}
-.splash-orbit-guide{position:absolute;inset:7% 5%;border:1px solid #7dbc3020;border-radius:50%;opacity:0;animation:fatya-orbit-guide 3.6s .4s ease both}
-.splash-launch-glow{position:absolute;left:50%;top:calc(50% - 105px);width:85px;height:24px;translate:-50% -50%;background:radial-gradient(ellipse,#c3ee4c75,transparent 70%);opacity:0;animation:fatya-launch 1.6s .35s ease both}
-.splash-flight{position:absolute;left:calc(50% - 27px);top:calc(50% - 38px);width:54px;height:76px;z-index:3;opacity:0;pointer-events:none;will-change:transform,opacity;animation:fatya-card-flight 2.65s calc(.55s + var(--card-index)*.24s) cubic-bezier(.35,0,.25,1) both}
-.splash-card{height:100%;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:7px 5px;border:1px solid #7dbc30;border-radius:9px;color:#f2f7ef;background:linear-gradient(145deg,#0a8b61,#034037 75%);overflow:hidden;position:relative;direction:ltr}
-.splash-card::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,#ffffff18 30%,#ffffff05 60%,transparent 60%);pointer-events:none}
-.splash-card-1,.splash-card-3{background:linear-gradient(145deg,#c3ee4c,#7dbc30);color:#034037}
-.splash-card-brand{font-size:7px;letter-spacing:1.3px;line-height:1}
-.splash-card-label{font-size:6px;letter-spacing:1px;line-height:1}
-.splash-card-chip{align-self:flex-start;width:11px;height:8px;border:1px solid currentColor;border-radius:2px;opacity:.65}
-.splash-caption{position:absolute;top:calc(50% + 160px);left:0;right:0;display:grid;justify-items:center;gap:17px;color:#c6dccf;font-size:12px;letter-spacing:0;animation:fatya-caption 1s .45s both}
-.splash-caption i{width:68px;height:2px;border-radius:2px;background:#c3ee4c;transform-origin:center;animation:fatya-progress 3.8s ease both}
+.masal-splash .splash-glow{position:absolute;width:min(110vw,720px);aspect-ratio:1;background:radial-gradient(circle,#0a8b612e,transparent 66%);border-radius:50%;animation:fatya-ambient 7.1s ease both}
+.splash-orbit-guide{position:absolute;inset:7% 5%;border:1px solid #7dbc3020;border-radius:50%;opacity:0;animation:fatya-orbit-guide 6.5s .4s ease both}
+.splash-launch-glow{position:absolute;left:50%;top:calc(50% - 105px);width:85px;height:24px;translate:-50% -50%;background:radial-gradient(ellipse,#c3ee4c75,transparent 70%);opacity:0;animation:fatya-launch 2.6s .65s ease both}
+.splash-box-lid{transform-box:view-box;transform-origin:74% 12%;animation:fatya-lid-open 6.8s cubic-bezier(.4,0,.2,1) both}
+.splash-box-interior{opacity:0;animation:fatya-box-interior 6.8s both}
+.splash-flight{position:absolute;left:50%;top:50%;width:clamp(78px,21vw,98px);aspect-ratio:1.586;z-index:3;opacity:0;pointer-events:none;will-change:transform,opacity;animation:fatya-card-flight 4s calc(1.2s + var(--card-index)*.3s) cubic-bezier(.35,0,.25,1) both}
+.splash-card{height:100%;width:100%;display:block;padding:8px;border:1px solid #ffffff80;border-radius:8px;overflow:hidden;position:relative;direction:ltr}
+.splash-card::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 35%,#ffffff18 35%,#ffffff05 65%,transparent 65%);pointer-events:none}
+.splash-gift-apple{background:linear-gradient(145deg,#fff,#dde7e4);color:#14291f}
+.splash-gift-playstation{background:linear-gradient(145deg,#0872d5,#003da1 75%);color:#fff}
+.splash-gift-google{background:linear-gradient(145deg,#fff,#f0f3f6);color:#394551}
+.splash-gift-steam{background:linear-gradient(145deg,#1b5065,#14233a 75%);color:#fff}
+.splash-gift-caption{position:absolute;top:6px;left:8px;font-size:5px;letter-spacing:1.2px;line-height:1}
+.splash-gift-icon{position:absolute;left:8px;top:17px;width:23px;height:23px}
+.splash-gift-brand{position:absolute;left:8px;bottom:7px;font-size:8px;letter-spacing:-.1px;line-height:1;white-space:nowrap}
+.splash-gift-value{position:absolute;right:7px;top:8px;font-size:13px;line-height:1}
+.splash-gift-steam .splash-gift-brand{letter-spacing:1px}
+.splash-caption{position:absolute;top:calc(50% + 235px);left:0;right:0;display:grid;justify-items:center;gap:17px;color:#c6dccf;font-size:12px;letter-spacing:0;animation:fatya-caption 1s .45s both}
+.splash-caption i{width:68px;height:2px;border-radius:2px;background:#c3ee4c;transform-origin:center;animation:fatya-progress 6.8s ease both}
 .masal-splash .splash-skip{position:absolute;bottom:max(26px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);border:1px solid #7dbc3066;border-radius:24px;padding:8px 24px;background:#ffffff05;color:#d4e7d8;font-size:12px}
 .splash-skip:focus-visible{outline:2px solid #c3ee4c;outline-offset:5px}
 @keyframes fatya-logo-arrive{from{opacity:0;transform:translateY(14px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
 /* Every card starts at the F lid, completes one orbit, then returns to that lid. */
 @keyframes fatya-card-flight{
- 0%{opacity:0;transform:translate(0,-100px) scale(.08) rotate(-12deg)}
- 10%{opacity:1;transform:translate(0,calc(var(--orbit-y)*-1)) scale(.85) rotate(-10deg)}
- 25%{opacity:1;transform:translate(calc(var(--orbit-x)*.85),calc(var(--orbit-y)*-.65)) scale(.92) rotate(14deg)}
- 40%{opacity:1;transform:translate(var(--orbit-x),calc(var(--orbit-y)*.2)) scale(1) rotate(22deg)}
- 55%{opacity:1;transform:translate(calc(var(--orbit-x)*.4),calc(var(--orbit-y)*.85)) scale(1) rotate(8deg)}
- 70%{opacity:1;transform:translate(calc(var(--orbit-x)*-.75),calc(var(--orbit-y)*.65)) scale(.92) rotate(-16deg)}
- 85%{opacity:1;transform:translate(calc(var(--orbit-x)*-1),calc(var(--orbit-y)*-.45)) scale(.82) rotate(-22deg)}
- 94%{opacity:.8;transform:translate(-20px,-140px) scale(.65) rotate(-10deg)}
- 100%{opacity:0;transform:translate(0,-100px) scale(.08) rotate(0)}
+ 0%{opacity:0;transform:translate(-50%,calc(-50% - 88px)) scale(.12) rotate(-12deg)}
+ 9%{opacity:1;transform:translate(-50%,calc(-50% - 118px)) scale(.65) rotate(-8deg)}
+ 18%{opacity:1;transform:translate(-50%,calc(-50% - var(--orbit-y))) scale(.94) rotate(-5deg)}
+ 32%{opacity:1;transform:translate(calc(-50% + var(--orbit-x)*.85),calc(-50% - var(--orbit-y)*.65)) scale(.96) rotate(12deg)}
+ 46%{opacity:1;transform:translate(calc(-50% + var(--orbit-x)),calc(-50% + var(--orbit-y)*.2)) scale(1) rotate(16deg)}
+ 60%{opacity:1;transform:translate(calc(-50% + var(--orbit-x)*.4),calc(-50% + var(--orbit-y)*.85)) scale(1) rotate(6deg)}
+ 74%{opacity:1;transform:translate(calc(-50% - var(--orbit-x)*.75),calc(-50% + var(--orbit-y)*.85)) scale(.96) rotate(-12deg)}
+ 86%{opacity:1;transform:translate(calc(-50% - var(--orbit-x)),calc(-50% - var(--orbit-y)*.45)) scale(.94) rotate(-16deg)}
+ 94%{opacity:1;transform:translate(calc(-50% - 20px),calc(-50% - 142px)) scale(.65) rotate(-8deg)}
+ 100%{opacity:0;transform:translate(-50%,calc(-50% - 88px)) scale(.12) rotate(0)}
 }
+@keyframes fatya-lid-open{0%,8%,100%{transform:translate(0,0) rotate(0) skewX(0)}20%,90%{transform:translate(-7px,-44px) rotate(-11deg) skewX(-8deg)}}
+@keyframes fatya-box-interior{0%,8%,100%{opacity:0}16%,93%{opacity:1}}
 @keyframes fatya-launch{0%,100%{opacity:0;scale:.5}30%,65%{opacity:1;scale:1}}
 @keyframes fatya-orbit-guide{0%,100%{opacity:0}20%,80%{opacity:.6}}
 @keyframes fatya-ambient{from{opacity:0;scale:.7}30%,80%{opacity:1;scale:1}to{opacity:.8;scale:1.08}}
 @keyframes fatya-caption{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fatya-progress{from{scale:0 1}to{scale:1 1}}
 .masal-splash.is-reduced *{animation:none!important;transition:none!important}
-.masal-splash.is-reduced :is(.splash-flight,.splash-orbit-guide,.splash-launch-glow){display:none}
-@media(prefers-reduced-motion:reduce){.masal-splash,.masal-splash *{animation:none!important;transition:none!important}.masal-splash :is(.splash-flight,.splash-orbit-guide,.splash-launch-glow){display:none}}
+.masal-splash.is-reduced :is(.splash-flight,.splash-orbit-guide,.splash-launch-glow,.splash-box-interior){display:none}
+@media(prefers-reduced-motion:reduce){.masal-splash,.masal-splash *{animation:none!important;transition:none!important}.masal-splash :is(.splash-flight,.splash-orbit-guide,.splash-launch-glow,.splash-box-interior){display:none}}
 @media(max-height:600px){.masal-splash .splash-scene{scale:.75}.splash-skip{bottom:12px}}

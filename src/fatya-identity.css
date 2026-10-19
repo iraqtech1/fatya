@@ -87,5 +87,5 @@ html[data-fatya-store] .nav-progress-ring{stroke:#0a8b61!important}
 html[data-fatya-store][data-theme=dark] .nav-progress-ring{stroke:#c3ee4c!important}
 /* Splash cards use their own contrast rather than the general component frames. */
 html[data-fatya-store] #app .splash-orbit-guide{border-color:#7dbc3020!important}
-html[data-fatya-store] #app .splash-card{border-color:#7dbc30!important}
+html[data-fatya-store] #app .splash-card{border-color:#ffffff80!important}
 html[data-fatya-store] #app .splash-card-chip{border-color:currentColor!important}
