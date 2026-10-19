@@ -3,8 +3,8 @@
 .brand-mark svg,.admin-brand>span svg{width:30px;height:30px}
 .hero,.auth-story{background:linear-gradient(135deg,#061a14 0%,#1a684f 62%,#56bd9c 100%)}
 .admin-hero{background:linear-gradient(125deg,#023b33,#034037 70%,#5bc3a2)}
-.ms-site{font-family:'Readex Pro',sans-serif;font-weight:700;--ms-primary:#034037;--ms-light:#5bc3a2}
-.ms-site button,.ms-site input,.ms-site textarea,.ms-site select,.ms-site h1,.ms-site h2,.ms-site h3,.ms-site .ms-modal{font-family:'Readex Pro',sans-serif;font-weight:700}
+.ms-site{font-family:'Cairo',sans-serif;font-weight:700;--ms-primary:#034037;--ms-light:#5bc3a2}
+.ms-site button,.ms-site input,.ms-site textarea,.ms-site select,.ms-site h1,.ms-site h2,.ms-site h3,.ms-site .ms-modal{font-family:'Cairo',sans-serif;font-weight:700}
 .ms-site .ms-hero{background:linear-gradient(180deg,#023b33 0%,#034037 48%,#8bd3bc 80%,#fff 100%)}
 .ms-site .ms-hero h1 em{color:#e7fdf6}
 .ms-site .ms-hero .ms-stat strong,.ms-site .ms-hero .ms-stat>span{color:white}

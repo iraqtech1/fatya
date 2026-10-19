@@ -13,7 +13,7 @@ The storefront and dashboard use the supplied green visual identity while retain
 
 Use lime sparingly for selection and emphasis. Use forest green text on pale surfaces and light text on dark surfaces. Error and destructive states keep their semantic colors; product and payment-provider artwork keeps its original identity.
 
-Typography: locally served Readex Pro, weights 400–700. The green logo artwork was extracted from the supplied identity PDF. Versioned green icon filenames refresh browser, iOS and installed PWA branding. The maskable icon keeps the F mark inside the central safe area.
+Typography: locally served Cairo Bold, weight 700 across all screens and controls. The green logo artwork was extracted from the supplied identity PDF. Versioned green icon filenames refresh browser, iOS and installed PWA branding. The maskable icon keeps the F mark inside the central safe area.
 
 `src/fatya-identity.css` defines the shared palette, typography and final theme treatments. Storefront-specific rules stay scoped with `data-fatya-store`; dashboard and storefront retain independent saved theme preferences.
 

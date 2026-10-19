@@ -1,19 +1,16 @@
 /* Fatya green identity. Palette and type from the supplied visual identity guide. */
-@font-face{font-family:'Readex Pro';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/readex-pro-400.ttf') format('truetype')}
-@font-face{font-family:'Readex Pro';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/readex-pro-500.ttf') format('truetype')}
-@font-face{font-family:'Readex Pro';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/readex-pro-600.ttf') format('truetype')}
-@font-face{font-family:'Readex Pro';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/readex-pro-700.ttf') format('truetype')}
+@font-face{font-family:'Cairo';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/cairo-bold.ttf') format('truetype')}
 :root{
  --fatya-green:#034037;--fatya-emerald:#0a8b61;--fatya-lime:#7dbc30;
  --fatya-lime-light:#c3ee4c;--fatya-night:#061a14;--fatya-forest:#023b33;
  --fatya-surface:#f7faf4;--fatya-ink:#034037;--fatya-muted:#526f62;
  --fatya-line:#bfd1b6;--wine:var(--fatya-green);
- font-family:'Readex Pro',sans-serif;font-weight:400;
+ font-family:'Cairo',sans-serif;font-weight:700;
 }
-body{font-weight:400}
-button,input,textarea,select{font-weight:500}
+body{font-weight:700}
+button,input,textarea,select{font-weight:700}
 h1,h2,h3,strong,b{font-weight:700}
-.admin-shell,.ms-site{font-weight:400}
+.admin-shell,.ms-site{font-weight:700}
 .admin-shell{--admin-wine:var(--fatya-green);--admin-dark:var(--fatya-forest);--admin-rose:#e5efdf;--admin-border:var(--fatya-line);--admin-muted:var(--fatya-muted)}
 html[data-fatya-store]{--wine:var(--fatya-green);--muted:var(--fatya-muted);--border:var(--fatya-line);--fatya-frame:#a5bc86;--field-surface:#f7faf4;--field-ink:#034037;--field-muted:#60796c;--field-caret:#0a8b61}
 html[data-fatya-store]:not([data-theme=dark]){
@@ -27,7 +24,7 @@ html[data-fatya-store] :is(.hero,.auth-story),.admin-shell .admin-hero,.masal-lo
 html[data-fatya-store] :is(.hero h2 span,.hero-label),.admin-hero .admin-eyebrow{color:#c3ee4c}
 html[data-fatya-store] .hero p{color:#d4e7d8}
 html[data-fatya-store] .primary,.admin-primary,.masal-login-submit{background:linear-gradient(115deg,#034037,#0a8b61);color:#fff}
-html[data-fatya-store] .auth-action.primary{font-weight:600}
+html[data-fatya-store] .auth-action.primary{font-weight:700}
 html[data-fatya-store] .auth-identity>span{color:#526f62}
 html[data-fatya-store] .phone-auth .auth-logo{width:152px;height:152px;align-items:center;margin-bottom:8px}
 html[data-fatya-store] .phone-auth .auth-logo .store-brand-mark{width:142px;height:150px;transform:none}
@@ -71,3 +68,6 @@ html:not([data-theme=dark]) .admin-sidebar nav button.active{color:#034037}
 .masal-login-field{--login-field:#fff;--login-ink:#034037}
 html[data-theme=dark] .masal-login-field{--login-field:#0c2d23;--login-ink:#f2f7ef}
 .masal-login-field input:-webkit-autofill{box-shadow:0 0 0 1000px var(--login-field) inset!important;-webkit-text-fill-color:var(--login-ink)!important;caret-color:var(--login-ink)}
+
+/* One consistent Cairo Bold face across every screen and control. */
+html,body,#app,#app *,#app *::before,#app *::after{font-family:'Cairo',sans-serif!important;font-weight:700!important}
