@@ -13,6 +13,13 @@
 @media(max-width:420px){.admin-shell .admin-stats{grid-template-columns:minmax(0,1fr)}.admin-shell .admin-content{padding:12px}.admin-shell .admin-header{height:auto;min-height:76px;flex-wrap:wrap;gap:8px;padding:10px 12px!important}.admin-shell .admin-header>div{min-width:0;flex:1 1 auto}.admin-shell .admin-header-right{gap:6px;justify-content:flex-end}.admin-shell .admin-signout{padding:8px;font-size:10px}.admin-shell .admin-search{min-width:0;max-width:100%}.admin-shell .admin-hero>div{min-width:0;max-width:100%}}
 
 .admin-shell td > .admin-row-action + .admin-row-action{margin-inline-start:14px}
+@media(max-width:700px){
+ .admin-shell .admin-search{flex:1 1 100%;width:100%;min-width:0;max-width:100%}
+ .admin-shell .admin-search input{flex:1;width:100%;min-width:0}
+ .admin-shell .admin-toolbar .searchable-filter{flex:1 1 100%;width:100%;min-width:0}
+ .admin-shell .searchable-filter-panel{inset-inline:0;width:100%;max-width:100%}
+ .admin-shell .searchable-filter-search input{width:100%;min-width:0}
+}
 
 .admin-shell td > .admin-row-action{background:#d8ede6;color:#1f5f4b}
 .admin-shell td > .admin-row-action:hover{background:#c4e4da}

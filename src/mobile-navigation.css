@@ -4,10 +4,10 @@
 .store-account dl{margin:24px 0}.store-account dl>div{padding:14px 0;border-bottom:1px solid var(--border)}
 .store-account dt{color:var(--muted);font-size:12px;margin-bottom:8px}.store-account dd{margin:0;font-size:14px;overflow-wrap:anywhere;text-align:right}
 @media(max-width:700px){
- .app-shell{position:fixed;inset:0;height:100%;min-height:0!important;overflow:hidden}
+ .app-shell{--mobile-safe-bottom:env(safe-area-inset-bottom,0px);--mobile-dock-bottom:clamp(8px,calc(var(--mobile-safe-bottom) - 24px),10px);position:fixed;inset:0;height:100%;min-height:0!important;overflow:hidden}
  .app-shell>main{height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
- .app-shell nav.bottom-nav{position:absolute;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:max(8px,min(env(safe-area-inset-bottom,0px),34px));width:auto;transform:none}
- .app-shell main .content{padding-bottom:calc(126px + env(safe-area-inset-bottom,0px))}
+ .app-shell nav.bottom-nav{position:absolute;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:var(--mobile-dock-bottom);width:auto;transform:none}
+ .app-shell main .content{padding-bottom:calc(104px + var(--mobile-dock-bottom))}
  .app-shell .toast{bottom:calc(115px + env(safe-area-inset-bottom,0px))}
 }
 @media(max-width:360px){.app-shell nav.bottom-nav{left:8px;right:8px}}
