@@ -101,3 +101,7 @@ html[data-fatya-store][data-theme=dark] #app .category-tiles>button.selected .ca
 html[data-fatya-store] #app :is(.product,.brands button,.category-tiles>button):hover .category-tile-icon,
 html[data-fatya-store] #app :is(.product,.brands button):is(:hover,:focus-visible),
 html #app .admin-stats>button:is(:hover,.is-selected){border-color:var(--fatya-card-edge-active)!important}
+
+/* Brand intro: independent muted symbol frames and one clean pulse. */
+html[data-fatya-store] #app .splash-symbol-flight i{border-color:#7dbc3070!important}
+html[data-fatya-store] #app .splash-reveal-pulse{border-color:#a9df49!important}

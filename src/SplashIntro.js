@@ -1,14 +1,15 @@
 import {t} from './i18n.js';
 import {ref,onMounted,onBeforeUnmount,nextTick} from 'vue/dist/vue.esm-bundler.js';
-import {Apple,Gamepad2,Twitch,MonitorPlay} from 'lucide-vue-next';
+import {CreditCard,Smartphone,Gamepad2,Monitor,Cpu} from 'lucide-vue-next';
 import './splash.css';
 export default {
-  components:{Apple,Gamepad2,Twitch,MonitorPlay},
+  components:{CreditCard,Smartphone,Gamepad2,Monitor,Cpu},
   props:{enabled:{type:Boolean,default:true}},
   setup(props){
     const visible=ref(false),leaving=ref(false),reduced=ref(false),skip=ref(null);
     const logo=import.meta.env.BASE_URL+'brand/fatya-logo-smooth.svg';
-    const cards=[{theme:'apple',brand:'Apple',value:'$25',icon:Apple},{theme:'playstation',brand:'PlayStation',value:'$50',icon:Gamepad2},{theme:'steam',brand:'STEAM',value:'$20',icon:Gamepad2},{theme:'twitch',brand:'Twitch',value:'$25',icon:Twitch},{theme:'xbox',brand:'Xbox',value:'$50',icon:Gamepad2},{theme:'appstore',brand:'App Store',value:'$25',icon:MonitorPlay}];
+    const symbols=[CreditCard,Smartphone,Gamepad2,Monitor,Cpu];
+    const sparks=Array.from({length:12},(_,i)=>i);
     let timer,exitTimer,content,previousOverflow,previousInert;
     function restore(){if(content)content.inert=previousInert;if(previousOverflow!==undefined)document.body.style.overflow=previousOverflow;}
     function finish(){
@@ -30,27 +31,16 @@ export default {
       await nextTick();skip.value?.focus({preventScroll:true});
     });
     onBeforeUnmount(()=>{clearTimeout(timer);clearTimeout(exitTimer);restore();});
-    return {t,visible,leaving,reduced,skip,logo,cards,finish};
+    return {t,visible,leaving,reduced,skip,logo,symbols,sparks,finish};
   },
   template:`<div v-if="visible" class="masal-splash" :class="{'is-leaving':leaving,'is-reduced':reduced}" role="dialog" aria-modal="true" :aria-label="t('مرحباً بك في فاتيا')" @keydown.esc="finish">
     <div class="splash-glow" aria-hidden="true"></div>
     <div class="splash-scene" aria-hidden="true">
-      <div class="splash-orbit-guide"></div>
-      <div class="splash-launch-glow"></div>
-      <div class="splash-logo">
-        <svg class="splash-logo-color" viewBox="0 0 536 567" fill="none" aria-hidden="true"><defs><clipPath id="fatya-splash-lid"><path d="M116 119C116 91 128 71 151 63L325 14Q337 10 349 15L414 36Q424 40 424 49L424 65L348 87L337 89L337 91L285 106L212 128L116 155Z"/></clipPath><mask id="fatya-splash-body" maskUnits="userSpaceOnUse" x="0" y="0" width="536" height="567" mask-type="luminance"><rect width="536" height="567" fill="white"/><path d="M116 119C116 91 128 71 151 63L325 14Q337 10 349 15L414 36Q424 40 424 49L424 65L348 87L337 89L337 91L285 106L212 128L116 155Z" fill="black"/></mask><linearGradient id="fatya-pocket" x1="250" y1="40" x2="270" y2="140" gradientUnits="userSpaceOnUse"><stop stop-color="#020e0b"/><stop offset="1" stop-color="#0a4b36"/></linearGradient></defs><path class="splash-box-interior" d="M116 119C116 91 128 71 151 63L325 14Q337 10 349 15L414 36Q424 40 424 49L424 65L348 87L337 89L337 91L285 106L212 128L116 155Z" fill="url(#fatya-pocket)" stroke="#0a8b61" stroke-width="2"/><image :href="logo" width="536" height="567" mask="url(#fatya-splash-body)"/><g class="splash-box-lid"><image :href="logo" width="536" height="567" clip-path="url(#fatya-splash-lid)"/></g></svg>
-
-      </div>
-      <div class="splash-card-orbit">
-      <div v-for="(card,i) in cards" :key="card.theme" class="splash-flight" :style="{'--card-index':i}">
-        <div class="splash-card" :class="'splash-gift-'+card.theme">
-          <span class="splash-gift-caption">GIFT CARD</span>
-          <span v-if="card.theme==='appstore'" class="splash-gift-icon splash-platform-letter">A</span>
-          <component v-else :is="card.icon" class="splash-gift-icon" :size="23" :stroke-width="1.7"/>
-          <span class="splash-gift-brand">{{card.brand}}</span><span class="splash-gift-value">{{card.value}}</span>
-        </div>
-      </div>
-      </div>
+      <div class="splash-seed splash-seed-top"></div><div class="splash-seed splash-seed-bottom"></div>
+      <div class="splash-reveal-pulse"></div>
+      <div class="splash-sparks"><span v-for="i in sparks" :key="i" :style="{'--spark-index':i}" :class="'spark-shape-'+(i%3)"></span></div>
+      <div class="splash-logo"><img class="splash-logo-image" :src="logo" alt="" width="536" height="567" fetchpriority="high" draggable="false"/></div>
+      <div class="splash-symbol-orbit"><span v-for="(symbol,i) in symbols" :key="i" class="splash-symbol-flight" :style="{'--symbol-index':i}"><i><component :is="symbol" :size="23" :stroke-width="1.7"/></i></span></div>
       <div class="splash-caption"><span>بطاقاتك، بمكان واحد</span><i></i></div>
     </div>
     <button ref="skip" class="splash-skip" @click="finish">{{t('تخطي')}}</button>
