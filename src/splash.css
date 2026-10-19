@@ -14,22 +14,22 @@
 .splash-launch-glow{position:absolute;left:50%;top:calc(50% - 105px);width:85px;height:24px;translate:-50% -50%;background:radial-gradient(ellipse,#c3ee4c75,transparent 70%);opacity:0;animation:fatya-launch 2.6s .65s ease both}
 .splash-box-lid{transform-box:view-box;transform-origin:74% 12%;animation:fatya-lid-open 6.8s cubic-bezier(.4,0,.2,1) both}
 .splash-box-interior{opacity:0;animation:fatya-box-interior 6.8s both}
-/* A single clock keeps all four cards exactly one quarter turn apart. */
+/* A single clock keeps all eight cards exactly one eighth turn apart. */
 @property --splash-orbit-turn{syntax:'<angle>';initial-value:0deg;inherits:true}
 @property --splash-spread{syntax:'<number>';initial-value:0;inherits:true}
 @property --splash-card-scale{syntax:'<number>';initial-value:0;inherits:true}
 .splash-card-orbit{position:absolute;inset:0;z-index:3;pointer-events:none;animation:fatya-orbit-spread 5.2s 1.2s both,fatya-orbit-turn 3.6s 2s linear both}
-.splash-flight{--card-angle:calc(var(--splash-orbit-turn) + var(--card-index)*90deg - 90deg);position:absolute;left:50%;top:50%;width:clamp(78px,21vw,98px);aspect-ratio:1.586;pointer-events:none;transform:translate(calc(-50% + cos(var(--card-angle))*var(--orbit-x)*var(--splash-spread)),calc(-50% + sin(var(--card-angle))*var(--orbit-y)*var(--splash-spread) - (1 - var(--splash-spread))*100px)) scale(var(--splash-card-scale));will-change:transform}
+.splash-flight{--card-angle:calc(var(--splash-orbit-turn) + var(--card-index)*45deg - 90deg);position:absolute;left:50%;top:50%;width:clamp(60px,17vw,84px);aspect-ratio:1.586;pointer-events:none;transform:translate(calc(-50% + cos(var(--card-angle))*var(--orbit-x)*var(--splash-spread)),calc(-50% + sin(var(--card-angle))*var(--orbit-y)*var(--splash-spread) - (1 - var(--splash-spread))*100px)) scale(var(--splash-card-scale));will-change:transform}
 .splash-card{height:100%;width:100%;display:block;padding:8px;border:1px solid #ffffff80;border-radius:8px;overflow:hidden;position:relative;direction:ltr}
 .splash-card::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 35%,#ffffff18 35%,#ffffff05 65%,transparent 65%);pointer-events:none}
 .splash-gift-apple{background:linear-gradient(145deg,#fff,#dde7e4);color:#14291f}
 .splash-gift-playstation{background:linear-gradient(145deg,#0872d5,#003da1 75%);color:#fff}
 .splash-gift-google{background:linear-gradient(145deg,#fff,#f0f3f6);color:#394551}
 .splash-gift-steam{background:linear-gradient(145deg,#1b5065,#14233a 75%);color:#fff}
-.splash-gift-caption{position:absolute;top:6px;left:8px;font-size:5px;letter-spacing:1.2px;line-height:1}
-.splash-gift-icon{position:absolute;left:8px;top:17px;width:23px;height:23px}
-.splash-gift-brand{position:absolute;left:8px;bottom:7px;font-size:8px;letter-spacing:-.1px;line-height:1;white-space:nowrap}
-.splash-gift-value{position:absolute;right:7px;top:8px;font-size:13px;line-height:1}
+.splash-gift-caption{position:absolute;top:6px;left:8px;font-size:4px;letter-spacing:1px;line-height:1}
+.splash-gift-icon{position:absolute;left:7px;top:13px;width:21px;height:21px}
+.splash-gift-brand{position:absolute;left:7px;bottom:5px;font-size:6.5px;letter-spacing:-.1px;line-height:1;white-space:nowrap}
+.splash-gift-value{position:absolute;right:6px;top:7px;font-size:11px;line-height:1}
 .splash-gift-steam .splash-gift-brand{letter-spacing:1px}
 .splash-caption{position:absolute;top:calc(50% + 134px);left:0;right:0;display:grid;justify-items:center;gap:17px;color:#c6dccf;font-size:12px;letter-spacing:0;animation:fatya-caption 1s .45s both}
 .splash-caption i{width:68px;height:2px;border-radius:2px;background:#c3ee4c;transform-origin:center;animation:fatya-progress 6.8s ease both}
@@ -54,3 +54,15 @@
 .masal-splash.is-reduced :is(.splash-flight,.splash-orbit-guide,.splash-launch-glow,.splash-box-interior){display:none}
 @media(prefers-reduced-motion:reduce){.masal-splash,.masal-splash *{animation:none!important;transition:none!important}.masal-splash :is(.splash-flight,.splash-orbit-guide,.splash-launch-glow,.splash-box-interior){display:none}}
 @media(max-height:600px){.masal-splash .splash-scene{scale:.75}.splash-skip{bottom:12px}}
+
+.splash-gift-twitch{background:linear-gradient(135deg,#a347ff,#6622c3);color:#fff}
+.splash-gift-xbox{background:linear-gradient(135deg,#168c2e,#07551b);color:#fff}
+.splash-gift-chatgpt{background:linear-gradient(135deg,#13b68c,#087b63);color:#fff}
+.splash-gift-appstore{background:linear-gradient(135deg,#ff4a58,#b91c31);color:#fff}
+.splash-platform-letter{display:grid;place-items:center;font-size:24px;line-height:1}
+.splash-box-stack{position:absolute;inset:0;z-index:3;clip-path:inset(-35% 0 83% 0);pointer-events:none;opacity:0;animation:fatya-box-fan 7.1s both}
+.splash-stack-card{position:absolute;left:50%;top:17%;width:42px;height:31px;border-radius:4px;display:grid;place-content:center;gap:2px;border:1px solid #ffffff70;transform-origin:50% 110%;transform:translate(calc(-50% + (var(--stack-index) - 3.5)*5px),-50%) rotate(calc((var(--stack-index) - 3.5)*11deg));}
+.splash-stack-card span{font-size:4px;line-height:1}
+@keyframes fatya-box-fan{0%,10%,33%,82%,100%{opacity:0;translate:0 12px}18%,27%{opacity:1;translate:0 -5px}}
+.masal-splash.is-reduced .splash-box-stack{display:none}
+@media(prefers-reduced-motion:reduce){.masal-splash .splash-box-stack{display:none}}
