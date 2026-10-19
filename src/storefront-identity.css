@@ -1148,33 +1148,6 @@ html[data-fatya-store] .theme-scene.night .theme-scene-orb-disc {
 html[data-fatya-store] .theme-toggle.theme-scenic-toggle {
   background: #f7faf4;
 }
-html[data-fatya-store] .masal-splash {
-  background: radial-gradient(ellipse at 50% 45%,#034037,#034037 60%,#023b33);
-  color: #f7faf4;
-}
-html[data-fatya-store] .splash-glow {
-  background: radial-gradient(circle,#7dbc3014,transparent 66%);
-}
-html[data-fatya-store] .splash-logo {
-  filter: drop-shadow(0 12px 22px #061a1440);
-}
-html[data-fatya-store] .splash-wordmark>span {
-  color: #c4d7b8;
-}
-html[data-fatya-store] .splash-line {
-  background: linear-gradient(90deg,transparent,#7dbc30,transparent);
-}
-html[data-fatya-store] .splash-symbols>span {
-  color: #c4d7b8;
-}
-html[data-fatya-store] .splash-skip {
-  border: 1px solid #f7faf420;
-  color: #e5efdf;
-  background: #f7faf408;
-}
-html[data-fatya-store] .splash-skip:focus-visible {
-  outline: 2px solid #7dbc30;
-}
 html[data-fatya-store] .ms-site {
   --ms-primary: #034037;
   --ms-light: #7dbc30;
@@ -1536,10 +1509,6 @@ html[data-fatya-store] .brand-mark>.store-brand-mark {
   width: 44px;
   height: 44px;
 }
-html[data-fatya-store] .splash-logo>.store-brand-mark {
-  width: 100%;
-  height: 100%;
-}
 html[data-fatya-store] .auth-logo {
   background: #061a14!important;
   border-color: #7dbc30!important;
@@ -1661,8 +1630,6 @@ html[data-fatya-store]:not([data-theme=dark]) .app-shell>.sidebar {
 /* Let the artwork alpha show through every brand placement. */
 html[data-fatya-store] .store-brand-mark{border-radius:0;background:transparent}
 html[data-fatya-store] .auth-logo{background:transparent!important;border-color:transparent!important;box-shadow:none!important}
-html[data-fatya-store] .splash-logo{width:min(72vw,330px);height:min(72vw,330px)}
-
 /* One lime frame treatment across the store, without raised shadows. */
 html[data-fatya-store]{--border:#7dbc30;--fatya-frame:#7dbc30}
 html[data-fatya-store] #app *,

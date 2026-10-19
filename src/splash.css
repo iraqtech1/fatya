@@ -1,35 +1,47 @@
-.masal-mark{display:block;width:32px;height:32px;object-fit:contain;flex-shrink:0}.brand-mark .masal-mark,.admin-brand>span .masal-mark,.ms-brand>span .masal-mark{width:34px;height:34px}.ms-stage>.masal-mark{width:70px;height:70px}.masal-splash{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 45%,#206650 0%,#104333 60%,#0d372a 100%);color:#fff;overflow:hidden;isolation:isolate;transition:opacity .26s ease,visibility .26s ease;font-family:'Cairo',sans-serif}.masal-splash.is-leaving{opacity:0;visibility:hidden;pointer-events:none}.splash-glow{position:absolute;width:min(85vw,620px);aspect-ratio:1;background:radial-gradient(circle,#b0ea5814,transparent 66%);border-radius:50%;animation:splash-glow 1.8s ease both}.splash-scene{position:relative;width:300px;height:280px;display:flex;align-items:center;justify-content:center;flex-direction:column;animation:splash-scene 3s cubic-bezier(.22,.7,.2,1) both}.splash-logo{position:relative;z-index:2;animation:splash-mark 1.3s cubic-bezier(.2,.8,.2,1) both;filter:drop-shadow(0 12px 22px #05221940)}.splash-logo .masal-mark{width:104px;height:104px}.splash-wordmark{display:flex;flex-direction:column;align-items:center;margin-top:14px;animation:splash-name 1.25s cubic-bezier(.2,.8,.2,1) both}.splash-wordmark strong{font-size:36px;font-weight:700;line-height:1.5;letter-spacing:0}.splash-wordmark>span{font-size:12px;letter-spacing:7px;padding-left:7px;color:#cded9d;margin-top:3px}.splash-line{margin-top:19px;width:52px;height:1px;background:linear-gradient(90deg,transparent,#b8e96f,transparent);animation:splash-name 1.4s ease both}.splash-symbols{position:absolute;inset:0;pointer-events:none}.splash-symbols>span{position:absolute;left:calc(50% - 12px);top:calc(43% - 12px);color:#c0e885;opacity:0;transform:rotate(calc(var(--i)*72deg)) translateX(126px) rotate(calc(var(--i)*-72deg));animation:splash-symbol 2.7s ease both;animation-delay:calc(.2s + var(--i)*.025s)}.splash-skip{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);padding:9px 24px;border:1px solid #ffffff20;border-radius:30px;color:#def0ea;background:#ffffff08;font:inherit;font-size:12px}.splash-skip:focus-visible{outline:2px solid #b8e96f;outline-offset:4px}@keyframes splash-mark{0%{opacity:0;transform:scale(.38) translateY(28px)}20%{opacity:1;transform:scale(.62) translateY(22px)}60%,100%{opacity:1;transform:scale(1) translateY(0)}}@keyframes splash-name{0%,25%{opacity:0;transform:translateY(10px);filter:blur(4px)}65%,100%{opacity:1;transform:translateY(0);filter:blur(0)}}@keyframes splash-symbol{0%,15%{opacity:0;scale:.55}40%,65%{opacity:.22;scale:1}100%{opacity:0;scale:1.15}}@keyframes splash-scene{0%,91%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.84)}}@keyframes splash-glow{0%{opacity:0;transform:scale(.5)}50%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}.masal-splash.is-reduced *{animation:none!important;transition:none!important}.masal-splash.is-reduced .splash-symbols{display:none}@media(prefers-reduced-motion:reduce){.masal-splash,.masal-splash *{animation:none!important;transition:none!important}.splash-symbols{display:none}}@media(max-width:360px){.splash-scene{width:260px}.splash-symbols>span{transform:rotate(calc(var(--i)*72deg)) translateX(112px) rotate(calc(var(--i)*-72deg))}}
-/* Transparent brand choreography: reveal, lift the cards, settle behind the chest. */
-.splash-scene{width:min(90vw,480px);height:480px;animation:splash-arrival .65s cubic-bezier(.16,1,.3,1) both}
-.splash-masks{position:absolute}
-.splash-logo{width:min(72vw,330px);height:min(72vw,330px);animation:splash-arrival .8s cubic-bezier(.16,1,.3,1) both;position:relative;z-index:2}
-.splash-logo>div{position:absolute;inset:0}
-.splash-logo .store-brand-mark{width:100%;height:100%;border-radius:0;object-fit:contain}
-.splash-chest-shell{clip-path:url(#splash-shell)}
-.splash-chest-cards{clip-path:polygon(25% 20.5%,75% 20.5%,75% 42.5%,25% 42.5%);animation:splash-card-arrival 2.7s cubic-bezier(.2,.7,.25,1) both}
-.splash-chest-front{clip-path:polygon(0 42%,16% 39%,44% 43%,44% 40%,55% 40%,55% 43%,83% 39%,100% 42%,100% 100%,0 100%);z-index:3}
-.splash-wordmark{margin-top:0;animation:splash-name 1.8s ease both;position:relative;z-index:3}
-.splash-wordmark strong{font-size:29px}.splash-wordmark>span{font-size:10px;letter-spacing:8px}
-.splash-orbit-ring{position:absolute;top:31px;left:50%;translate:-50% 0;width:min(84vw,410px);aspect-ratio:1;border:1px solid #c0e8851f;border-radius:50%;transform:rotateX(22deg);box-shadow:0 0 60px #c0e88506,inset 0 0 60px #c0e88506;animation:splash-arrival 1.2s ease both}
-.splash-symbols{inset:0;z-index:1;animation:splash-orbit 12s linear infinite}
-.splash-symbols>span{top:calc(47% - 23px);left:calc(50% - 23px);width:46px;height:46px;transform:rotate(calc(var(--i)*72deg)) translateY(clamp(-205px,-42vw,-148px)) rotate(calc(var(--i)*-72deg));animation:splash-orbit-item 3.5s ease both;animation-delay:calc(var(--i)*.07s)}
-.splash-symbols i{display:grid;place-items:center;width:100%;height:100%;border:1px solid #c7ef8a55;border-radius:14px;background:linear-gradient(145deg,#c0e88521,#ffffff05);box-shadow:0 8px 24px #061a1426,inset 0 1px #ffffff18;animation:splash-counter-orbit 12s linear infinite;color:#d2f49e}
-.splash-symbols>span:nth-child(3n+1) i{background:linear-gradient(145deg,#2b896b66,#10513d66);border-radius:9px;width:40px;height:53px}
-.splash-glow{width:min(110vw,720px);animation:splash-ambient 3.5s ease both;background:radial-gradient(circle,#b0ea5824,transparent 66%)}
-.splash-line{width:100px;height:2px;transform-origin:right;animation:splash-progress 3.4s ease both}
-@keyframes splash-arrival{from{opacity:0;transform:translateY(22px) scale(.86);filter:blur(6px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
-@keyframes splash-card-arrival{0%,15%{opacity:0;transform:translateY(-85px) scale(.82)}34%{opacity:1;transform:translateY(-65px) scale(1.04)}52%{opacity:1;transform:translateY(-72px) scale(1.04)}78%{opacity:1;transform:translateY(6px) scale(.98)}90%,100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes splash-orbit{to{rotate:22deg}}@keyframes splash-counter-orbit{to{rotate:-22deg}}
-@keyframes splash-orbit-item{0%,8%{opacity:0;scale:.4}28%,84%{opacity:1;scale:1}100%{opacity:.3;scale:.85}}
-@keyframes splash-ambient{0%{opacity:0;scale:.6}40%,80%{opacity:1;scale:1}100%{opacity:.6;scale:1.1}}
-@keyframes splash-progress{from{scale:0 1;opacity:0}25%{opacity:1}to{scale:1 1;opacity:1}}
-.masal-splash.is-reduced .splash-chest-shell{clip-path:none}.masal-splash.is-reduced :is(.splash-chest-cards,.splash-chest-front,.splash-orbit-ring){display:none}
-@media(prefers-reduced-motion:reduce){.splash-chest-shell{clip-path:none}.splash-chest-cards,.splash-chest-front,.splash-orbit-ring{display:none}}
-@media(max-width:360px){.splash-scene{height:420px}.splash-symbols>span{transform:rotate(calc(var(--i)*72deg)) translateY(-145px) rotate(calc(var(--i)*-72deg))}}
-
-/* Keep the compact intro and phone sign-in identity visually grouped. */
-.splash-scene{scale:.84}
-@media(max-width:800px){
-  .phone-auth .auth-identity .auth-logo{width:112px;height:100px;margin-bottom:2px;align-items:end}
-  html[data-fatya-store] .phone-auth .auth-logo .store-brand-mark{width:112px;height:112px;transform:translateY(12px)}
+/* Original brand artwork, with a separate light wordmark layer on the night canvas. */
+.masal-mark{display:block;width:32px;height:32px;object-fit:contain;flex-shrink:0}
+.brand-mark .masal-mark,.admin-brand>span .masal-mark,.ms-brand>span .masal-mark{width:34px;height:34px}
+.ms-stage>.masal-mark{width:70px;height:70px}
+.masal-splash{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,#0a8b612c,transparent 65%),linear-gradient(145deg,#061a14,#023b33);color:#fff;overflow:hidden;isolation:isolate;transition:opacity .26s ease,visibility .26s ease}
+.masal-splash.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
+.masal-splash .splash-scene{--orbit-x:clamp(125px,37vw,185px);--orbit-y:clamp(140px,38vw,185px);position:relative;width:min(94vw,460px);height:min(108vw,480px);scale:1;animation:none;display:grid;place-items:center}
+.masal-splash .splash-logo{position:relative;width:clamp(176px,52vw,240px);height:auto;aspect-ratio:536/567;z-index:2;animation:fatya-logo-arrive .65s cubic-bezier(.16,1,.3,1) both}
+.splash-logo-color,.splash-logo-lettering{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain}
+.masal-splash .splash-logo-color{filter:none;opacity:1}
+.masal-splash .splash-logo-lettering{clip-path:inset(59.5% 0 0);filter:brightness(0) invert(1);opacity:.97}
+.masal-splash .splash-glow{position:absolute;width:min(110vw,720px);aspect-ratio:1;background:radial-gradient(circle,#0a8b612e,transparent 66%);border-radius:50%;animation:fatya-ambient 4.2s ease both}
+.splash-orbit-guide{position:absolute;inset:7% 5%;border:1px solid #7dbc3020;border-radius:50%;opacity:0;animation:fatya-orbit-guide 3.6s .4s ease both}
+.splash-launch-glow{position:absolute;left:50%;top:calc(50% - 105px);width:85px;height:24px;translate:-50% -50%;background:radial-gradient(ellipse,#c3ee4c75,transparent 70%);opacity:0;animation:fatya-launch 1.6s .35s ease both}
+.splash-flight{position:absolute;left:calc(50% - 27px);top:calc(50% - 38px);width:54px;height:76px;z-index:3;opacity:0;pointer-events:none;will-change:transform,opacity;animation:fatya-card-flight 2.65s calc(.55s + var(--card-index)*.24s) cubic-bezier(.35,0,.25,1) both}
+.splash-card{height:100%;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:7px 5px;border:1px solid #7dbc30;border-radius:9px;color:#f2f7ef;background:linear-gradient(145deg,#0a8b61,#034037 75%);overflow:hidden;position:relative;direction:ltr}
+.splash-card::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,#ffffff18 30%,#ffffff05 60%,transparent 60%);pointer-events:none}
+.splash-card-1,.splash-card-3{background:linear-gradient(145deg,#c3ee4c,#7dbc30);color:#034037}
+.splash-card-brand{font-size:7px;letter-spacing:1.3px;line-height:1}
+.splash-card-label{font-size:6px;letter-spacing:1px;line-height:1}
+.splash-card-chip{align-self:flex-start;width:11px;height:8px;border:1px solid currentColor;border-radius:2px;opacity:.65}
+.splash-caption{position:absolute;top:calc(50% + 160px);left:0;right:0;display:grid;justify-items:center;gap:17px;color:#c6dccf;font-size:12px;letter-spacing:0;animation:fatya-caption 1s .45s both}
+.splash-caption i{width:68px;height:2px;border-radius:2px;background:#c3ee4c;transform-origin:center;animation:fatya-progress 3.8s ease both}
+.masal-splash .splash-skip{position:absolute;bottom:max(26px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);border:1px solid #7dbc3066;border-radius:24px;padding:8px 24px;background:#ffffff05;color:#d4e7d8;font-size:12px}
+.splash-skip:focus-visible{outline:2px solid #c3ee4c;outline-offset:5px}
+@keyframes fatya-logo-arrive{from{opacity:0;transform:translateY(14px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
+/* Every card starts at the F lid, completes one orbit, then returns to that lid. */
+@keyframes fatya-card-flight{
+ 0%{opacity:0;transform:translate(0,-100px) scale(.08) rotate(-12deg)}
+ 10%{opacity:1;transform:translate(0,calc(var(--orbit-y)*-1)) scale(.85) rotate(-10deg)}
+ 25%{opacity:1;transform:translate(calc(var(--orbit-x)*.85),calc(var(--orbit-y)*-.65)) scale(.92) rotate(14deg)}
+ 40%{opacity:1;transform:translate(var(--orbit-x),calc(var(--orbit-y)*.2)) scale(1) rotate(22deg)}
+ 55%{opacity:1;transform:translate(calc(var(--orbit-x)*.4),calc(var(--orbit-y)*.85)) scale(1) rotate(8deg)}
+ 70%{opacity:1;transform:translate(calc(var(--orbit-x)*-.75),calc(var(--orbit-y)*.65)) scale(.92) rotate(-16deg)}
+ 85%{opacity:1;transform:translate(calc(var(--orbit-x)*-1),calc(var(--orbit-y)*-.45)) scale(.82) rotate(-22deg)}
+ 94%{opacity:.8;transform:translate(-20px,-140px) scale(.65) rotate(-10deg)}
+ 100%{opacity:0;transform:translate(0,-100px) scale(.08) rotate(0)}
 }
+@keyframes fatya-launch{0%,100%{opacity:0;scale:.5}30%,65%{opacity:1;scale:1}}
+@keyframes fatya-orbit-guide{0%,100%{opacity:0}20%,80%{opacity:.6}}
+@keyframes fatya-ambient{from{opacity:0;scale:.7}30%,80%{opacity:1;scale:1}to{opacity:.8;scale:1.08}}
+@keyframes fatya-caption{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fatya-progress{from{scale:0 1}to{scale:1 1}}
+.masal-splash.is-reduced *{animation:none!important;transition:none!important}
+.masal-splash.is-reduced :is(.splash-flight,.splash-orbit-guide,.splash-launch-glow){display:none}
+@media(prefers-reduced-motion:reduce){.masal-splash,.masal-splash *{animation:none!important;transition:none!important}.masal-splash :is(.splash-flight,.splash-orbit-guide,.splash-launch-glow){display:none}}
+@media(max-height:600px){.masal-splash .splash-scene{scale:.75}.splash-skip{bottom:12px}}
