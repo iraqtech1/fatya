@@ -1,6 +1,7 @@
 .admin-shell{width:100%;min-width:0;overflow-x:clip}
 .admin-shell .admin-content{max-width:none;width:100%;margin:0;padding:clamp(12px,2vw,28px);min-width:0}
 .admin-shell .admin-main{width:calc(100% - 270px);max-width:none;min-width:0}
+.admin-shell .admin-hero{position:sticky;top:12px;z-index:20}
 .admin-shell .admin-stats>button,.admin-shell .admin-stats>button.is-selected{box-shadow:0 8px 24px #023b3320,0 2px 6px #023b330c}
 .admin-shell .admin-stats>button:hover,.admin-shell .admin-stats>button:focus-visible{box-shadow:0 12px 28px #023b332b}
 .admin-shell .admin-stats>button:active{box-shadow:0 4px 14px #023b3324}
@@ -8,6 +9,7 @@
 .masal-login .masal-login-field input{text-align:left;direction:ltr}
 @media(max-width:1200px){.admin-shell .admin-main{width:calc(100% - 245px)}.admin-shell .admin-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:900px){.admin-shell .admin-main{width:100%;margin:0}.admin-shell .admin-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-shell .admin-header{padding-inline:14px}}
+@media(max-width:900px){.admin-shell .admin-hero{top:8px}}
 @media(max-width:420px){.admin-shell .admin-stats{grid-template-columns:minmax(0,1fr)}.admin-shell .admin-content{padding:12px}.admin-shell .admin-header{height:auto;min-height:76px;flex-wrap:wrap;gap:8px;padding:10px 12px!important}.admin-shell .admin-header>div{min-width:0;flex:1 1 auto}.admin-shell .admin-header-right{gap:6px;justify-content:flex-end}.admin-shell .admin-signout{padding:8px;font-size:10px}.admin-shell .admin-search{min-width:0;max-width:100%}.admin-shell .admin-hero>div{min-width:0;max-width:100%}}
 
 .admin-shell td > .admin-row-action + .admin-row-action{margin-inline-start:14px}
