@@ -3,13 +3,13 @@
 .dock-arrival{display:grid;place-items:center;width:100%;height:100%}
 @media(max-width:700px){
   html:root[data-theme] #app .app-shell nav.bottom-nav.masal-cutout-dock{
-    --motion-surface:#f7faf4f2;--motion-edge:#45826590;--motion-accent:#7dbc30;--motion-ink:#034037;--motion-muted:#60796c;--motion-halo:#7dbc3038;
+    --motion-surface:#f7faf4f2;--motion-edge:#45826590;--motion-accent:#7dbc30;--motion-ink:#034037;--motion-muted:#526c5e;--motion-halo:#7dbc3038;--motion-label-active:#034037;
     height:64px;padding:0;border-radius:22px;background:var(--motion-surface)!important;
     border:1.5px solid var(--motion-edge)!important;box-shadow:0 10px 30px #00000014!important;
     backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   }
   html:root[data-theme=dark] #app .app-shell nav.bottom-nav.masal-cutout-dock{
-    --motion-surface:#04181aeb;--motion-edge:#a1d5c26b;--motion-accent:#b6ff55;--motion-ink:#10240d;--motion-muted:#8fa9a0;--motion-halo:#b6ff5538;
+    --motion-surface:#04181aeb;--motion-edge:#a1d5c26b;--motion-accent:#b6ff55;--motion-ink:#10240d;--motion-muted:#8fa9a0;--motion-halo:#b6ff5538;--motion-label-active:#b6ff55;
   }
   html:root[data-theme] #app .masal-cutout-dock :is(.dock-surface,.dock-notch-blur){display:none!important}
   html:root[data-theme] #app .masal-cutout-dock .dock-bubble{
@@ -42,12 +42,12 @@
     color:var(--motion-muted);opacity:1;transform:translateY(0);transition:color .2s;
   }
   html:root[data-theme] #app .masal-cutout-dock button.active>span{
-    color:var(--motion-accent);opacity:1;transform:translateY(0);
+    color:var(--motion-label-active);opacity:1;transform:translateY(0);
     transition:opacity .25s .15s,transform .3s .12s cubic-bezier(.2,.7,.3,1);
   }
   html:root[data-theme] #app .masal-cutout-dock button:focus-visible{outline:2px solid var(--motion-accent);outline-offset:3px}
 }
-@keyframes fatya-dock-arrive{0%{opacity:.6;transform:translateY(13px) scale(.72,.82)}40%{opacity:1;transform:translateY(-10px) scale(1.12,.9)}65%{transform:translateY(2px) scale(.96,1.06)}83%{transform:translateY(-3px) scale(1.03,.98)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fatya-dock-arrive{0%{opacity:.6;transform:translateY(2px) scale(.72,.82)}40%{opacity:1;transform:translateY(-10px) scale(1.12,.9)}65%{transform:translateY(1px) scale(.96,1.04)}83%{transform:translateY(-3px) scale(1.03,.98)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){
   html:root[data-theme] #app .masal-cutout-dock :is(.dock-bubble,.dock-active-trail,.dock-arrival,.dock-idle-icon,button>span){animation:none!important;transition:none!important;will-change:auto}
 }

@@ -1,11 +1,12 @@
 import {t,language} from './i18n.js';
 import {computed,useId} from 'vue/dist/vue.esm-bundler.js';
 import './mobile-dock.css';
+import {selectedDockItem} from './dock-selection.js';
 export default {
   props:{items:Array,icons:Object,page:String},emits:['navigate'],
   setup(props){
     const maskId='dock-'+useId();
-    const selected=computed(()=>props.items.find(item=>item.id===props.page)||props.items[0]);
+    const selected=computed(()=>selectedDockItem(props.items,props.page));
     const center=computed(()=>(((language.value==='en'?props.items.indexOf(selected.value):props.items.length-1-props.items.indexOf(selected.value))+.5)/props.items.length*100)+'%');
     return {t,language,maskId,selected,center};
   },
@@ -14,6 +15,6 @@ export default {
     <svg class="dock-surface" width="100%" height="100%" aria-hidden="true"><defs><mask :id="maskId" maskUnits="userSpaceOnUse" x="0" y="-80" width="100%" height="180"><rect width="100%" height="100%" fill="white"/><circle :style="{cx:center}" cy="0" fill="black" class="dock-notch"/></mask></defs><rect width="100%" height="100%" rx="30" class="dock-body" :mask="'url(#'+maskId+')'"/></svg>
     <span class="dock-bubble" :style="{left:center}" aria-hidden="true"><span class="dock-arrival" :key="selected.id"><component :is="icons[selected.icon]" :size="23"/></span></span>
     <span class="dock-active-trail" :style="{left:center}" aria-hidden="true"></span>
-    <button v-for="item in items" :key="item.id" :class="{active:page===item.id}" :aria-current="page===item.id?'page':undefined" @click="$emit('navigate',item.id)"><component :is="icons[item.icon]" :size="21" class="dock-idle-icon"/><span>{{t(item.label)}}</span></button>
+    <button v-for="item in items" :key="item.id" :class="{active:selected.id===item.id}" :aria-current="selected.id===item.id?'page':undefined" @click="$emit('navigate',item.id)"><component :is="icons[item.icon]" :size="21" class="dock-idle-icon"/><span>{{t(item.label)}}</span></button>
   </nav>`
 };
