@@ -41,7 +41,7 @@ export default {
       <div class="splash-sparks"><span v-for="i in sparks" :key="i" :style="{'--spark-index':i}" :class="'spark-shape-'+(i%3)"></span></div>
       <div class="splash-logo"><img class="splash-logo-image" :src="logo" alt="" width="536" height="567" fetchpriority="high" draggable="false"/></div>
       <div class="splash-symbol-orbit"><span v-for="(symbol,i) in symbols" :key="i" class="splash-symbol-flight" :style="{'--symbol-index':i}"><i><component :is="symbol" :size="23" :stroke-width="1.7"/></i></span></div>
-      <div class="splash-caption"><span>كل بطاقاتك، بمكان واحد</span><i></i></div>
+      <div class="splash-caption"><span>كل بطاقاتك , بمكان واحد</span><i></i></div>
     </div>
     <button ref="skip" class="splash-skip" @click="finish">{{t('تخطي')}}</button>
   </div>`
