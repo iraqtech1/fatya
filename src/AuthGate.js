@@ -54,7 +54,7 @@ export default {
     function back(){change('reset');}
     return {t,language,store,view,name,phone,password,visible,email,code,notice,error,busy,heading,otpInput,challenge,remaining,expired,displayPhone,change,submit,resend,back,cleanCode,cleanPhone};
   },
-  template:`<div class="auth-shell phone-auth" :class="{'auth-login':view==='login','auth-register':view==='register'}">
+  template:`<div class="auth-shell phone-auth" :class="{'auth-login':view==='login','auth-register':view==='register','auth-reset':view==='reset'}">
     <aside class="auth-story" aria-hidden="true"><span class="auth-wordmark">FATYA / DIGITAL STORE</span><div><span class="auth-kicker">{{t("بطاقاتك، بمكان واحد")}}</span><h2>{{t("أهلاً بيك")}}<br>{{t("بفاتيا.")}}</h2><p>{{t("رصيد واتصالات، ألعاب ومتاجر عالمية.")}}<br>{{t("كل اللي تحتاجه صار أقرب إلك.")}}</p></div><div class="auth-art"><span>Zain<small>{{t("رصيد واتصالات")}}</small></span><span>PUBG<small>{{t("عالم الألعاب")}}</small></span><span>Apple<small>{{t("بطاقات عالمية")}}</small></span></div></aside>
     <section class="auth-panel" :aria-label="t(&quot;الدخول إلى فاتيا&quot;)">
       <div class="auth-top"><span class="auth-step">{{view==='otp'?t("تأكيد رقم الهاتف"):view==='reset'?t("استرجاع كلمة المرور"):view==='register'?t("حساب جديد"):t("أهلاً بيك")}}</span><button v-if="view!=='login'" type="button" class="auth-back" @click="view==='otp'?back():change('login')" :disabled="busy" :aria-label="t(&quot;الرجوع&quot;)"><ChevronRight :size="22"/></button></div>

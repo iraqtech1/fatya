@@ -11,7 +11,8 @@
 .splash-seed{position:absolute;left:calc(50% - 5px);top:calc(50% - 5px);width:10px;height:10px;border-radius:50%;z-index:4;animation:fatya-seed-merge .58s cubic-bezier(.4,0,.2,1) both}
 .splash-seed-top{--seed-start:-28px;background:#c3ee4c}
 .splash-seed-bottom{--seed-start:28px;background:#e3f2d1}
-.splash-reveal-pulse{position:absolute;left:50%;top:50%;width:160px;height:160px;border:2px solid #a9df49;border-radius:50%;background:radial-gradient(circle,#7dbc3030,transparent 70%);translate:-50% -50%;opacity:0;animation:fatya-reveal-pulse .9s .4s ease-out both}
+.splash-reveal-pulse{position:absolute;left:50%;top:50%;width:160px;height:160px;border:1px solid #b8ed70;border-radius:50%;background:radial-gradient(circle,#7dbc3030,transparent 70%);translate:-50% -50%;opacity:0;animation:fatya-reveal-pulse .9s .4s ease-out both,fatya-ring-glow 2.2s 1.3s ease-in-out infinite}
+.splash-reveal-pulse::after{content:'';position:absolute;inset:-1px;border:1px solid transparent;border-top-color:#e0ffac;border-right-color:#c3ee4c55;border-radius:50%;filter:drop-shadow(0 0 3px #c3ee4c88);animation:fatya-ring-turn 3s .4s linear infinite}
 .splash-sparks{position:absolute;inset:0;z-index:1;pointer-events:none}
 .splash-sparks>span{--spark-angle:calc(var(--spark-index)*30deg);position:absolute;left:50%;top:50%;width:7px;height:7px;background:#c3ee4c;opacity:0;animation:fatya-spark-out 1s .5s cubic-bezier(.2,.6,.3,1) both}
 .splash-sparks>.spark-shape-0{border-radius:50%;background:#8bcbb4}
@@ -29,6 +30,8 @@
 .splash-skip:focus-visible{outline:2px solid #c3ee4c;outline-offset:5px}
 @keyframes fatya-seed-merge{0%{opacity:0;transform:translateY(var(--seed-start)) scale(.5)}25%{opacity:1;transform:translateY(var(--seed-start)) scale(1)}75%{opacity:1;transform:translateY(0) scale(1.2)}100%{opacity:0;transform:translateY(0) scale(.2)}}
 @keyframes fatya-reveal-pulse{0%{opacity:0;scale:.1}20%{opacity:.9;scale:.35}100%{opacity:.45;scale:1.8;background:transparent}}
+@keyframes fatya-ring-glow{0%,100%{box-shadow:0 0 5px #c3ee4c24,inset 0 0 4px #c3ee4c12}50%{box-shadow:0 0 12px #c3ee4c50,inset 0 0 7px #c3ee4c24}}
+@keyframes fatya-ring-turn{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 @keyframes fatya-spark-out{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}20%{opacity:.85}75%{opacity:.4}100%{opacity:0;transform:translate(calc(-50% + cos(var(--spark-angle))*155px),calc(-50% + sin(var(--spark-angle))*155px)) rotate(110deg) scale(.6)}}
 @keyframes fatya-brand-reveal{0%{opacity:0;transform:translateY(12px) scale(.55) rotate(-9deg)}65%{opacity:1;transform:translateY(-2px) scale(1.035) rotate(1deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
 @keyframes fatya-symbol-spread{0%{--splash-symbol-radius:0;opacity:0}25%,72%{--splash-symbol-radius:1;opacity:1}100%{--splash-symbol-radius:1.08;opacity:0}}
