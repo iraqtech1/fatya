@@ -71,3 +71,21 @@ html[data-theme=dark] .masal-login-field{--login-field:#0c2d23;--login-ink:#f2f7
 
 /* One consistent Cairo Bold face across every screen and control. */
 html,body,#app,#app *,#app *::before,#app *::after{font-family:'Cairo',sans-serif!important;font-weight:700!important}
+/* Clear green frames and a distinct moving lime selection in the mobile dock. */
+:root{--fatya-line:#458265;--fatya-frame:#458265;--border:#458265}
+html[data-fatya-store]{--fatya-frame:#458265;--border:#458265}
+html[data-theme=dark]{--fatya-line:#84b84b;--fatya-frame:#84b84b;--border:#84b84b}
+html[data-fatya-store][data-theme=dark]{--fatya-frame:#84b84b;--border:#84b84b}
+.admin-shell{--admin-border:var(--fatya-line)}
+html[data-theme=dark] .admin-shell{--admin-border:var(--fatya-line)}
+html #app :is(.admin-panel,.admin-stats>button,.admin-mini-stats>div,.admin-sidebar,.admin-header,.admin-brand,.admin-overview-events,.admin-stat-heading,.admin-table-wrap,.admin-table-wrap th,.admin-table-wrap td,.admin-dialog,.admin-search,.masal-login-frame,.masal-login-field,.admin-secondary,.admin-row-action,.admin-signout){border-color:var(--fatya-line)!important}
+html #app .admin-shell :is(input,textarea,select){border-color:var(--fatya-line)!important}
+html[data-fatya-store] #app .masal-cutout-dock .dock-bubble{
+ background:#c3ee4c!important;color:#034037!important;
+ border:3px solid #034037!important;
+}
+html[data-fatya-store][data-theme=dark] #app .masal-cutout-dock .dock-bubble{border-color:#c3ee4c!important}
+html[data-fatya-store] .app-shell nav.bottom-nav.masal-cutout-dock{--dock-selected:#034037}
+html[data-fatya-store][data-theme=dark] .app-shell nav.bottom-nav.masal-cutout-dock{--dock-selected:#c3ee4c}
+html[data-fatya-store] .nav-progress-ring{stroke:#0a8b61!important}
+html[data-fatya-store][data-theme=dark] .nav-progress-ring{stroke:#c3ee4c!important}
