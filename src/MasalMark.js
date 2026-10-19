@@ -1,1 +1,1 @@
-export default {setup(){return {logo:import.meta.env.BASE_URL+'brand/fatya-app-icon-green.png'};},template:`<img class="masal-mark" :src="logo" alt="" aria-hidden="true" width="64" height="64" decoding="async" draggable="false"/>`};
+export default {setup(){return {logo:import.meta.env.BASE_URL+'brand/fatya-mark-smooth.svg'};},template:`<img class="masal-mark" :src="logo" alt="" aria-hidden="true" width="64" height="64" decoding="async" draggable="false"/>`};

@@ -89,3 +89,15 @@ html[data-fatya-store][data-theme=dark] .nav-progress-ring{stroke:#c3ee4c!import
 html[data-fatya-store] #app .splash-orbit-guide{border-color:#7dbc3020!important}
 html[data-fatya-store] #app .splash-card{border-color:#ffffff80!important}
 html[data-fatya-store] #app .splash-card-chip{border-color:currentColor!important}
+/* Give card edges a little more definition without changing their geometry. */
+:root{--fatya-card-edge:#287052;--fatya-card-edge-active:#0a8b61}
+html[data-theme=dark]{--fatya-card-edge:#8bb65d;--fatya-card-edge-active:#c3ee4c}
+html[data-fatya-store] #app :is(.category-tile-icon,.product,.product-art,.brands button,.deck-card,.order,.support-form,.faq,.store-account,.ticket-history article,.empty,.payment-order-panel,.payment-fields-panel,.payment-preview-card,.payment-method-summary){border:1.5px solid var(--fatya-card-edge)!important}
+html #app :is(.admin-panel,.admin-stats>button,.admin-mini-stats>div,.admin-brand,.admin-overview-events,.admin-stat-heading,.admin-import-panel){border:1.5px solid var(--fatya-card-edge)!important}
+html[data-fatya-store] #app .category-tile-icon{border-width:2px!important;background:linear-gradient(145deg,#f9fcf4,#e3efdc)}
+html[data-fatya-store][data-theme=dark] #app .category-tile-icon{background:linear-gradient(145deg,#204d38,#123c2a)}
+html[data-fatya-store] #app .category-tiles>button.selected .category-tile-icon{border:2px solid #7dbc30!important;background:linear-gradient(135deg,#034037,#0a7251);color:#fff}
+html[data-fatya-store][data-theme=dark] #app .category-tiles>button.selected .category-tile-icon{border-color:#c3ee4c!important;background:linear-gradient(135deg,#0a7752,#125d3d);color:#f6ffe9}
+html[data-fatya-store] #app :is(.product,.brands button,.category-tiles>button):hover .category-tile-icon,
+html[data-fatya-store] #app :is(.product,.brands button):is(:hover,:focus-visible),
+html #app .admin-stats>button:is(:hover,.is-selected){border-color:var(--fatya-card-edge-active)!important}
