@@ -1,4 +1,5 @@
 export default {
+  "إذا فشل طلبك نقوم باسترداد المبلغ تلقائياً خلال أقل من 24 ساعة.": "If your order fails, we will automatically refund the amount in less than 24 hours.",
   "فتح ": "Open ",
   "مختارات لك": "Selected for you",
   "كارتات رصيد": "Recharge cards",
