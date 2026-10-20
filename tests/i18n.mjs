@@ -16,7 +16,7 @@ setLanguage('en');assert.equal(saved.get('masal-language'),'en');
 location.hash='#/admin/overview';events.get('hashchange')();assert.equal(document.documentElement.dir,'rtl','Dashboard direction stays Arabic');
 location.hash='#/';events.get('hashchange')();assert.equal(document.documentElement.dir,'ltr','Store restores chosen language');
 const reload=await import('../src/i18n.js?restore');assert.equal(reload.language.value,'en');
-for(const file of ['main','AccountPage','OrderArchive','PaymentMethods','AuthGate','StoreHeader','CardDeck','BannerSlider','MobileDock','PullToRefresh','PwaControls','SplashIntro','ThemeToggle']){
+for(const file of ['main','StoreCards','AccountPage','OrderArchive','PaymentMethods','AuthGate','StoreHeader','CardDeck','BannerSlider','MobileDock','PullToRefresh','PwaControls','SplashIntro','ThemeToggle']){
  const source=readFileSync('src/'+file+'.js','utf8').replaceAll('&quot;','"');
  for(const match of source.matchAll(/\bt\(["']([^"']+)["']\)/g))if(/[\u0600-\u06ff]/.test(match[1]))assert.ok(english[match[1]],file+': missing translation '+match[1]);
 }

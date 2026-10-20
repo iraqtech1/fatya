@@ -1,4 +1,9 @@
 export default {
+  "بحث": "Search",
+  "كل بطاقاتك بمكان واحد": "All your cards in one place",
+  "اختار القسم، وبعدها البطاقة اللي تحتاجها": "Choose a category, then find your card",
+  "اختر الفئة": "Choose value",
+  "لا توجد بطاقات متاحة حالياً": "No cards available right now",
   "استرجاع كلمة المرور": "Recover password",
   "أدخل رقم هاتف حسابك لاستعادة كلمة المرور": "Enter your account phone number to recover your password",
   "كلمة المرور الجديدة": "New password",
