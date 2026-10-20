@@ -12,7 +12,7 @@ export default {
     const query=ref('');
     const filtered=computed(()=>{
       const term=query.value.trim().toLocaleLowerCase();
-      return props.orders.filter(o=>[o.name,t(o.name),o.id,o.date,String(o.value)].some(value=>String(value).toLocaleLowerCase().includes(term)));
+      return props.orders.filter(o=>[o.name,t(o.name),o.id,o.date,String(o.value),o.offerLabel||'',o.recipient||''].some(value=>String(value).toLocaleLowerCase().includes(term)));
     });
     const unitFor=order=>order.unit||store.products.find(p=>p.id===order.productId)?.unit||'د.ع';
     return {t,number,query,filtered,unitFor};
@@ -25,8 +25,8 @@ export default {
       <p v-if="!filtered.length" class="archive-empty account-panel" role="status">{{t('لا توجد طلبات مطابقة للبحث')}}</p>
       <PagedList :items="filtered" :reset-key="query" :size="6" v-slot="{items}">
         <details class="archive-order" v-for="order in items" :key="order.id">
-          <summary><span class="archive-card-icon"><CreditCard :size="23"/></span><span class="archive-order-title"><strong>{{t(order.name)}}</strong><small>{{number(order.value)}} {{t(unitFor(order))}} · <time dir="ltr">{{order.date}}</time></small></span><span class="archive-status" :class="{'is-cancelled':order.status==='ملغي'}">{{t(order.status)}}</span><ChevronDown class="archive-chevron" :size="18"/></summary>
-          <div class="archive-details"><dl><div><dt>{{t('رقم الطلب')}}</dt><dd dir="ltr">{{order.id}}</dd></div><div><dt>{{t('فئة البطاقة')}}</dt><dd>{{number(order.value)}} {{t(unitFor(order))}}</dd></div><div><dt>{{t('الكمية')}}</dt><dd>{{number(order.quantity)}}</dd></div><div><dt>{{t('طريقة الدفع')}}</dt><dd dir="ltr">{{order.payment}}</dd></div><div><dt>{{t('المجموع')}}</dt><dd>{{number(order.price)}} {{t('د.ع')}}</dd></div></dl></div>
+          <summary><span class="archive-card-icon"><CreditCard :size="23"/></span><span class="archive-order-title"><strong>{{t(order.name)}}</strong><small>{{order.offerLabel?t(order.offerLabel):number(order.value)+' '+t(unitFor(order))}} · <time dir="ltr">{{order.date}}</time></small></span><span class="archive-status" :class="{'is-cancelled':order.status==='ملغي'}">{{t(order.status)}}</span><ChevronDown class="archive-chevron" :size="18"/></summary>
+          <div class="archive-details"><dl><div><dt>{{t('رقم الطلب')}}</dt><dd dir="ltr">{{order.id}}</dd></div><div><dt>{{t('فئة البطاقة')}}</dt><dd>{{order.offerLabel?t(order.offerLabel):number(order.value)+' '+t(unitFor(order))}}</dd></div><div v-if="order.recipient"><dt>{{t('رقم آسياسيل المراد شحنه')}}</dt><dd dir="ltr">{{order.recipient}}</dd></div><div><dt>{{t('الكمية')}}</dt><dd>{{number(order.quantity)}}</dd></div><div><dt>{{t('طريقة الدفع')}}</dt><dd dir="ltr">{{order.payment}}</dd></div><div><dt>{{t('المجموع')}}</dt><dd>{{number(order.price)}} {{t('د.ع')}}</dd></div></dl></div>
         </details>
       </PagedList>
     </template>

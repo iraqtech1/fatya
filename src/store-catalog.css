@@ -57,3 +57,40 @@ html[dir=ltr] .store-card-action svg,html[dir=ltr] .store-catalog-section .secti
  .store-browse-heading h1{font-size:22px}
 }
 @media(prefers-reduced-motion:reduce){.store-card,.store-category-icon{transition:none}.store-card:hover,.store-category-shortcuts>button:hover .store-category-icon{transform:none}}
+
+/* Reference layout: small service icons, card rails, then company wordmarks. */
+.store-home-shortcuts{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 12px;margin-block:22px 28px}
+.store-home-shortcuts .store-category-icon{background:transparent;border:0;border-radius:0;width:44px;height:38px}
+.store-home-shortcuts>button{gap:7px}
+.store-home-shortcuts>button:hover .store-category-icon{background:transparent}
+.store-variant-brands{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 16px}
+.store-variant-brands .store-card{border:0;background:transparent;border-radius:0;box-shadow:none;padding:6px 4px;gap:8px}
+.store-variant-brands .store-card-art{width:100%;max-width:150px;height:70px;border-radius:12px;margin:0;background:#ffffffb3}
+.store-variant-brands .store-brand-wordmark{font-family:Arial,sans-serif;font-size:clamp(17px,2vw,27px);font-weight:800;letter-spacing:-1px;line-height:1.25;max-width:100%;padding:8px}
+.store-variant-brands .store-card-name{font-size:12px;font-weight:500}
+.store-variant-brands .store-card:hover{border:0;box-shadow:none}
+.store-variant-featured{display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:calc((100% - 30px)/3);gap:15px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:var(--fatya-line) transparent}
+.store-variant-featured .store-card{padding:0;border:0;border-radius:12px;background:transparent;box-shadow:none;align-items:stretch;scroll-snap-align:start}
+.store-variant-featured .store-card-art{height:auto;aspect-ratio:1.6;border-radius:12px;margin-bottom:8px;background:transparent}
+.store-variant-featured .store-card-art img{object-fit:cover}
+.store-variant-featured .store-card-name{font-size:12px}
+.store-filter-tabs{display:flex;overflow-x:auto;gap:6px;padding-block:5px 10px;border-bottom:1px solid var(--fatya-line);scrollbar-width:none}
+.store-filter-tabs>button{flex:0 0 auto;flex-direction:row;padding:8px 13px;min-height:44px;border:1px solid transparent;border-radius:30px;gap:6px;font-size:12px}
+.store-filter-tabs .store-category-icon{width:auto;height:auto;border:0;background:transparent!important;border-radius:0;color:inherit!important}
+.store-filter-tabs .store-category-icon svg{width:17px;height:17px}
+.store-filter-tabs>button[aria-pressed=true]{background:#e5efdf;border-color:var(--fatya-line)}
+html:root[data-theme=dark] #app .store-variant-brands .store-card,html:root[data-theme=dark] #app .store-variant-featured .store-card{background:transparent;border:0;box-shadow:none}
+html:root[data-theme=dark] #app .store-home-shortcuts .store-category-icon{background:transparent;border:0}
+html:root[data-theme=dark] #app .store-filter-tabs>button[aria-pressed=true]{background:#b6ff5515;border-color:#b6ff5550}
+@media(min-width:1100px){.store-variant-brands{grid-template-columns:repeat(6,minmax(0,1fr))}.store-brands-section .store-card-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.store-variant-featured{grid-auto-columns:calc((100% - 75px)/6)}}
+@media(max-width:700px){
+ .store-home-shortcuts{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 6px;margin-block:18px 24px}
+ .store-home-shortcuts .store-category-icon{width:40px;height:32px;border-radius:0}
+ .store-home-shortcuts>button{font-size:10px;padding:2px;gap:5px}
+ .store-variant-brands{gap:22px 10px}.store-variant-brands .store-card-art{height:55px;max-width:100px;background:#ffffffb3;border-radius:9px}
+ .store-variant-brands .store-brand-wordmark{font-size:18px;letter-spacing:-.7px;padding:5px}
+ .store-variant-brands .store-card-name{font-size:10px}.store-variant-brands .store-card{padding:5px 0}
+ .store-variant-featured{gap:10px;grid-auto-columns:calc((100% - 20px)/3)}
+ .store-variant-featured .store-card-art{height:auto;border-radius:9px}.store-variant-featured .store-card-name{font-size:10px}
+ .store-filter-tabs{margin-block:16px 24px!important}.store-filter-tabs>button{padding-inline:11px;font-size:11px}
+}

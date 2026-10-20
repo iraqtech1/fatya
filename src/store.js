@@ -35,10 +35,12 @@ export function upsertCustomer(user){
   if(customer){Object.assign(customer,user);return;}
   if(!customer){store.customers.push({...user,id:crypto.randomUUID(),kind:'فرد',active:true,discount:0,date:isoDate()});record('انضم حساب جديد إلى فاتيا');}
 }
-export function createOrder(product,denom,quantity,customer,payment='Qi'){
-  if(connected)return api('/orders',{productId:product.id,denom,quantity,payment,reference:arguments[5]||crypto.randomUUID()}).then(async order=>{await refreshStore();return order;});
+export function createOrder(product,denom,quantity,customer,payment='Qi',reference=crypto.randomUUID(),details={}){
+  if(connected&&details.demoOnly)throw Error('هذه الخدمة قيد التجهيز');
+  if(connected)return api('/orders',{productId:product.id,denom,quantity,payment,reference}).then(async order=>{await refreshStore();return order;});
   const unit=product.prices[denom];
   const order={id:'FATYA-'+crypto.randomUUID().toUpperCase(),productId:product.id,name:product.name,value:product.values[denom],unit:product.unit||'د.ع',price:unit*quantity,quantity,date:isoDate(),customer:customer?.name||'زائر',phone:customer?.phone||'',email:customer?.email||'',...(customer?.previewId?{previewId:customer.previewId}:{}),kind:'فرد',status:'مكتمل',payment:(payment==='ZainCash'?'ZainCash':'Qi')};
+  if(details.telecom)Object.assign(order,{service:details.telecom.service,serviceLabel:details.telecom.label,offerLabel:details.telecom.offerLabel,recipient:details.telecom.recipient,demoOnly:!!details.demoOnly});
   const knownIds=new Set(store.orders.map(o=>o.id));
   const previousOrders=[...store.orders,...readPreviewOrders(previewSettingsStorage).filter(o=>!knownIds.has(o.id))];
   try{savePreviewOrders(previewSettingsStorage,[order,...previousOrders]);}catch{throw Error("تعذّر حفظ الطلب في المتصفح اسمح بالتخزين وأعد المحاولة");}

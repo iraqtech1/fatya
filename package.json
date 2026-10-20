@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "vite build",
-    "test": "node tests/flows.mjs && node tests/order-archive.mjs && node tests/payment-methods.mjs && node tests/dock-selection.mjs && node tests/marketing.mjs && node tests/pull-refresh.mjs && node tests/store-session.mjs && node tests/deck-gesture.mjs && node tests/auth-preview.mjs && node tests/slides.mjs && node tests/i18n.mjs && node tests/pagination.mjs && node tests/backend.mjs && node tests/dashboard-dialog.mjs && node tests/preview-settings.mjs",
+    "test": "node tests/flows.mjs && node tests/asiacell-services.mjs && node tests/order-archive.mjs && node tests/payment-methods.mjs && node tests/dock-selection.mjs && node tests/marketing.mjs && node tests/pull-refresh.mjs && node tests/store-session.mjs && node tests/deck-gesture.mjs && node tests/auth-preview.mjs && node tests/slides.mjs && node tests/i18n.mjs && node tests/pagination.mjs && node tests/backend.mjs && node tests/dashboard-dialog.mjs && node tests/preview-settings.mjs",
     "check": "node scripts/check.mjs",
     "start": "node --env-file-if-exists=.env server/start.mjs"
   },
