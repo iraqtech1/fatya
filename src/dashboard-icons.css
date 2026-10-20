@@ -1,0 +1,74 @@
+/* Dashboard icon palette follows the lime and mint marks in the Fatya artwork. */
+.admin-shell {
+  --dashboard-icon-lime: #c1ef32;
+  --dashboard-icon-mint: #b9e5d5;
+  --dashboard-icon-ink: var(--dashboard-icon-lime);
+  --dashboard-icon-edge: #749e2d99;
+  --dashboard-icon-surface: linear-gradient(145deg, #104936, #073a2c);
+}
+
+.admin-sidebar nav button:nth-child(even),
+.admin-stats > button:nth-child(even),
+.admin-health > div:nth-child(odd) {
+  --dashboard-icon-ink: var(--dashboard-icon-mint);
+}
+
+html:root #app .admin-shell :is(
+  .admin-sidebar nav button > svg:first-child,
+  .admin-stats > button > div > svg,
+  .admin-empty > svg,
+  .admin-health-icon,
+  .admin-import-icon,
+  .admin-supplier-icon
+) {
+  color: var(--dashboard-icon-ink) !important;
+  background: var(--dashboard-icon-surface) !important;
+  border: 1px solid var(--dashboard-icon-edge) !important;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 #b9e5d50b;
+  flex-shrink: 0;
+}
+
+html:root #app .admin-shell .admin-sidebar nav button > svg:first-child {
+  box-sizing: border-box;
+  width: 34px;
+  height: 34px;
+  padding: 7px;
+}
+
+html:root #app .admin-shell :is(.admin-health-icon, .admin-import-icon, .admin-supplier-icon) > svg {
+  color: inherit !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+html:root #app .admin-shell .admin-sidebar nav button.active > svg:first-child,
+html:root #app .admin-shell .admin-stats > button.is-selected > div > svg {
+  color: var(--dashboard-icon-lime) !important;
+  border-color: #b1db3c !important;
+  box-shadow: 0 0 9px #c1ef3226, inset 0 1px 0 #b9e5d50b;
+}
+
+html:root #app .admin-shell :is(
+  .admin-hero > div > button,
+  .admin-hero > div > a,
+  .admin-primary,
+  .admin-secondary,
+  .admin-signout,
+  .admin-menu-button,
+  .admin-side-bottom > a
+) > svg:first-child {
+  color: var(--dashboard-icon-ink) !important;
+  background: var(--dashboard-icon-surface) !important;
+  border: 1px solid var(--dashboard-icon-edge) !important;
+  border-radius: 7px;
+  box-sizing: content-box;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.admin-hero > div > a,
+.admin-signout,
+.admin-side-bottom > a {
+  --dashboard-icon-ink: var(--dashboard-icon-mint);
+}
