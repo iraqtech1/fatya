@@ -1,5 +1,6 @@
 /* Dashboard icon palette follows the lime and mint marks in the Fatya artwork. */
-.admin-shell {
+.admin-shell,
+.masal-login {
   --dashboard-icon-lime: #c1ef32;
   --dashboard-icon-mint: #b9e5d5;
   --dashboard-icon-ink: var(--dashboard-icon-lime);
@@ -71,4 +72,15 @@ html:root #app .admin-shell :is(
 .admin-signout,
 .admin-side-bottom > a {
   --dashboard-icon-ink: var(--dashboard-icon-mint);
+}
+
+html:root #app .masal-login .masal-orbit-item {
+  color: var(--dashboard-icon-mint) !important;
+  background: var(--dashboard-icon-surface) !important;
+  border-color: var(--dashboard-icon-edge) !important;
+  box-shadow: inset 0 1px 0 #b9e5d50b, 0 8px 22px #0a3d2d26;
+}
+
+html:root #app .masal-login :is(.orbit-card, .orbit-chip, .orbit-game) {
+  color: var(--dashboard-icon-lime) !important;
 }
