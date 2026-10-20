@@ -1,0 +1,30 @@
+/* Keep the archive return action visually part of the page in both themes. */
+html:root #app .account-page .account-back.archive-back {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  padding: 0;
+}
+
+/* Lime neon outlines remain visible over the light and dark card surfaces. */
+html:root #app .notification-panel li,
+html:root #app .notification-panel .notification-item,
+html:root #app .notification-panel .notification-detail {
+  border: 2px solid #c3ff4d !important;
+  box-shadow: 0 0 9px #b6ff5559, inset 0 0 8px #b6ff5514 !important;
+}
+html:root #app .notification-panel li {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+html:root #app .notification-panel .notification-item {
+  cursor: pointer;
+}
+html:root #app .notification-panel .notification-item:is(:hover, :focus-visible),
+html:root #app .notification-panel .notification-detail:focus-visible {
+  border-color: #d9ff85 !important;
+  box-shadow: 0 0 15px #b6ff5590, inset 0 0 10px #b6ff5524 !important;
+  outline: none;
+}

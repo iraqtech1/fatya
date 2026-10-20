@@ -34,7 +34,7 @@ export function createMasalServer({dbPath='server/data/masal.sqlite',adminUser=p
   function user(req,s){const row=session(req,'customer');const customer=s.customers.find(c=>c.id===row.customer);if(!customer?.active)fail('الحساب موقوف',403);return customer;}
   const identity=c=>({id:c.id,name:c.name,phone:c.phone,email:c.email,...(c.previewId?{previewId:c.previewId}:{})});
   function state(req,s,admin=false){if(admin)return {...s,codes:undefined};let c;try{c=user(req,s);}catch(e){if(e.status!==401&&e.status!==403)throw e;}return {revision:s.revision,categories:s.categories.filter(c=>c.active),products:s.products.filter(p=>p.active&&s.categories.some(c=>c.active&&c.name===p.category)).map(p=>({...p,stock:p.stock.map(()=>0)})),settings:s.settings,slides:s.slides,middleSlides:s.middleSlides,customers:[],orders:c?s.orders.filter(o=>o.customerId===c.id):[],tickets:c?s.tickets.filter(t=>t.customerId===c.id):[],imports:[],suppliers:[],companies:[],events:[]};}
-  const revision=(s,b)=>{if(b.revision!==s.revision)fail('البيانات تغيرت. حدّث الصفحة وأعد المحاولة.',409);};
+  const revision=(s,b)=>{if(b.revision!==s.revision)fail("البيانات تغيرت حدّث الصفحة وأعد المحاولة",409);};
   function profile(b){const name=text(b.name,80),email=text(b.email||'',254).toLowerCase();if(name.length<2||email&&!/^\S+@\S+\.\S+$/.test(email))fail('اكتب اسماً وبريداً صحيحاً');return {name,email};}
   function image(src){if(typeof src!=='string'||src.length>3000000||!(src===''||/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(src)||/^https:\/\/[^\s]+$/.test(src)||/^(cards|middle-banners)\/[\w.-]+$/.test(src)))fail('رابط الصورة غير صحيح');}
   async function body(req){let bytes=0;const chunks=[];for await(const chunk of req){bytes+=chunk.length;if(bytes>30*1024*1024)fail('حجم البيانات كبير',413);chunks.push(chunk);}try{return JSON.parse(Buffer.concat(chunks).toString()||'{}');}catch{fail('بيانات غير صحيحة');}}
@@ -59,7 +59,7 @@ export function createMasalServer({dbPath='server/data/masal.sqlite',adminUser=p
       const b=req.method==='GET'?{}:await body(req);if(!b||Array.isArray(b)||typeof b!=='object')fail('بيانات غير صحيحة');let s=read();
       if(path==='/api/health'&&req.method==='GET')return json({ok:true});
       if(path==='/api/state'&&req.method==='GET')return json(state(req,s));
-      if(path==='/api/admin/login'&&req.method==='POST'){rate('admin:'+req.socket.remoteAddress,10);if(b.username!==adminUser||typeof b.password!=='string'||!equal(b.password,adminPassword))fail('اسم المستخدم أو الباسورد غير صحيح',401);cookie(res,'admin');return json({ok:true});}
+      if(path==='/api/admin/login'&&req.method==='POST'){rate('admin:'+req.socket.remoteAddress,10);if(b.username!==adminUser||typeof b.password!=='string'||!equal(b.password,adminPassword))fail("اسم المستخدم أو كلمة المرور غير صحيح",401);cookie(res,'admin');return json({ok:true});}
       if(path==='/api/admin/session'&&req.method==='GET'){session(req,'admin');return json({ok:true});}
       if(path==='/api/admin/state'&&req.method==='GET'){session(req,'admin');return json(state(req,s,true));}
       if(['/api/admin/logout','/api/auth/logout'].includes(path)&&req.method==='POST'){const role=path.includes('/admin/')?'admin':'customer';const row=session(req,role);db.prepare('DELETE FROM sessions WHERE token=?').run(row.token);res.setHeader('Set-Cookie',`masal_${role}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${secureCookies?'; Secure':''}`);return json({ok:true});}
@@ -68,7 +68,7 @@ export function createMasalServer({dbPath='server/data/masal.sqlite',adminUser=p
         rate('password:'+req.socket.remoteAddress,10);
         const phone=normalizePhone(b.phone),password=b.password;
         if(!/^07[3-9][0-9]{8}$/.test(phone))fail('اكتب رقم هاتف عراقي صحيح');
-        if(typeof password!=='string'||password.length<8||password.length>128)fail('الباسورد لازم يكون من 8 إلى 128 حرف.');
+        if(typeof password!=='string'||password.length<8||password.length>128)fail("كلمة المرور يجب أن تكون من 8 أرقام أو حروف فما فوق");
         let account=s.customers.find(c=>c.phone===phone);
         if(path.endsWith('/register')){
           if(account)fail('هذا الرقم مسجّل بالفعل');
@@ -80,7 +80,7 @@ export function createMasalServer({dbPath='server/data/masal.sqlite',adminUser=p
         }else{
           const credential=account&&db.prepare('SELECT * FROM credentials WHERE customer=?').get(account.id);
           const actual=scryptSync(password,credential?.salt||'masal-missing-account',64);
-          if(!credential||!timingSafeEqual(actual,Buffer.from(credential.digest,'hex')))fail('رقم الهاتف أو الباسورد غير صحيح.',401);
+          if(!credential||!timingSafeEqual(actual,Buffer.from(credential.digest,'hex')))fail("رقم الهاتف أو كلمة المرور غير صحيح",401);
           if(!account.active)fail('الحساب موقوف',403);
         }
         cookie(res,'customer',account.id);return json(identity(account));
@@ -93,7 +93,7 @@ export function createMasalServer({dbPath='server/data/masal.sqlite',adminUser=p
         const c=challenges.get(b.challengeId);
         if(!c||c.mode!=='reset'||Date.now()>=c.expiresAt||c.attempts>=5)fail('اطلب رمز تحقق جديداً');
         c.attempts++;if(typeof b.code!=='string'||!equal(hash(b.code),c.code))fail('رمز التحقق غير صحيح');
-        if(typeof b.password!=='string'||b.password.length<8||b.password.length>128)fail('الباسورد لازم يكون من 8 إلى 128 حرف.');
+        if(typeof b.password!=='string'||b.password.length<8||b.password.length>128)fail("كلمة المرور يجب أن تكون من 8 أرقام أو حروف فما فوق");
         const account=s.customers.find(a=>a.id===c.account.id);if(!account?.active||account.phone!==c.account.phone)fail('الحساب موقوف',403);
         const salt=randomBytes(16).toString('hex'),digest=scryptSync(b.password,salt,64).toString('hex');
         db.prepare('INSERT OR REPLACE INTO credentials VALUES (?,?,?)').run(account.id,salt,digest);
@@ -118,7 +118,7 @@ export function createMasalServer({dbPath='server/data/masal.sqlite',adminUser=p
         session(req,'admin');revision(s,b);const collection=path.slice('/api/admin/'.length),d=b.data;
         if(!d||typeof d!=='object')fail('بيانات غير صحيحة');
         if(collection==='categories'){try{upsertCategory(s.categories,s.products,d,randomUUID);}catch(e){fail(e.message);}}
-        else if(collection==='companies'){try{const previous=s.companies.find(c=>c.id===d.id);if(previous&&s.products.some(p=>p.manufacturerId===d.id&&d.role!=='manufacturer'&&d.role!=='both'||p.supplierCompanyId===d.id&&d.role!=='supplier'&&d.role!=='both'))fail('نوع الشركة مرتبط ببطاقات. عدّل ربط البطاقات أولاً.');upsertCompany(s.companies,d,randomUUID);}catch(e){fail(e.message);}}
+        else if(collection==='companies'){try{const previous=s.companies.find(c=>c.id===d.id);if(previous&&s.products.some(p=>p.manufacturerId===d.id&&d.role!=='manufacturer'&&d.role!=='both'||p.supplierCompanyId===d.id&&d.role!=='supplier'&&d.role!=='both'))fail("نوع الشركة مرتبط ببطاقات عدّل ربط البطاقات أولاً");upsertCompany(s.companies,d,randomUUID);}catch(e){fail(e.message);}}
         else if(collection==='settings'){const name=text(d.name,60),supportEmail=text(d.supportEmail,254),supportPhone=text(d.supportPhone,30),privacyText=text(d.privacyText??s.settings.privacyText,10000),aboutText=text(d.aboutText??s.settings.aboutText,10000);if(!name||!Number.isInteger(d.lowStock)||d.lowStock<0||d.lowStock>10000||supportEmail&&!/^\S+@\S+\.\S+$/.test(supportEmail))fail('إعدادات غير صحيحة');s.settings={name,supportEmail,supportPhone,privacyText,aboutText,lowStock:d.lowStock};}
         else if(['slides','middleSlides'].includes(collection)){if(!Array.isArray(d)||d.length>10)fail('الحد الأقصى 10 صور');s[collection]=d.map(slide=>{image(slide.src);return {id:text(slide.id,100),name:text(slide.name,200),src:slide.src};});}
         else if(['products','customers','suppliers','tickets','orders'].includes(collection)){
@@ -129,7 +129,7 @@ export function createMasalServer({dbPath='server/data/masal.sqlite',adminUser=p
           if(collection==='tickets'){if(!old||!['مفتوحة','قيد المعالجة','مغلقة'].includes(d.status))fail('تذكرة غير صحيحة');item={...old,status:d.status,reply:text(d.reply||'',2000)};}
           if(collection==='orders'){if(!old||!['مكتمل','قيد المراجعة','ملغي'].includes(d.status))fail('طلب غير صحيح');item={...old,status:d.status};}
           if(collection==='customers'&&d.password){
-            if(typeof d.password!=='string'||d.password.length<8||d.password.length>128)fail('الباسورد لازم يكون من 8 إلى 128 حرف.');
+            if(typeof d.password!=='string'||d.password.length<8||d.password.length>128)fail("كلمة المرور يجب أن تكون من 8 أرقام أو حروف فما فوق");
             const salt=randomBytes(16).toString('hex'),digest=scryptSync(d.password,salt,64).toString('hex');
             db.prepare('INSERT OR REPLACE INTO credentials VALUES (?,?,?)').run(item.id,salt,digest);
             db.prepare("DELETE FROM sessions WHERE role='customer' AND customer=?").run(item.id);

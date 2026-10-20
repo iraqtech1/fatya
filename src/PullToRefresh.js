@@ -60,5 +60,5 @@ export default {
     });
     return {t,language,distance,ready,refreshing};
   },
-  template:`<div class="pull-refresh" :class="{visible:distance>0,refreshing}" :style="{'--pull-distance':distance+'px'}" role="status" aria-live="polite"><RefreshCw :size="20" :style="{transform:'rotate('+distance*3+'deg)'}"/><span>{{refreshing?t("جاري التحديث…"):ready?t("اترك للتحديث"):t("اسحب للأسفل للتحديث")}}</span></div>`
+  template:`<div class="pull-refresh" :class="{visible:distance>0,refreshing}" :style="{'--pull-distance':distance+'px'}" role="status" aria-live="polite"><RefreshCw :size="20" :style="{transform:'rotate('+distance*3+'deg)'}"/><span>{{refreshing?t("جاري التحديث"):ready?t("اترك للتحديث"):t("اسحب للأسفل للتحديث")}}</span></div>`
 };

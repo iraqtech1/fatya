@@ -21,7 +21,7 @@ if(!connected&&typeof window!=='undefined')window.addEventListener('storage',eve
 export function saveSlides(next,placement='top'){
   if(next.length>MAX_SLIDES)throw Error('الحد الأقصى 10 صور');
   if(connected)return remoteSave(next,placement);
-  try{localStorage.setItem(placement==='middle'?middleKey:key,JSON.stringify(next));}catch{throw Error('مساحة الحفظ غير كافية. احذف صورة أو جرّب صورة أصغر.');}
+  try{localStorage.setItem(placement==='middle'?middleKey:key,JSON.stringify(next));}catch{throw Error("مساحة الحفظ غير كافية احذف صورة أو جرّب صورة أصغر");}
   const target=placement==='middle'?middleSlides:slides;target.splice(0,target.length,...next);
 }
 export async function prepareSlide(file){

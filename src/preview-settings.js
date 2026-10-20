@@ -19,7 +19,7 @@ export function readPreviewSettings(storage){
 export function savePreviewSettings(data,storage){
   const settings=cleanSettings(data);
   try{storage.setItem(SETTINGS_KEY,JSON.stringify(settings));}
-  catch{throw Error('تعذّر حفظ الإعدادات في المتصفح. اسمح بالتخزين وأعد المحاولة.');}
+  catch{throw Error("تعذّر حفظ الإعدادات في المتصفح اسمح بالتخزين وأعد المحاولة");}
   return settings;
 }
 

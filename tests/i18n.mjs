@@ -8,7 +8,7 @@ globalThis.location={hash:'#/'};
 const events=new Map();globalThis.window={addEventListener:(name,callback)=>events.set(name,callback)};
 const {t,setLanguage,language,denominations,cardCount}=await import('../src/i18n.js');
 assert.equal(language.value,'en');assert.equal(document.documentElement.dir,'ltr');assert.equal(document.documentElement.lang,'en');
-assert.equal(cardCount(1),'1 card');assert.equal(cardCount(2),'2 cards');assert.equal(denominations(1),'1 denomination available');assert.equal(t('طلباتي'),'My orders');assert.equal(t('اكتب اسمك الكامل.'),'Enter your full name.');
+assert.equal(cardCount(1),'1 card');assert.equal(cardCount(2),'2 cards');assert.equal(denominations(1),'1 denomination available');assert.equal(t('طلباتي'),'My orders');assert.equal(t("اكتب اسمك الكامل"),'Enter your full name');
 assert.equal(t('Custom user content'),'Custom user content','Custom content must be preserved');
 setLanguage('ar');assert.equal(document.documentElement.dir,'rtl');assert.equal(t('طلباتي'),'طلباتي');assert.equal(saved.get('masal-language'),'ar');
 setLanguage('invalid');assert.equal(language.value,'ar');

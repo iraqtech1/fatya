@@ -41,7 +41,7 @@ export function createOrder(product,denom,quantity,customer,payment='Qi'){
   const order={id:'FATYA-'+crypto.randomUUID().toUpperCase(),productId:product.id,name:product.name,value:product.values[denom],unit:product.unit||'د.ع',price:unit*quantity,quantity,date:isoDate(),customer:customer?.name||'زائر',phone:customer?.phone||'',email:customer?.email||'',...(customer?.previewId?{previewId:customer.previewId}:{}),kind:'فرد',status:'مكتمل',payment:(payment==='ZainCash'?'ZainCash':'Qi')};
   const knownIds=new Set(store.orders.map(o=>o.id));
   const previousOrders=[...store.orders,...readPreviewOrders(previewSettingsStorage).filter(o=>!knownIds.has(o.id))];
-  try{savePreviewOrders(previewSettingsStorage,[order,...previousOrders]);}catch{throw Error('تعذّر حفظ الطلب في المتصفح. اسمح بالتخزين وأعد المحاولة.');}
+  try{savePreviewOrders(previewSettingsStorage,[order,...previousOrders]);}catch{throw Error("تعذّر حفظ الطلب في المتصفح اسمح بالتخزين وأعد المحاولة");}
   if(product.stock[denom]>=quantity)product.stock[denom]-=quantity;
   store.orders.splice(0,store.orders.length,order,...previousOrders);record('طلب جديد: '+product.name);return order;
 }
