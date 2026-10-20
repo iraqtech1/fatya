@@ -1,5 +1,6 @@
-/* Lime and mint artwork accents are limited to the dashboard login screen. */
-.masal-login {
+/* Artwork accents stay on login; dashboard accents identify the active choice. */
+.masal-login,
+.admin-shell {
   --dashboard-icon-lime: #c1ef32;
   --dashboard-icon-mint: #b9e5d5;
   --dashboard-icon-edge: #749e2d99;
@@ -15,4 +16,21 @@ html:root #app .masal-login .masal-orbit-item {
 
 html:root #app .masal-login :is(.orbit-card, .orbit-chip, .orbit-game) {
   color: var(--dashboard-icon-lime) !important;
+}
+
+html:root #app .admin-shell .admin-sidebar nav button.active > svg:first-child,
+html:root #app .admin-shell .admin-stats > button.is-selected > div > svg {
+  color: var(--dashboard-icon-lime) !important;
+  background: var(--dashboard-icon-surface) !important;
+  border: 1px solid var(--dashboard-icon-edge) !important;
+  box-shadow: 0 0 9px #c1ef3226;
+  border-radius: 10px;
+}
+
+html:root #app .admin-shell .admin-sidebar nav button.active > svg:first-child {
+  box-sizing: border-box;
+  width: 34px;
+  height: 34px;
+  padding: 7px;
+  flex-shrink: 0;
 }
