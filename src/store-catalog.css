@@ -94,3 +94,32 @@ html:root[data-theme=dark] #app .store-filter-tabs>button[aria-pressed=true]{bac
  .store-variant-featured .store-card-art{height:auto;border-radius:9px}.store-variant-featured .store-card-name{font-size:10px}
  .store-filter-tabs{margin-block:16px 24px!important}.store-filter-tabs>button{padding-inline:11px;font-size:11px}
 }
+
+/* Frame each shortcut and company together with its label. */
+html:root #app .store-home-shortcuts>button,
+html:root #app .store-variant-brands .store-card{
+ border:1px solid #b7d96b;
+ border-radius:16px;
+ background:#ffffff30;
+ padding:12px 8px;
+ box-shadow:0 2px 8px #03403706;
+ transition:border-color .2s,background .2s;
+}
+html:root[data-theme=dark] #app .store-home-shortcuts>button,
+html:root[data-theme=dark] #app .store-variant-brands .store-card{
+ border-color:#b7d96b99;
+ background:#b7d96b08;
+}
+html:root #app .store-home-shortcuts>button:is(:hover,:focus-visible),
+html:root #app .store-variant-brands .store-card:is(:hover,:focus-visible){
+ border-color:#a4cb4f;
+ background:#b7d96b18;
+}
+@media(max-width:700px){
+ html:root #app .store-home-shortcuts>button{padding:9px 3px;border-radius:13px}
+ html:root #app .store-variant-brands .store-card{padding:10px 5px;border-radius:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ html:root #app .store-home-shortcuts>button,
+ html:root #app .store-variant-brands .store-card{transition:none}
+}
