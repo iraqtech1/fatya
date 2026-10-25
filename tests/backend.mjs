@@ -1,20 +1,9 @@
-import {DatabaseSync} from 'node:sqlite';
 import assert from 'node:assert/strict';
-import {mkdtempSync,rmSync} from 'node:fs';
-import {tmpdir} from 'node:os';
-import {join} from 'node:path';
-import {createMasalServer} from '../server/app.mjs';
-const dir=mkdtempSync(join(tmpdir(),'masal-test-'));
-let app,base;
-async function start(){app=createMasalServer({dbPath:join(dir,'test.sqlite'),adminPassword:'test-password-123456',developmentOtp:true});await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));base='http://127.0.0.1:'+app.server.address().port;}
-async function stop(){await new Promise(resolve=>app.server.close(resolve));app.close();}
-function client(){let cookie='';return async(path,body,method=body===undefined?'GET':'POST',expected=200)=>{const response=await fetch(base+'/api'+path,{method,headers:{...(cookie?{Cookie:cookie}:{}),...(body!==undefined?{'Content-Type':'application/json'}:{})},body:body===undefined?undefined:JSON.stringify(body)});if(response.headers.get('set-cookie'))cookie=response.headers.get('set-cookie').split(';')[0];const data=await response.json();assert.equal(response.status,expected,JSON.stringify(data));return data;};}
+import {artisan,start,stop,base} from './laravel-harness.mjs';
+function client(){let cookie='';return async(path,body,method=body===undefined?'GET':'POST',expected=200)=>{const response=await fetch(base+'/api'+path,{method,headers:{Accept:'application/json',...(cookie?{Cookie:cookie}:{}),...(body!==undefined?{'Content-Type':'application/json','X-Fatya-Request':'1'}:{})},body:body===undefined?undefined:JSON.stringify(body)});if(response.headers.get('set-cookie'))cookie=response.headers.get('set-cookie').split(';')[0];const data=await response.json();assert.equal(response.status,expected,JSON.stringify(data));return data;};}
 try{
+  artisan('migrate:fresh','--force');artisan('fatya:seed');
   await start();
-  // Existing databases predate managed categories; keep their product assignments.
-  const legacyDb=new DatabaseSync(join(dir,'test.sqlite'));
-  const legacy=JSON.parse(legacyDb.prepare('SELECT value FROM state WHERE id=1').get().value);delete legacy.categories;delete legacy.companies;legacy.settings.name='ماسال';
-  legacyDb.prepare('UPDATE state SET value=? WHERE id=1').run(JSON.stringify(legacy));legacyDb.close();
   const admin=client(),alice=client(),bob=client(),anon=client();
   await anon('/admin/state',undefined,'GET',401);
   await admin('/admin/login',{username:'masal',password:'masal'},'POST',401);
@@ -146,4 +135,4 @@ try{
   await passwordLogin('/auth/me',undefined,'GET',403);
   await admin('/admin/logout',{});await admin('/admin/state',undefined,'GET',401);
   console.log('Backend persistence, sessions, customer isolation, admin updates, images, imports, conflicts, OTP and restart checks passed.');
-}finally{if(app?.server.listening)await stop();rmSync(dir,{recursive:true,force:true});}
+}finally{await stop();}

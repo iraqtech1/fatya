@@ -7,3 +7,15 @@ dist/
 .openai/
 
 server/data/
+backend/public/assets/
+backend/public/brand/
+backend/public/cards/
+backend/public/fonts/
+backend/public/icons/
+backend/public/middle-banners/
+backend/public/payments/
+backend/public/index.html
+backend/public/*.png
+backend/public/*.svg
+backend/public/*.js
+backend/public/*.webmanifest

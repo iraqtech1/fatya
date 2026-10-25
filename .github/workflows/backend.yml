@@ -1,0 +1,45 @@
+name: Laravel and MariaDB
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:12.3.3
+        env:
+          MARIADB_ROOT_PASSWORD: ci-only-password
+          MARIADB_DATABASE: fatya_contract_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, pdo_sqlite, sodium
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: composer install --working-dir=backend --prefer-dist --no-interaction
+      - run: cp backend/.env.example backend/.env
+      - run: php backend/artisan key:generate --force
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:api
+        env:
+          FATYA_TEST_DATABASE: fatya_contract_test
+          FATYA_TEST_DB_HOST: 127.0.0.1
+          FATYA_TEST_DB_PORT: 3306
+          FATYA_TEST_DB_USERNAME: root
+          FATYA_TEST_DB_PASSWORD: ci-only-password
+      - run: php artisan test
+        working-directory: backend
+      - run: composer audit --working-dir=backend
