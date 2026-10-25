@@ -32,7 +32,28 @@ MariaDB transactions lock the store revision across workers; stale administrator
 - Guest sessions and the existing phone/password and legacy OTP API contracts.
 - Customer notifications for orders, status changes, tickets and replies, with private read/unread status stored in MariaDB.
 
-Qi/ZainCash payment collection, payment webhooks, supplier API fulfillment and actual delivery of redemption codes remain unimplemented integrations from the original project. Checkout remains a simulation: it does not charge or decrement real stock. A reset/legacy OTP delivery provider must be configured with `OTP_WEBHOOK_URL` and `OTP_WEBHOOK_TOKEN`; ordinary phone/password registration and login do not need it.
+Checkout now reserves actual imported inventory for 15 minutes by default. Reservations atomically remove the held quantity from available stock. Cancellation/expiry releases unpaid holds; verified payment permanently assigns the held codes to the order. Delivery is idempotent and an inventory card can appear in the delivery ledger only once. The existing copy button retrieves codes only for the active owner of a paid, delivered order; neither shared state nor administrator state exposes codes.
+
+Real Qi/ZainCash collection and authenticated payment webhooks are **not connected yet**. Browser requests and administrator status changes cannot confirm payment. Until a gateway adapter is implemented, use only the explicitly enabled local/test CLI simulator documented below. Supplier API fulfillment is also deferred. A reset/legacy OTP delivery provider must be configured with `OTP_WEBHOOK_URL` and `OTP_WEBHOOK_TOKEN`; ordinary phone/password registration and login do not need it.
+
+## Reservation and delivery lifecycle
+
+- Import cards before checkout; insufficient stock returns HTTP 409 without a partial hold or order.
+- The server freezes amount, currency, product denomination and quantity when reserving. Reusing an order reference with changed contents is rejected.
+- `OrderFulfillment::confirm(VerifiedPayment)` is an internal boundary for a future gateway adapter **after it verifies provider authenticity and successful settled payment**. No HTTP confirmation/simulation endpoint is exposed.
+- A matching receipt delivers the precise reserved cards in one MariaDB transaction, marks the order completed and notifies the owner. Transaction IDs and event IDs are deduplicated per provider. Retrying cannot reassign a card or issue extra codes.
+- Amount/currency/provider mismatch, late/cancelled reservations, inactive customers or incomplete allocation go to payment review without exposing codes. An additional payment for a delivered order also goes to review and does not deliver more stock. No automatic financial refund is implemented.
+- A corrupt encrypted item rolls the entire acceptance/delivery transaction back; no partial delivery is committed.
+- Run `php artisan fatya:expire-reservations` from the backend, or use the Laravel scheduler every minute. A new checkout also releases expired holds before allocating. Configure `RESERVATION_MINUTES` (1–60, default 15). Five active holds per customer are allowed.
+- Legacy simulation orders have no payment/reservation proof and are never converted automatically into paid orders. Their codes cannot be retrieved. New orders must reserve inventory through the new flow.
+
+For isolated local testing only, set `APP_ENV=local` (or `testing`) and explicitly enable `ALLOW_PAYMENT_SIMULATION=true`. In `backend/`, simulate a receipt using the frozen order amount and provider:
+
+```sh
+php artisan fatya:simulate-payment ORDER-UUID --amount=2100 --provider=Qi --transaction=local-receipt-001 --event=local-event-001
+```
+
+This command charges nothing. It refuses to run in production even when the enable flag is true, and is disabled by default. Never expose it through a web route. Keep `ALLOW_PAYMENT_SIMULATION=false` on deployed environments. It prints receipt outcome only, never redemption codes. The owner retrieves codes through `GET /api/orders/{id}/codes` only after successful delivery; responses use `Cache-Control: no-store`. Keep code payloads out of logs, analytics, exports and the PWA cache.
 
 ## Verification
 
@@ -42,6 +63,7 @@ Qi/ZainCash payment collection, payment webhooks, supplier API fulfillment and a
 - From `backend/`, `php artisan test` runs PHP account normalization and legacy password compatibility tests.
 - `npm run test:api` exercises a real Laravel HTTP server against MariaDB, including restart persistence, authorization, pricing, conflicts, imports, OTP, origin protection, hashed sessions, encrypted inventory and SQLite migration.
 - The same suite also mounts the real Vue dashboard/store against Laravel to check settings conflicts, role cleanup, account suspension, failed background refreshes, notification isolation and persistence of every store collection.
+- Reservation tests run two separate PHP server processes against one MariaDB database, race for the last card, race cancellation/payment, replay receipts, and cover expiry/reuse, money checks, multi-card atomic rollback, customer isolation and the production simulator guard. Payment receipts in tests are synthetic; no provider network request or charge occurs.
 
 For API tests, create a dedicated disposable database whose name ends in `_test`, set `FATYA_TEST_DATABASE`, then run the command. The runner resets **only that named test database**. It uses connection settings from `backend/.env`, optionally overridden by `FATYA_TEST_DB_HOST`, `FATYA_TEST_DB_PORT`, `FATYA_TEST_DB_USERNAME`, `FATYA_TEST_DB_PASSWORD`, and `PHP_BIN`. GitHub Actions also defines this MariaDB integration suite.
 

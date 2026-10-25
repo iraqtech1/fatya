@@ -7,6 +7,7 @@ use App\Services\Accounts;
 use App\Services\CatalogEditor;
 use App\Services\CustomerNotifications;
 use App\Services\Inventory;
+use App\Services\OrderFulfillment;
 use App\Services\Otp;
 use App\Services\Store;
 use Illuminate\Http\Request;
@@ -230,29 +231,16 @@ class StoreController extends Controller
 
             return $json(Accounts::identity($c));
         }
-        if ($path === '/api/orders' && $req->isMethod('POST')) {
-            $c = $this->accounts->customer($req, $s);
-            $p = collect($s['products'])->first(fn ($p) => $p['id'] === ($b['productId'] ?? null) && $p['active'] && collect($s['categories'])->contains(fn ($cat) => $cat['active'] && $cat['name'] === $p['category']));
-            if (! $p || ! is_int($b['denom'] ?? null) || $b['denom'] < 0 || $b['denom'] >= count($p['values']) || ! is_int($b['quantity'] ?? null) || $b['quantity'] < 1 || $b['quantity'] > 20) {
-                throw new ApiError('تفاصيل الطلب غير صحيحة');
-            }
-            if (! in_array($b['payment'] ?? '', ['Qi', 'ZainCash'])) {
-                throw new ApiError('وسيلة الدفع غير صحيحة');
-            }
-            if (! is_string($b['reference'] ?? null) || mb_strlen($b['reference']) > 100) {
-                throw new ApiError('مرجع الطلب مطلوب');
-            }
-            $old = collect($s['orders'])->first(fn ($o) => $o['customerId'] === $c['id'] && $o['reference'] === $b['reference']);
-            if ($old) {
-                return $json($old);
-            }
-            $o = ['id' => 'ORDER-'.Str::uuid(), 'reference' => $b['reference'], 'customerId' => $c['id'], 'customer' => $c['name'], 'phone' => $c['phone'], 'email' => $c['email'], ...isset($c['previewId']) ? ['previewId' => $c['previewId']] : [], 'productId' => $p['id'], 'name' => $p['name'], 'value' => $p['values'][$b['denom']], 'quantity' => $b['quantity'], 'price' => $p['prices'][$b['denom']] * $b['quantity'], 'date' => now('Asia/Baghdad')->toDateString(), 'kind' => $c['kind'], 'status' => 'قيد المراجعة', 'payment' => $b['payment']];
-            array_unshift($s['orders'], $o);
-            $this->store->event($s, 'طلب جديد: '.$p['name']);
-            $this->store->save($s);
-            $notifications->send($c['id'], 'تم إضافة طلبك', 'تفاصيل البطاقة متاحة في صفحة طلباتي', 'order-'.$o['id']);
+        if (preg_match('~^/api/orders/([^/]+)/codes$~D', $path, $match) && $req->isMethod('GET')) {
+            $customer = $this->accounts->customer($req, $s);
 
-            return $json($o, 201);
+            return $json(app(OrderFulfillment::class)->codes($match[1], $customer));
+        }
+        if ($path === '/api/orders' && $req->isMethod('POST')) {
+            $customer = $this->accounts->customer($req, $s);
+            $result = app(OrderFulfillment::class)->reserve($customer, $b);
+
+            return $json($result['order'], $result['created'] ? 201 : 200);
         }
         if ($path === '/api/tickets' && $req->isMethod('POST')) {
             $c = $this->accounts->customer($req, $s);
@@ -276,6 +264,9 @@ class StoreController extends Controller
             $data = $b['data'] ?? null;
             if (! is_array($data) || (! in_array($collection, ['slides', 'middleSlides']) && array_is_list($data))) {
                 throw new ApiError('بيانات غير صحيحة');
+            }
+            if ($collection === 'orders') {
+                return $json(app(OrderFulfillment::class)->adminStatus(CatalogEditor::text($data['id'] ?? null, 100), $data['status'] ?? null));
             }
             $previous = in_array($collection, ['orders', 'tickets']) ? collect($s[$collection])->firstWhere('id', $data['id'] ?? null) : null;
             $item = $this->editor->update($s, $collection, $data);

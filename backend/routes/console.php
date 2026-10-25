@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\OrderFulfillment;
 use App\Services\Store;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -17,3 +18,7 @@ Artisan::command('fatya:prune', function () {
 })->purpose('Remove expired authentication data');
 
 Schedule::command('fatya:prune')->hourly()->withoutOverlapping();
+Artisan::command('fatya:expire-reservations', function (OrderFulfillment $fulfillment) {
+    $this->info('Expired reservations released: '.$fulfillment->expire());
+})->purpose('Release unpaid expired inventory reservations');
+Schedule::command('fatya:expire-reservations')->everyMinute()->withoutOverlapping();

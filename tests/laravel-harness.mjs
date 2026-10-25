@@ -7,9 +7,11 @@ const settings=parseEnv(readFileSync(new URL('../backend/.env',import.meta.url),
 const database=process.env.FATYA_TEST_DATABASE;
 if(!database||!database.endsWith('_test'))throw Error('Set FATYA_TEST_DATABASE to a dedicated disposable MariaDB database ending in _test.');
 export const env={...process.env,...settings,APP_ENV:'testing',APP_DEBUG:'false',DB_CONNECTION:'mariadb',DB_DATABASE:database,ADMIN_USER:'masal',ADMIN_PASSWORD:'test-password-123456',DEV_OTP:'true',SESSION_SECURE_COOKIE:'false',BCRYPT_ROUNDS:'4'};
+env.ALLOW_PAYMENT_SIMULATION='true';
 for(const key of ['HOST','PORT','USERNAME','PASSWORD'])if(process.env['FATYA_TEST_DB_'+key]!==undefined)env['DB_'+key]=process.env['FATYA_TEST_DB_'+key];
 export function artisan(...args){const r=spawnSync(php,['artisan',...args,'--no-ansi'],{cwd,env,encoding:'utf8'});if(r.status!==0)throw Error(r.stdout+r.stderr);return r.stdout;}
 export function probe(code){const r=spawnSync(php,['-r',"require 'vendor/autoload.php'; $app = require 'bootstrap/app.php'; $app->make(Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap(); "+code],{cwd,env,encoding:'utf8'});if(r.status!==0)throw Error(r.stdout+r.stderr);return JSON.parse(r.stdout);}
+export function confirmPayment(order,amount,transaction='test-'+order,provider='Qi',currency='IQD',event=transaction){return JSON.parse(artisan('fatya:simulate-payment',order,'--amount='+amount,'--provider='+provider,'--currency='+currency,'--transaction='+transaction,'--event='+event).trim());}
 let app,port,output='';
 export let base;
 export async function start(){

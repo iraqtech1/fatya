@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {artisan,start,stop,base} from './laravel-harness.mjs';
+import {artisan,start,stop,base,confirmPayment} from './laravel-harness.mjs';
 function client(){let cookie='';return async(path,body,method=body===undefined?'GET':'POST',expected=200)=>{const response=await fetch(base+'/api'+path,{method,headers:{Accept:'application/json',...(cookie?{Cookie:cookie}:{}),...(body!==undefined?{'Content-Type':'application/json','X-Fatya-Request':'1'}:{})},body:body===undefined?undefined:JSON.stringify(body)});if(response.headers.get('set-cookie'))cookie=response.headers.get('set-cookie').split(';')[0];const data=await response.json();assert.equal(response.status,expected,JSON.stringify(data));return data;};}
 try{
   artisan('migrate:fresh','--force');artisan('fatya:seed');
@@ -11,6 +11,7 @@ try{
   assert.equal((await admin('/admin/state')).settings.name,'فاتيا','Existing databases show the new brand while the original admin credentials still work');
   const a=await alice('/auth/guest',{}),b=await bob('/auth/guest',{});assert.notEqual(a.id,b.id);
   let state=await admin('/admin/state');assert.equal(state.categories.length,5,'Existing database gains initial categories');assert.ok(state.products.every(p=>state.categories.some(c=>c.name===p.category)));const product=state.products[0];
+  state=(await admin('/admin/import',{revision:state.revision,name:'order-stock.xlsx',rows:[1,2].map(i=>({product_id:product.id,denomination:product.values[0],code:'ORDER-FIXTURE-'+i,serial:'order-fixture-'+i}))})).state;
   const order=await alice('/orders',{productId:product.id,denom:0,quantity:2,payment:'Qi',reference:'retry-1',price:1,customerId:b.id},'POST',201);
   assert.equal(order.price,product.prices[0]*2);assert.equal(order.customerId,a.id);assert.equal(order.status,'قيد المراجعة');
   assert.equal((await alice('/orders',{productId:product.id,denom:0,quantity:2,payment:'Qi',reference:'retry-1'})).id,order.id);
@@ -23,6 +24,7 @@ try{
   state=await admin('/admin/tickets',{revision:state.revision,data:{id:ticket.id,reply:'We are checking',status:'قيد المعالجة'}},'PUT');
   assert.equal((await alice('/state')).tickets[0].reply,'We are checking');
   await admin('/admin/settings',{revision:stale,data:state.settings},'PUT',409);
+  confirmPayment(order.id,String(order.price));state=await admin('/admin/state');
   state=await admin('/admin/orders',{revision:state.revision,data:{id:order.id,status:'مكتمل',price:1,customerId:b.id}},'PUT');
   assert.equal((await alice('/state')).orders[0].status,'مكتمل');assert.equal(state.orders[0].price,order.price);
   state=await admin('/admin/products',{revision:state.revision,data:{...product,image:'https://example.com/card.png',prices:product.prices.map(p=>p+10)}},'PUT');

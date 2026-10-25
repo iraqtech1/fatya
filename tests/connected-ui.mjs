@@ -42,6 +42,8 @@ try{
   assert.equal(dashboard.settings.name,'Unsaved draft','Polling does not erase an unsaved settings draft');
   await dashboard.saveSettings();assert.match(dashboard.notice,/البيانات تغيرت/);assert.equal((await api('/state')).settings.name,'Another administrator');
   app.unmount();app=null;assert.equal(connection.admin,false,'Leaving dashboard resets the active API role');assert.equal(store.customers.length,0);await refreshStore();
+  const inventoryState=await api('/admin/state');const inventoryProduct=inventoryState.products[0];
+  await api('/admin/import',{revision:inventoryState.revision,name:'connected-stock.xlsx',rows:[{product_id:inventoryProduct.id,denomination:inventoryProduct.values[0],code:'CONNECTED-FIXTURE',serial:'connected-fixture'}]});
   const user=await api('/auth/register',{name:'Connected Customer',phone:'07812345678',email:'',password:'connected-password'});await refreshStore();
   assert.equal(connection.customer.id,user.id);
   const p=store.products[0];failSnapshot=true;

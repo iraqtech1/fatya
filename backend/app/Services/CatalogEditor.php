@@ -184,11 +184,7 @@ class CatalogEditor
                 $item = [...$old, 'status' => $d['status'], 'reply' => self::text($d['reply'] ?? '', 2000)];
                 break;
             case 'orders':
-                if (! $old || ! in_array($d['status'] ?? '', ['مكتمل', 'قيد المراجعة', 'ملغي'])) {
-                    throw new ApiError('طلب غير صحيح');
-                }
-                $item = [...$old, 'status' => $d['status']];
-                break;
+                throw new ApiError('استخدم خدمة حجز وتسليم الطلبات', 409);
             default: throw new ApiError('غير موجود', 404);
         }
         if ($old) {

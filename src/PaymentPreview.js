@@ -1,5 +1,6 @@
 import {t} from './i18n.js';
 import {connected} from './api.js';
+import {store} from './store.js';
 import {limitPhoneInput} from './phone-input.js';
 import {computed,ref} from 'vue/dist/vue.esm-bundler.js';
 import {ArrowRight,Check,ShieldCheck} from 'lucide-vue-next';
@@ -7,7 +8,7 @@ import './payment-preview.css';
 export default {
  components:{ArrowRight,Check,ShieldCheck},
  props:{checkout:Object,receipt:{type:String,default:''}},emits:['confirm','back','orders'],
- setup(props){const amount=computed(()=>new Intl.NumberFormat('en-US').format(props.checkout.amount));const buyer=ref(''),account=ref(''),expiry=ref('');return {connected,limitPhoneInput,t,amount,buyer,account,expiry};},
+ setup(props){const amount=computed(()=>new Intl.NumberFormat('en-US').format(props.checkout.amount));const buyer=ref(''),account=ref(''),expiry=ref('');const savedOrder=computed(()=>store.orders.find(o=>o.id===props.receipt));const receiptTitle=computed(()=>savedOrder.value?.codesAvailable?'تم تأكيد الدفع':savedOrder.value?.status==='ملغي'?'تم إلغاء الطلب':'تم استلام الطلب');const receiptMessage=computed(()=>savedOrder.value?.codesAvailable?'أكواد طلبك متاحة من طلباتي':savedOrder.value?.paymentStatus==='review'?'تأكيد الدفع يحتاج مراجعة الإدارة':savedOrder.value?.status==='ملغي'?'الحجز منتهي أو ملغي؛ أنشئ طلباً جديداً':'طلبك قيد المراجعة ولم يتم تحصيل دفعة');return {connected,receiptTitle,receiptMessage,limitPhoneInput,t,amount,buyer,account,expiry};},
  template:`<section class="payment-preview" :aria-label="t('صفحة الدفع')">
  <div class="payment-page-heading"><button v-if="!receipt" class="account-back" @click="$emit('back')"><ArrowRight :size="18"/>{{t('تأكيد عملية الدفع')}}</button></div>
  <template v-if="!receipt">
@@ -22,6 +23,6 @@ export default {
  <label v-else>{{t('رقم محفظة زين كاش')}}<input v-model="account" required inputmode="numeric" pattern="07[0-9]{9}" @input="account=limitPhoneInput($event)" minlength="11" maxlength="11" dir="ltr" placeholder="07700000000" autocomplete="off"/></label>
  <label v-if="checkout.method==='Qi'">{{t('تاريخ الانتهاء')}}<input v-model="expiry" required pattern="(0[1-9]|1[0-2])/[0-9]{2}" maxlength="5" dir="ltr" placeholder="12/30" autocomplete="off"/></label>
  </div><div class="payment-amount-row"><span>{{t('مبلغ الطلب')}}</span><strong>{{amount}} {{t('د.ع')}}</strong></div><div class="payment-amount-row payment-final-total"><span>{{t('المبلغ الكلي')}}</span><strong>{{amount}} {{t('د.ع')}}</strong></div><button class="primary wide payment-confirm" type="submit">{{t('تأكيد')}} · {{amount}} {{t('د.ع')}}</button></form></template>
- <div v-else class="payment-preview-card success"><span><Check :size="36"/></span><h2>{{t(connected?'تم استلام الطلب':'تم تأكيد الدفع')}}</h2><p>{{t(connected?'طلبك قيد المراجعة ولم يتم تحصيل دفعة':'أضفنا طلبك إلى طلباتي')}}</p><p dir="ltr">{{receipt}}</p><button class="primary wide" @click="$emit('orders')">{{t('عرض طلباتي')}}</button></div>
+ <div v-else class="payment-preview-card success"><span><Check :size="36"/></span><h2>{{t(connected?receiptTitle:'تم تأكيد الدفع')}}</h2><p>{{t(connected?receiptMessage:'أضفنا طلبك إلى طلباتي')}}</p><p dir="ltr">{{receipt}}</p><button class="primary wide" @click="$emit('orders')">{{t('عرض طلباتي')}}</button></div>
  </section>`
 };

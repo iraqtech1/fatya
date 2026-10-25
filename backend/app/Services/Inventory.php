@@ -9,6 +9,14 @@ use Illuminate\Support\Str;
 
 class Inventory
 {
+    public function refreshStock(array &$s): void
+    {
+        $rows = DB::table('inventory_cards')->whereNull('reserved_order_id')->whereNull('sold_order_id')->selectRaw('product_id, denomination, COUNT(*) AS available')->groupBy('product_id', 'denomination')->get();
+        foreach ($s['products'] as &$p) {
+            $p['stock'] = array_map(fn ($value) => (int) ($rows->first(fn ($r) => $r->product_id === (string) $p['id'] && (float) $r->denomination === (float) $value)->available ?? 0), $p['values']);
+        }
+    }
+
     public function search(array $s, mixed $serial): ?array
     {
         $key = CatalogEditor::text($serial, 256);

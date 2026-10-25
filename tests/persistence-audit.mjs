@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {artisan,start,stop,base,probe} from './laravel-harness.mjs';
+import {artisan,start,stop,base,probe,confirmPayment} from './laravel-harness.mjs';
 function client(){let cookie='';return async(path,body,method=body===undefined?'GET':'POST',status=200)=>{const r=await fetch(base+'/api'+path,{method,headers:{Cookie:cookie,Accept:'application/json',...(body===undefined?{}:{'Content-Type':'application/json','X-Fatya-Request':'1'})},body:body===undefined?undefined:JSON.stringify(body)});if(r.headers.get('set-cookie'))cookie=r.headers.get('set-cookie').split(';')[0];const data=await r.json();assert.equal(r.status,status,JSON.stringify(data));return data;};}
 try{
   artisan('migrate:fresh','--force');artisan('fatya:seed');await start();
@@ -19,10 +19,10 @@ try{
   await save('slides',slides);await save('slides',[slides[1],slides[0]]);await save('slides',[slides[1]]);await save('middleSlides',slides);
   assert.equal(probe("echo json_encode(Illuminate\\Support\\Facades\\DB::table('slides')->count());"),1,'Banner removal deletes its stored record');
   await save('settings',{...s.settings,name:'متجر الفحص',supportEmail:'support@example.test',supportPhone:'07712345678',privacyText:'Privacy\nSaved line',aboutText:'About\nSaved line',lowStock:7});
-  const imported=await admin('/admin/import',{revision:s.revision,name:'audit.xlsx',rows:[{product_id:product.id,denomination:5000,code:'PRIVATE-AUDIT-1',serial:'0000-audit-1'},{product_id:product.id,denomination:10000,code:'PRIVATE-AUDIT-2',serial:'0000-audit-2'}]});s=imported.state;assert.equal(imported.accepted,2);
+  const imported=await admin('/admin/import',{revision:s.revision,name:'audit.xlsx',rows:[{product_id:product.id,denomination:5000,code:'PRIVATE-AUDIT-1',serial:'0000-audit-1'},{product_id:product.id,denomination:10000,code:'PRIVATE-AUDIT-2',serial:'0000-audit-2'},{product_id:product.id,denomination:10000,code:'PRIVATE-AUDIT-3',serial:'0000-audit-3'}]});s=imported.state;assert.equal(imported.accepted,3);
   const order=await customer('/orders',{productId:product.id,denom:1,quantity:2,payment:'ZainCash',reference:'persistence-audit'},'POST',201);
   const ticket=await customer('/tickets',{subject:'فحص الحفظ',message:'Verify support persistence'},'POST',201);
-  s=await admin('/admin/state');await save('orders',{id:order.id,status:'مكتمل'});await save('tickets',{id:ticket.id,status:'مغلقة',reply:'Persistence checked'});
+  confirmPayment(order.id,String(order.price),'audit-payment','ZainCash');s=await admin('/admin/state');await save('tickets',{id:ticket.id,status:'مغلقة',reply:'Persistence checked'});
   assert.equal(order.price,21000);
   const expected=await admin('/admin/state'),publicExpected=await customer('/state');
   await stop();await start();
