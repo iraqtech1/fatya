@@ -2,6 +2,8 @@
 
 Vue 3 + Vite PWA with a Laravel 13 API and MariaDB database. The customer application and dashboard retain their existing Vue components, design, API routes and response shapes. `#/admin` opens administration.
 
+لإكمال العمل من جهاز الشركة، ابدأ بـ[دليل التنصيب والتشغيل على Windows](docs/company-setup-ar.txt)، ثم اقرأ [ملف المتابعة: المنجز والباقي ونتائج الفحوصات](docs/project-handoff-ar.txt). أمثلة كلمات المرور في الدليل نصوص بديلة فقط؛ أنشئ بيانات بيئتك محلياً.
+
 ## Requirements and development
 
 - PHP 8.3+ with the Laravel-required extensions, PDO MySQL and Argon2id password support. Sodium and PDO SQLite are needed only when importing old SQLite accounts.

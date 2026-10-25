@@ -1,0 +1,225 @@
+تشغيل فاتيا على جهاز الشركة — Windows / PowerShell
+إعداد بتاريخ 26 أكتوبر 2026
+المستودع: https://github.com/iraqtech1/fatya
+آخر نسخة تحققنا من نجاح CI عليها: cb4abdc42016e250f4fc63c76ec2e94dbc737d9d
+
+هذا الدليل يبدأ بقاعدة محلية جديدة. نقل بيانات الجهاز السابق موضح بآخر الملف.
+الداش والتطبيق داخل نفس المشروع؛ لا يحتاجان مشروعين منفصلين.
+
+1. البرامج المطلوبة، بالترتيب
+
+أ) Git for Windows x64:
+https://git-scm.com/install/windows
+أبقِ خيار استعمال Git من سطر الأوامر مفعلاً في المثبت.
+
+ب) Node.js 22.x، إصدار 22.13 أو أحدث من نفس السلسلة، Windows x64 MSI:
+https://nodejs.org/en/download
+اختر v22 من قائمة الإصدارات، لتطابق سلسلة Node المستخدمة في CI.
+npm يُثبت معه.
+
+ج) PHP 8.4.x، أحدث تحديث من السلسلة، Windows x64 Non Thread Safe:
+https://www.php.net/downloads.php?os=windows&version=8.4
+مثال ثابت للمسار: فك ZIP داخل C:\Tools\php84 بحيث يوجد C:\Tools\php84\php.exe.
+اختر ZIP العادي، وليس Debug Pack أو SDK.
+ثبت Visual C++ Redistributable x64 إذا طلبته حزمة PHP؛ رابط المتطلب موجود في صفحة PHP الرسمية.
+انسخ php.ini-development إلى php.ini داخل نفس المجلد.
+داخل php.ini اضبط extension_dir="ext"، وفعّل الإضافات التالية بإزالة ; من بداية أسطرها:
+extension=curl
+extension=fileinfo
+extension=mbstring
+extension=openssl
+extension=pdo_mysql
+extension=pdo_sqlite
+extension=sodium
+extension=zip
+إضافات XML/DOM الأساسية تأتي ضمن حزمة Windows المعتادة؛ Composer يفحص متطلبات المشروع.
+فعّل pdo_sqlite وsodium حتى تعمل اختبارات الاستيراد والتوافق القديمة أيضاً.
+أضف C:\Tools\php84 إلى PATH قبل أي PHP قديم مثل XAMPP، ثم افتح PowerShell جديداً.
+بديل مؤقت لكل نافذة PowerShell: $env:PATH='C:\Tools\php84;'+$env:PATH
+
+د) Composer 2:
+https://getcomposer.org/doc/00-intro.md#installation-windows
+شغّل Composer-Setup.exe وحدد له C:\Tools\php84\php.exe عند السؤال عن PHP.
+افتح نافذة PowerShell جديدة بعد التثبيت.
+
+هـ) MariaDB Server 12.3.3 x64، وهي النسخة التي اختبرنا المشروع عليها:
+https://mariadb.org/download/
+اختر Windows وMSI. فعّل تشغيل قاعدة البيانات كـWindows Service.
+احفظ باسورد root الذي تختاره. استخدم port 3306 إذا كان فارغاً، أو 3307 عند التعارض.
+سجّل المنفذ لاستخدامه في .env. لا تحتاج تشغيل نسخة XAMPP أخرى فوقها.
+دليل التثبيت الرسمي:
+https://mariadb.com/docs/server/server-management/install-and-upgrade-mariadb/installing-mariadb/binary-packages/installing-mariadb-msi-packages-on-windows
+
+و) محرر كود اختياري: Visual Studio Code
+https://code.visualstudio.com/download
+ومتصفح Chrome أو Edge لتجربة التطبيق والداش.
+Vue وVite وLaravel تنزل ضمن اعتماديات المشروع؛ لا تثبتها يدوياً بشكل global.
+تشغيل التطوير يستخدم خادم PHP وVite مباشرة؛ لا يحتاج Apache أو cPanel محلياً.
+
+2. افحص البرامج
+من PowerShell جديد:
+git --version
+node --version
+npm.cmd --version
+php -v
+php --ini
+composer --version
+php -m
+
+تأكد PHP هو 8.4 وليس 8.2. استخدم where.exe php لمعرفة المسارات المتاحة.
+نستخدم npm.cmd لتجنب مشكلة منع npm.ps1 في بعض إعدادات PowerShell، بدون تغيير سياسة الجهاز.
+
+3. اسحب المشروع للمرة الأولى
+من PowerShell:
+New-Item -ItemType Directory -Force C:\Projects
+Set-Location C:\Projects
+git clone https://github.com/iraqtech1/fatya.git
+Set-Location C:\Projects\fatya
+git log -1 --oneline
+
+إذا عندك نسخة موجودة مسبقاً:
+Set-Location C:\Projects\fatya
+git status
+تأكد من حفظ أي تعديلات موجودة قبل المتابعة، ثم:
+git switch main
+git pull --ff-only origin main
+
+لا تحتاج الأرشيف للحصول على تعديلات الحجز؛ كلها الآن داخل GitHub.
+
+4. أنشئ قاعدة ومستخدماً محليين
+افتح MariaDB Command Prompt من Start، أو افتح عميل SQL الذي ثبتّته.
+اتصل بحساب root وباسورد التثبيت. إذا احتجت الأمر من PowerShell، عدل مسار النسخة:
+& 'C:\Program Files\MariaDB 12.3\bin\mariadb.exe' -u root -p
+
+داخل عميل MariaDB نفذ SQL التالي بعد استبدال CHANGE_THIS_DB_PASSWORD بباسورد خاص بك:
+CREATE DATABASE fatya_dev CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'fatya'@'127.0.0.1' IDENTIFIED BY 'CHANGE_THIS_DB_PASSWORD';
+GRANT ALL PRIVILEGES ON fatya_dev.* TO 'fatya'@'127.0.0.1';
+
+هذه أوامر إعداد مرة واحدة لقاعدة جديدة. لا تعيد إنشاء حساب موجود أو تحذف قاعدة قديمة.
+
+5. نزّل الاعتماديات واضبط البيئة
+ارجع إلى PowerShell داخل C:\Projects\fatya:
+npm.cmd ci
+composer install --working-dir=backend
+Copy-Item backend\.env.example backend\.env
+notepad backend\.env
+
+اضبط هذه القيم. استبدل الباسوردات بالقيم التي تختارها؛ لا تستخدم النصوص البديلة حرفياً:
+APP_ENV=local
+APP_URL=http://127.0.0.1:3001
+APP_DEBUG=false
+DB_CONNECTION=mariadb
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=fatya_dev
+DB_USERNAME=fatya
+DB_PASSWORD="CHANGE_THIS_DB_PASSWORD"
+ADMIN_USER=masal
+ADMIN_PASSWORD="CHOOSE_A_PRIVATE_ADMIN_PASSWORD"
+SESSION_SECURE_COOKIE=false
+DEV_OTP=false
+RESERVATION_MINUTES=15
+ALLOW_PAYMENT_SIMULATION=false
+
+باسورد الإدارة 12 حرفاً أو أكثر، وDB_PORT يجب أن يطابق منفذ MariaDB الفعلي.
+اترك APP_KEY فارغاً هنا لأن الخطوة التالية تولد مفتاحاً لقاعدة جديدة فقط.
+لا تضبط VITE_DATA_MODE=preview أثناء التطوير المتصل بالباك إند.
+إذا عندك backend/.env قديم فلا تنسخ المثال فوقه؛ احتفظ به وعدّل القيم المطلوبة فقط.
+
+6. تهيئة قاعدة جديدة فقط
+من جذر المشروع:
+Set-Location backend
+php artisan key:generate
+php artisan migrate
+php artisan fatya:seed
+composer check-platform-reqs
+Set-Location ..
+
+seed يجهز الكاتالوغ الأولي؛ لا ينقل عملاء وطلبات ومخزون الجهاز السابق.
+إذا تستعمل قاعدة مستوردة مع بيانات مشفرة، لا تنفذ key:generate؛ استخدم مفتاحها الأصلي.
+لا تستخدم migrate:fresh على قاعدة العمل لأنه يمسح بياناتها.
+
+7. شغّل التطبيق والداش
+نافذة PowerShell الأولى، داخل C:\Projects\fatya:
+$env:PHP_BIN='C:\Tools\php84\php.exe'
+npm.cmd run dev
+
+اتركها مفتوحة. عند النجاح افتح:
+التطبيق: http://127.0.0.1:5173/
+الداش: http://127.0.0.1:5173/#/admin
+فحص الـAPI: http://127.0.0.1:3001/api/health
+المتوقع من health: {"ok":true}
+إذا Vite اختار منفذاً آخر لأن 5173 مشغول، استخدم الرابط الذي يطبعه في النافذة.
+بيانات الداش: masal والباسورد الذي وضعته في ADMIN_PASSWORD.
+بيانات معاينة GitHub الثابتة تختلف عن بيانات الداش المحلي؛ استخدم إعدادات بيئتك الخاصة.
+
+نافذة PowerShell ثانية لتشغيل المهام الدورية:
+Set-Location C:\Projects\fatya\backend
+php artisan schedule:work
+اتركها مفتوحة حتى تتحرر الحجوزات المنتهية دورياً. Ctrl+C يوقف أي نافذة تطوير.
+MariaDB يجب أن تبقى خدمتها شغالة أيضاً.
+
+8. فحص أول تشغيل
+افتح التطبيق وأنشئ حساب عميل تجريبي.
+افتح الداش في تبويب وسجل الدخول، وعدّل منتجاً تجريبياً وتأكد أنه يظهر بالتطبيق.
+استورد كروت وهمية قبل إنشاء طلب؛ عدم وجود مخزون فعلي يرفض الطلب.
+الطلب يحجز المخزون 15 دقيقة، ولا يعرض الأكواد قبل تأكيد دفع موثوق.
+ربط الدفع الحقيقي مؤجل. تفاصيل المحاكاة المحلية الاختيارية موجودة في README؛ لا يوجد دفع مالي فعلي.
+إعادة تشغيل PHP لا تمسح البيانات طالما قاعدة MariaDB نفسها موجودة.
+
+9. الفحوصات الاختيارية قبل تطوير جديد
+من C:\Projects\fatya:
+npm.cmd run check
+npm.cmd test
+npm.cmd run build:host
+Set-Location backend
+php artisan test
+php vendor/bin/pint --test
+Set-Location ..
+
+لاختبارات API أنشئ قاعدة منفصلة قابلة للمسح؛ من عميل SQL بحساب root:
+CREATE DATABASE fatya_contract_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON fatya_contract_test.* TO 'fatya'@'127.0.0.1';
+
+ثم من جذر المشروع في PowerShell:
+$env:PHP_BIN='C:\Tools\php84\php.exe'
+$env:FATYA_TEST_DATABASE='fatya_contract_test'
+npm.cmd run test:api
+
+هذه الاختبارات تعيد إنشاء محتويات قاعدة الاختبار. لا توجهها إلى قاعدة العمل.
+الإعدادات الأخرى تُقرأ من backend/.env.
+
+10. التشغيل بالأيام التالية وتحديث الكود
+احفظ تعديلاتك أولاً، ثم داخل جذر المشروع:
+git status
+git pull --ff-only origin main
+npm.cmd ci
+composer install --working-dir=backend
+Set-Location backend
+php artisan migrate
+Set-Location ..
+$env:PHP_BIN='C:\Tools\php84\php.exe'
+npm.cmd run dev
+
+افتح نافذة ثانية وشغّل schedule:work كما سبق.
+لا تعيد نسخ .env أو توليد APP_KEY أو seed كل يوم.
+
+11. الفرق بين سحب الكود ونقل نفس البيانات
+Git ينقل الكود فقط. .env وكلمات المرور وMariaDB وبيانات المتصفح ليست في المستودع.
+إذا تريد نفس بيانات جهاز البيت تحتاج نسخة MariaDB احتياطية متسقة ونقلها بأمان، ومعها APP_KEY الأصلي المستخدم لتشفير المخزون.
+لا تستبدل مفتاح القاعدة المستوردة ولا ترفع .env أو النسخ الاحتياطية إلى المستودع.
+لإكمال تطوير الكود يمكنك البدء بقاعدة جديدة وبيانات اختبار؛ هذا الدليل مكتوب لهذا المسار.
+
+12. مشاكل شائعة
+- php أو composer غير معروف: افتح Terminal جديداً وافحص PATH، وتأكد Composer يشير إلى PHP 8.4.
+- could not find driver: فعّل pdo_mysql في ملف php.ini الذي يظهر في php --ini ثم أعد تشغيل PHP.
+- Access denied للقاعدة: طابق المستخدم والباسورد و127.0.0.1 والمنفذ مع .env والصلاحيات.
+- Connection refused: تأكد خدمة MariaDB شغالة والمنفذ صحيح.
+- No application encryption key: في قاعدة جديدة نفذ key:generate؛ في قاعدة منقولة استخدم المفتاح الأصلي.
+- تعديل .env لا ينعكس: من backend نفذ php artisan config:clear ثم أعد تشغيل خادم التطوير.
+- تظهر بيانات المعاينة: تأكد أن VITE_DATA_MODE غير مضبوط إلى preview وأعد تشغيل Vite.
+- منافذ مشغولة: أغلق نسخة التطوير السابقة قبل تشغيل نسخة أخرى.
+- فشل Composer: اقرأ أول خطأ للمتطلبات أو الإضافات؛ لا تستخدم --ignore-platform-reqs لتجاوز المشكلة.
+
+الخطوة التالية بعد اكتمال البيئة: فتح المشروع ومراجعة README وAGENTS.md وملف متابعة فاتيا، ثم متابعة التطوير محلياً مع الحفاظ على التصميم.
