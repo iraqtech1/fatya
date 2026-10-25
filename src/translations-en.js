@@ -81,6 +81,9 @@ export default {
   "حساب دفع": "payment account",
   "تأكيد الدفع": "Confirm payment",
   "تم تأكيد الدفع": "Payment confirmed",
+  "تم استلام الطلب": "Order received",
+  "إصدار أكواد البطاقات غير مفعّل بعد": "Card code delivery is not enabled yet",
+  "طلبك قيد المراجعة ولم يتم تحصيل دفعة": "Your order is under review. No payment has been collected.",
   "البطاقة": "Card",
 
   "التنقل بين الصفحات": "Pagination",

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiError;
 use App\Services\Accounts;
 use App\Services\CatalogEditor;
+use App\Services\CustomerNotifications;
 use App\Services\Inventory;
 use App\Services\Otp;
 use App\Services\Store;
@@ -74,6 +75,8 @@ class StoreController extends Controller
         foreach (['customers', 'imports', 'suppliers', 'companies', 'events'] as $key) {
             $s[$key] = [];
         }
+        $s['viewer'] = $customer ? Accounts::identity($customer) : null;
+        $s['notifications'] = $customer ? app(CustomerNotifications::class)->forCustomer($customer['id']) : [];
 
         return $s;
     }
@@ -89,6 +92,12 @@ class StoreController extends Controller
     {
         $b = $req->isMethod('GET') ? [] : $req->json()->all();
         $json = fn ($data, $status = 200) => response()->json($data, $status, [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $notifications = app(CustomerNotifications::class);
+        if ($path === '/api/notifications/read' && $req->isMethod('POST')) {
+            $customer = $this->accounts->customer($req, $s);
+
+            return $json($notifications->markRead($customer['id'], $b['ids'] ?? null));
+        }
         if ($path === '/api/state' && $req->isMethod('GET')) {
             return $json($this->publicState($req, $s));
         }
@@ -129,6 +138,7 @@ class StoreController extends Controller
             $s['customers'][] = $c;
             $this->store->event($s, 'انضم حساب زائر');
             $this->store->save($s);
+            $notifications->welcome($c['id']);
 
             return $json(Accounts::identity($c))->withCookie($this->accounts->issue('customer', $c['id']));
         }
@@ -166,6 +176,7 @@ class StoreController extends Controller
                     DB::table('customer_credentials')->where('customer_id', $c['id'])->update(['password' => Hash::make($password)]);
                 }
             }
+            $notifications->welcome($c['id']);
 
             return $json(Accounts::identity($c))->withCookie($this->accounts->issue('customer', $c['id']));
         }
@@ -203,6 +214,7 @@ class StoreController extends Controller
                 throw new ApiError('الحساب موقوف', 403);
             }
             DB::table('otp_challenges')->where('id', $b['challengeId'])->delete();
+            $notifications->welcome($c['id']);
 
             return $json(Accounts::identity($c))->withCookie($this->accounts->issue('customer', $c['id']));
         }
@@ -238,6 +250,7 @@ class StoreController extends Controller
             array_unshift($s['orders'], $o);
             $this->store->event($s, 'طلب جديد: '.$p['name']);
             $this->store->save($s);
+            $notifications->send($c['id'], 'تم إضافة طلبك', 'تفاصيل البطاقة متاحة في صفحة طلباتي', 'order-'.$o['id']);
 
             return $json($o, 201);
         }
@@ -252,6 +265,7 @@ class StoreController extends Controller
             array_unshift($s['tickets'], $ticket);
             $this->store->event($s, 'تذكرة دعم جديدة');
             $this->store->save($s);
+            $notifications->send($c['id'], 'وصلتنا تذكرتك', 'يمكنك متابعة تفاصيلها من صفحة الدعم', 'ticket-'.$ticket['id']);
 
             return $json($ticket, 201);
         }
@@ -263,9 +277,16 @@ class StoreController extends Controller
             if (! is_array($data) || (! in_array($collection, ['slides', 'middleSlides']) && array_is_list($data))) {
                 throw new ApiError('بيانات غير صحيحة');
             }
+            $previous = in_array($collection, ['orders', 'tickets']) ? collect($s[$collection])->firstWhere('id', $data['id'] ?? null) : null;
             $item = $this->editor->update($s, $collection, $data);
             $this->store->event($s, 'تحديث الإدارة: '.$collection);
             $this->store->save($s);
+            if ($collection === 'orders' && $previous['status'] !== $item['status']) {
+                $notifications->send($item['customerId'], 'تحديث حالة الطلب', $item['name'].' · '.$item['status']);
+            }
+            if ($collection === 'tickets' && ($previous['reply'] !== $item['reply'] || $previous['status'] !== $item['status'])) {
+                $notifications->send($item['customerId'], 'تحديث تذكرة الدعم', $item['subject'].' · '.$item['status']);
+            }
             if ($collection === 'customers' && ! empty($data['password'])) {
                 $this->accounts->setPassword($item['id'], $data['password']);
                 $this->removeChallenges($item['id']);

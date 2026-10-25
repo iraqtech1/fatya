@@ -1,5 +1,7 @@
 import PagedList from './PagedList.js';
 import {t,language} from './i18n.js';
+import {connected} from './api.js';
+import {store,connection,readNotifications} from './store.js';
 import {ref,computed,watch,onMounted,onBeforeUnmount,useId,nextTick} from 'vue/dist/vue.esm-bundler.js';
 import {Bell,X,CheckCheck,ChevronLeft,ArrowRight} from 'lucide-vue-next';
 import StoreBrandMark from './StoreBrandMark.js';
@@ -10,18 +12,19 @@ export default {
  props:{name:String,orderCount:Number,ticketCount:Number,showTheme:Boolean},
  setup(props){
   const root=ref(null),opened=ref(false),selectedMessage=ref(null),messageDetail=ref(null),panelId='notifications-'+useId();
-  const messages=ref([
+  const previewMessages=ref([
    {id:1,title:"أهلًا بك في فاتيا",body:"تصفّح بطاقات الرصيد والألعاب واختر الفئة التي تناسبك",time:'الآن',unread:true},
    {id:2,title:'بطاقاتك المفضّلة بانتظارك',body:"اكتشف البطاقات المتوفرة من قسم شراء بطاقة",time:'قبل دقيقة',unread:true},
    {id:3,title:'الدعم موجود لمساعدتك',body:"يمكنك إرسال استفسارك ومتابعة التذكرة من صفحة الدعم",time:'قبل دقيقتين',unread:true}
   ]);
+  const messages=computed(()=>connected?store.notifications:previewMessages.value);
   const unread=computed(()=>messages.value.filter(message=>message.unread).length);
   function add(title,body){messages.value.unshift({id:Date.now(),title,body,time:'الآن',unread:true});}
-  watch(()=>props.orderCount,(value,old)=>{if(value>old)add('تم إضافة طلبك',"تفاصيل البطاقة متاحة في صفحة طلباتي");});
-  watch(()=>props.ticketCount,(value,old)=>{if(value>old)add('وصلتنا تذكرتك',"يمكنك متابعة تفاصيلها من صفحة الدعم");});
-  async function openMessage(message){message.unread=false;selectedMessage.value=message;await nextTick();messageDetail.value?.focus();}
+  watch(()=>props.orderCount,(value,old)=>{if(!connected&&value>old)add('تم إضافة طلبك',"تفاصيل البطاقة متاحة في صفحة طلباتي");});
+  watch(()=>props.ticketCount,(value,old)=>{if(!connected&&value>old)add('وصلتنا تذكرتك',"يمكنك متابعة تفاصيلها من صفحة الدعم");});
+  async function openMessage(message){try{if(connected)await readNotifications([message.id]);else message.unread=false;}catch(e){connection.error=e.message;}selectedMessage.value=message;await nextTick();messageDetail.value?.focus();}
   watch(opened,value=>{if(!value)selectedMessage.value=null;});
-  function readAll(){messages.value.forEach(message=>message.unread=false);}
+  async function readAll(){try{if(connected)await readNotifications(messages.value.filter(m=>m.unread).map(m=>m.id));else messages.value.forEach(message=>message.unread=false);}catch(e){connection.error=e.message;}}
   function outside(event){if(root.value&&!event.composedPath().includes(root.value))opened.value=false;}
   onMounted(()=>document.addEventListener('click',outside));
   onBeforeUnmount(()=>document.removeEventListener('click',outside));

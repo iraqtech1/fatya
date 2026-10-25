@@ -56,6 +56,7 @@ let previewStorage,legacyStorage;try{previewStorage=window.localStorage;}catch{}
 const restored=connected?null:(restoreStoreSession(previewStorage)||restoreStoreSession(legacyStorage));
 if(!connected&&restored){saveStoreSession(previewStorage,restored);saveStoreSession(legacyStorage,{entered:false});}
 const entered=ref(!!restored),session=ref(restored?.user||null),authRequest=ref(0);
+watch(()=>[connection.admin,connection.ready,connection.customer],([isAdmin,ready,customer])=>{if(!connected||isAdmin||!ready)return;if(customer){session.value=customer;entered.value=true;}else if(session.value||entered.value){session.value=null;entered.value=false;authRequest.value++;}},{flush:'sync'});
 if(restored?.user)upsertCustomer(restored.user);
 async function enterStore(user){if(connected)await refreshStore().catch(e=>notify(e.message));session.value=user;entered.value=true;upsertCustomer(user);go('home');}
 async function accountAccess(){if(connected){try{await api('/auth/logout',{});}catch(e){notify(e.message);return;}await refreshStore().catch(()=>{});}session.value=null;entered.value=false;toast.value='';authRequest.value++;}
@@ -103,7 +104,7 @@ async function returnCheckout(){const c=paymentDraft.value;if(!c)return;if(c.tel
 
 const supportBusy=ref(false);
 async function support(){if(supportBusy.value)return;supportBusy.value=true;try{await createTicket(subject.value,message.value,session.value);notify('تم إرسال تذكرتك إلى لوحة الإدارة');subject.value='';message.value='';}catch(e){notify(e.message);}finally{supportBusy.value=false;}}
-async function copy(){try{await navigator.clipboard.writeText('FATYA-NOT-REDEEMABLE');notify('تم نسخ الكود')}catch{notify("تعذّر النسخ الكود: FATYA-NOT-REDEEMABLE")}}
+async function copy(){if(connected){notify('إصدار أكواد البطاقات غير مفعّل بعد');return;}try{await navigator.clipboard.writeText('FATYA-NOT-REDEEMABLE');notify('تم نسخ الكود')}catch{notify("تعذّر النسخ الكود: FATYA-NOT-REDEEMABLE")}}
 if(document.modelContext?.registerTool){try{document.modelContext.registerTool({name:'browse_cards',description:'Filter demo cards in the visible catalog; does not purchase.',inputSchema:{type:'object',properties:{query:{type:'string'}},required:['query'],additionalProperties:false},execute:async input=>{if(typeof input.query!=='string')throw Error('query must be a string');page.value='cards';query.value=input.query;await nextTick();return filtered.value.map(p=>({id:p.id,name:p.name}))}})}catch{}}
 let syncTimer;
 onMounted(async()=>{if(!connected)return;await refreshStore().catch(()=>{});try{const user=await api('/auth/me');session.value=user;entered.value=true;}catch{}syncTimer=setInterval(()=>{if(!document.hidden)refreshStore().catch(()=>{});},3000);});

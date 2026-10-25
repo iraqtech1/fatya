@@ -30,6 +30,7 @@ MariaDB transactions lock the store revision across workers; stale administrator
 - Customer profile edits, suspension, administrator password changes, support replies and order status changes.
 - Excel inventory import, duplicate code/serial checks and exact serial lookup, including leading zeroes.
 - Guest sessions and the existing phone/password and legacy OTP API contracts.
+- Customer notifications for orders, status changes, tickets and replies, with private read/unread status stored in MariaDB.
 
 Qi/ZainCash payment collection, payment webhooks, supplier API fulfillment and actual delivery of redemption codes remain unimplemented integrations from the original project. Checkout remains a simulation: it does not charge or decrement real stock. A reset/legacy OTP delivery provider must be configured with `OTP_WEBHOOK_URL` and `OTP_WEBHOOK_TOKEN`; ordinary phone/password registration and login do not need it.
 
@@ -40,6 +41,7 @@ Qi/ZainCash payment collection, payment webhooks, supplier API fulfillment and a
 - `npm run build:host` builds the connected Vue PWA and copies the build into `backend/public/`.
 - From `backend/`, `php artisan test` runs PHP account normalization and legacy password compatibility tests.
 - `npm run test:api` exercises a real Laravel HTTP server against MariaDB, including restart persistence, authorization, pricing, conflicts, imports, OTP, origin protection, hashed sessions, encrypted inventory and SQLite migration.
+- The same suite also mounts the real Vue dashboard/store against Laravel to check settings conflicts, role cleanup, account suspension, failed background refreshes, notification isolation and persistence of every store collection.
 
 For API tests, create a dedicated disposable database whose name ends in `_test`, set `FATYA_TEST_DATABASE`, then run the command. The runner resets **only that named test database**. It uses connection settings from `backend/.env`, optionally overridden by `FATYA_TEST_DB_HOST`, `FATYA_TEST_DB_PORT`, `FATYA_TEST_DB_USERNAME`, `FATYA_TEST_DB_PASSWORD`, and `PHP_BIN`. GitHub Actions also defines this MariaDB integration suite.
 
