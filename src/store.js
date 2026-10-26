@@ -13,7 +13,7 @@ export const store=reactive({
   categories:initialCategories.map(c=>({...c})),
   companies:[],
   products:initialProducts.map(p=>({...p,active:true,stock:p.values.map(()=>0)})),
-  orders:connected?[]:readPreviewOrders(previewSettingsStorage),customers:[],tickets:[],imports:[],suppliers:[],events:[],notifications:[],
+  orders:connected?[]:readPreviewOrders(previewSettingsStorage),customers:[],tickets:[],imports:[],suppliers:[],events:[],notifications:[],inventorySummary:[],paymentReceipts:[],
   settings:connected?{...defaultSettings}:readPreviewSettings(previewSettingsStorage),
 });
 if(!connected&&typeof window!=='undefined')subscribePreviewSettings(previewSettingsStorage,window,next=>Object.assign(store.settings,next));
@@ -56,12 +56,12 @@ export const connection=reactive({admin:false,ready:false,error:'',revision:0,cu
 export function setStoreRole(admin){
   if(connection.admin===admin)return;
   connection.admin=admin;connection.ready=false;
-  for(const key of ['orders','customers','tickets','imports','suppliers','companies','events','notifications'])store[key].splice(0);
+  for(const key of ['orders','customers','tickets','imports','suppliers','companies','events','notifications','inventorySummary','paymentReceipts'])store[key].splice(0);
 }
 let refreshing=null,refreshRole=false;
 export function applyState(data){
   if(Number.isInteger(data.revision)&&data.revision<connection.revision)return;
-  for(const key of ['categories','companies','products','orders','customers','tickets','imports','suppliers','events','notifications'])if(Array.isArray(data[key]))store[key].splice(0,store[key].length,...data[key]);
+  for(const key of ['categories','companies','products','orders','customers','tickets','imports','suppliers','events','notifications','inventorySummary','paymentReceipts'])if(Array.isArray(data[key]))store[key].splice(0,store[key].length,...data[key]);
   Object.assign(store.settings,normalizeBrandSettings({...data.settings}));
   if(data.slides)slides.splice(0,slides.length,...data.slides);
   if(data.middleSlides)middleSlides.splice(0,middleSlides.length,...data.middleSlides);
@@ -76,7 +76,7 @@ export async function refreshStore(){
   return refreshing;
 }
 export async function saveAdmin(collection,data,revision=connection.revision){
-  try{applyState(await api('/admin/'+collection,{revision,data},'PUT'));}
+  try{applyState(await api('/admin/'+collection,{revision,data},'PUT'));await refreshStore().catch(()=>{});}
   catch(e){await refreshStore().catch(()=>{});throw e;}
 }
 export async function readNotifications(ids){
@@ -84,6 +84,6 @@ export async function readNotifications(ids){
   if(result.revision>=connection.revision){store.notifications.splice(0,store.notifications.length,...result.notifications);connection.revision=result.revision;}
 }
 export async function importStock(rows,name){
-  try{const result=await api('/admin/import',{revision:connection.revision,rows,name});applyState(result.state);return result;}
+  try{const result=await api('/admin/import',{revision:connection.revision,rows,name});applyState(result.state);await refreshStore().catch(()=>{});return result;}
   catch(e){await refreshStore().catch(()=>{});throw e;}
 }

@@ -6,6 +6,7 @@ import CardDeck from './CardDeck.js';
 import {t,language,denominations} from './i18n.js';
 import StorePreferences from './StorePreferences.js';
 import {routeHref} from './routing.js';
+import {connected} from './api.js';
 import './web-store.css';
 
 const decorationIcons=[Gamepad2,Wifi,Ticket,Smartphone,CreditCard,Gift,Joystick,Coins,Music2,Globe2,Headphones,ShoppingBag];
@@ -36,7 +37,7 @@ export default {
   const brands=computed(()=>props.products.filter(p=>['zain','korek','steam','apple','ps','asiacell'].includes(p.en?.toLowerCase())).slice(0,6));
   const number=n=>new Intl.NumberFormat('en-US').format(n);
   function browse(category='الكل'){emit('browse',category,search.value);}
-  return {heroDecorations,t,language,denominations,routeHref,search,sort,browsing,showingHome,result,heroProducts,brands,number,browse};
+  return {connected,heroDecorations,t,language,denominations,routeHref,search,sort,browsing,showingHome,result,heroProducts,brands,number,browse};
  },
  template:`<div class="web-premium" :dir="language==='en'?'ltr':'rtl'">
  <header class="web-header web-container">
@@ -51,7 +52,7 @@ export default {
   <div v-if="showingHome&&brands.length" class="web-brand-row" :aria-label="t('شركات البطاقات')"><span v-for="p in brands" :key="p.id">{{p.en}}</span></div>
   <section id="web-collection" class="web-collection" :aria-label="t('مجموعة البطاقات')"><div class="web-section-heading"><div><span class="web-kicker">THE COLLECTION</span><h2>{{showingHome?t('اختيارات فاتيا'):category==='الكل'?t('كل البطاقات'):t(category)}}</h2><p v-if="query">{{t('نتائج البحث عن')}} «{{query}}»</p></div><label class="web-sort">{{t('ترتيب البطاقات')}}<select v-model="sort" :aria-label="t('ترتيب بطاقات الويب')"><option value="default">{{t('الترتيب الافتراضي')}}</option><option value="price">{{t('السعر من الأقل')}}</option><option value="name">{{t('حسب الاسم')}}</option></select></label></div>
    <p v-if="loading" class="web-feedback" role="status">{{t('جارٍ تحميل البطاقات…')}}</p><p v-if="error" class="web-feedback" role="alert">{{error}} <button @click="$emit('refresh')">{{t('إعادة المحاولة')}}</button></p>
-   <PagedList :items="result" :size="12" :reset-key="query+category+sort" v-slot="{items:rows}"><div class="web-products"><article v-for="p in rows" :key="p.id" class="web-product"><button class="web-product-art" @click="$emit('select',p)" :aria-label="t('تفاصيل')+' '+t(p.name)"><img :src="p.image" :alt="p.name" loading="lazy" width="1200" height="750"/></button><div class="web-product-heading"><h3>{{t(p.name)}}</h3><span>{{t(p.category)}} · {{denominations(p.values.length)}}</span></div><div class="web-product-bottom"><span><small>{{t('ابتداءً من')}}</small> <b>{{number(Math.min(...p.prices))}}</b> <small>{{t('د.ع')}}</small></span><button @click="$emit('select',p)">{{t('اختر الفئة')}}<ArrowUpLeft :size="16"/></button></div></article></div></PagedList>
+   <PagedList :items="result" :size="12" :reset-key="query+category+sort" v-slot="{items:rows}"><div class="web-products"><article v-for="p in rows" :key="p.id" class="web-product"><button class="web-product-art" @click="$emit('select',p)" :aria-label="t('تفاصيل')+' '+t(p.name)"><img :src="p.image" :alt="p.name" loading="lazy" width="1200" height="750"/></button><div class="web-product-heading"><h3>{{t(p.name)}}</h3><span>{{t(p.category)}} · {{connected&&!(p.availability||[]).some(Boolean)?t("نفد المخزون"):denominations(p.values.length)}}</span></div><div class="web-product-bottom"><span><small>{{t('ابتداءً من')}}</small> <b>{{number(Math.min(...p.prices))}}</b> <small>{{t('د.ع')}}</small></span><button @click="$emit('select',p)">{{t('اختر الفئة')}}<ArrowUpLeft :size="16"/></button></div></article></div></PagedList>
    <div v-if="!loading&&!error&&!result.length" class="web-empty"><Grid2X2 :size="32"/><h3>{{t('ما لقينا بطاقة بهالاسم')}}</h3><button class="web-primary" @click="search='';browse('الكل')">{{t('عرض كل البطاقات')}}</button></div>
   </section>
  </main>

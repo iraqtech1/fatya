@@ -55,6 +55,37 @@ class OrderFulfillment
         };
     }
 
+    public function receipts(): array
+    {
+        return DB::table('payment_receipts')->orderByDesc('received_at')->orderBy('id')->get()->map(fn ($r) => ['id' => $r->id, 'orderId' => $r->order_id, 'provider' => $r->provider, 'transactionId' => $r->transaction_id, 'eventId' => $r->event_id, 'amount' => $r->amount, 'currency' => $r->currency, 'outcome' => $r->outcome, 'reason' => $r->reason, 'receivedAt' => $r->received_at * 1000])->all();
+    }
+
+    public function cancel(string $id, array $customer): array
+    {
+        $this->expire();
+
+        return DB::transaction(function () use ($id, $customer) {
+            $s = $this->lockedState();
+            $i = $this->orderIndex($s, $id);
+            if ($s['orders'][$i]['customerId'] !== $customer['id']) {
+                throw new ApiError('الطلب غير موجود', 404);
+            }
+            $f = DB::table('order_fulfillments')->where('order_id', $id)->lockForUpdate()->first();
+            if (! $f) {
+                throw new ApiError('الطلب يحتاج مراجعة الإدارة', 409);
+            }
+            if (in_array($f->state, ['cancelled', 'expired'], true)) {
+                return $s['orders'][$i];
+            }
+            if ($f->state !== 'reserved' || $f->payment_status !== 'pending') {
+                throw new ApiError('لا يمكن إلغاء طلب مرتبط بتأكيد دفع', 409);
+            }
+            $updated = $this->adminStatus($id, 'ملغي');
+
+            return $updated['orders'][$this->orderIndex($updated, $id)];
+        }, 3);
+    }
+
     private function release(string $id): void
     {
         DB::table('inventory_cards')->where('reserved_order_id', $id)->whereNull('sold_order_id')->update(['reserved_order_id' => null]);

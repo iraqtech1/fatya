@@ -9,6 +9,11 @@ use Illuminate\Support\Str;
 
 class Inventory
 {
+    public function summary(): array
+    {
+        return DB::table('inventory_cards')->selectRaw('product_id, denomination, COUNT(*) AS total, SUM(CASE WHEN sold_order_id IS NOT NULL THEN 1 ELSE 0 END) AS delivered, SUM(CASE WHEN sold_order_id IS NULL AND reserved_order_id IS NOT NULL THEN 1 ELSE 0 END) AS reserved, SUM(CASE WHEN sold_order_id IS NULL AND reserved_order_id IS NULL THEN 1 ELSE 0 END) AS available')->groupBy('product_id', 'denomination')->get()->map(fn ($r) => ['productId' => $r->product_id, 'value' => (float) $r->denomination, 'total' => (int) $r->total, 'delivered' => (int) $r->delivered, 'reserved' => (int) $r->reserved, 'available' => (int) $r->available])->all();
+    }
+
     public function refreshStock(array &$s): void
     {
         $rows = DB::table('inventory_cards')->whereNull('reserved_order_id')->whereNull('sold_order_id')->selectRaw('product_id, denomination, COUNT(*) AS available')->groupBy('product_id', 'denomination')->get();
@@ -30,7 +35,10 @@ class Inventory
             return null;
         }
 
-        return ['productId' => $p['id'], 'name' => $p['name'], 'value' => (float) $row->denomination, 'unit' => $p['unit'], 'serial' => $row->serial ?? $key];
+        $orderId = $row->sold_order_id ?? $row->reserved_order_id;
+        $fulfillment = $orderId ? DB::table('order_fulfillments')->where('order_id', $orderId)->first() : null;
+
+        return ['productId' => $p['id'], 'name' => $p['name'], 'value' => (float) $row->denomination, 'unit' => $p['unit'], 'serial' => $row->serial ?? $key, 'inventoryStatus' => $row->sold_order_id ? 'delivered' : ($row->reserved_order_id ? 'reserved' : 'available'), 'orderId' => $orderId, 'reservationExpiresAt' => $row->reserved_order_id && $fulfillment ? $fulfillment->expires * 1000 : null];
     }
 
     public function import(array &$s, array $b): array

@@ -55,6 +55,9 @@ class StoreController extends Controller
     private function publicState(Request $req, array $s, bool $admin = false): array
     {
         if ($admin) {
+            $s['inventorySummary'] = $this->inventory->summary();
+            $s['paymentReceipts'] = app(OrderFulfillment::class)->receipts();
+
             return $s;
         }
         $customer = null;
@@ -68,12 +71,13 @@ class StoreController extends Controller
         $s['categories'] = array_values(array_filter($s['categories'], fn ($c) => $c['active']));
         $s['products'] = array_values(array_filter($s['products'], fn ($p) => $p['active'] && collect($s['categories'])->contains('name', $p['category'])));
         foreach ($s['products'] as &$p) {
+            $p['availability'] = array_map(fn ($quantity) => $quantity > 0, $p['stock']);
             $p['stock'] = array_fill(0, count($p['stock']), 0);
         } unset($p);
         foreach (['orders', 'tickets'] as $key) {
             $s[$key] = $customer ? array_values(array_filter($s[$key], fn ($item) => $item['customerId'] === $customer['id'])) : [];
         }
-        foreach (['customers', 'imports', 'suppliers', 'companies', 'events'] as $key) {
+        foreach (['customers', 'imports', 'suppliers', 'companies', 'events', 'inventorySummary', 'paymentReceipts'] as $key) {
             $s[$key] = [];
         }
         $s['viewer'] = $customer ? Accounts::identity($customer) : null;
@@ -121,7 +125,7 @@ class StoreController extends Controller
         if ($path === '/api/admin/state' && $req->isMethod('GET')) {
             $this->accounts->session($req, 'admin');
 
-            return $json($s);
+            return $json($this->publicState($req, $s, true));
         }
         if (in_array($path, ['/api/admin/logout', '/api/auth/logout']) && $req->isMethod('POST')) {
             $role = str_contains($path, '/admin/') ? 'admin' : 'customer';
@@ -230,6 +234,11 @@ class StoreController extends Controller
             $this->store->save($s);
 
             return $json(Accounts::identity($c));
+        }
+        if (preg_match('~^/api/orders/([^/]+)/cancel$~D', $path, $match) && $req->isMethod('POST')) {
+            $customer = $this->accounts->customer($req, $s);
+
+            return $json(app(OrderFulfillment::class)->cancel($match[1], $customer));
         }
         if (preg_match('~^/api/orders/([^/]+)/codes$~D', $path, $match) && $req->isMethod('GET')) {
             $customer = $this->accounts->customer($req, $s);

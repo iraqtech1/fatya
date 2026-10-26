@@ -38,6 +38,10 @@ MariaDB transactions lock the store revision across workers; stale administrator
 
 Checkout now reserves actual imported inventory for 15 minutes by default. Reservations atomically remove the held quantity from available stock. Cancellation/expiry releases unpaid holds; verified payment permanently assigns the held codes to the order. Delivery is idempotent and an inventory card can appear in the delivery ledger only once. The existing copy button retrieves codes only for the active owner of a paid, delivered order; neither shared state nor administrator state exposes codes.
 
+The connected catalog exposes only per-denomination availability booleans, while exact quantities remain private to administration. Out-of-stock denominations cannot start checkout. Orders show reservation expiry and payment/delivery state, enable code copying only after confirmed delivery, and allow the active owner to cancel a still-pending reservation through `POST /api/orders/{id}/cancel`. Cancellation is idempotent and serialized against payment settlement; payments under review or already delivered cannot be cancelled through this action. Before the real gateway is connected, the checkout button explicitly creates a reservation and the inactive payment-detail inputs collect no card information.
+
+Administration reads available/reserved/delivered inventory counts and payment receipts from the backend. Serial lookup includes inventory state and its assigned order without returning redemption codes. Payment movements and review reasons come from receipts, while confirmed sales require payment and delivery proof; a legacy `completed` label alone is excluded. These are read views, not a manual payment-confirmation or refund mechanism. Administrative projections are cleared when leaving the dashboard and are absent from public/customer snapshots.
+
 Real Qi/ZainCash collection and authenticated payment webhooks are **not connected yet**. Browser requests and administrator status changes cannot confirm payment. Until a gateway adapter is implemented, use only the explicitly enabled local/test CLI simulator documented below. Supplier API fulfillment is also deferred. A reset/legacy OTP delivery provider must be configured with `OTP_WEBHOOK_URL` and `OTP_WEBHOOK_TOKEN`; ordinary phone/password registration and login do not need it.
 
 ## Reservation and delivery lifecycle
@@ -74,5 +78,7 @@ For API tests, create a dedicated disposable database whose name ends in `_test`
 ## Deployment and legacy migration
 
 See [DEPLOYMENT.md](DEPLOYMENT.md). GitHub Pages remains an explicit static preview (`VITE_DATA_MODE=preview`) with browser-local data and preview credentials `iraq` / `iraq`. It cannot run Laravel or MariaDB. Production uses the connected build and server-side administrator credentials.
+
+Pushes and pull requests run frontend and backend checks without publishing either the production site or the Pages preview. Pages publishing is a separate manual workflow dispatch on `main`; do not dispatch it unless preview publication is requested. cPanel deployment remains a separate, explicitly authorized operation.
 
 The old Node API and Render SQLite blueprint have been removed from the active application. Git history retains them for reference. A read-only, one-time import command preserves actual legacy accounts and inventory; it does not transfer browser-local GitHub Pages demo accounts.

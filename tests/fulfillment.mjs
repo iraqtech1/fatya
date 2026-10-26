@@ -31,11 +31,18 @@ try{
   const request=(reference,quantity=1,denom=0,payment='Qi')=>({productId:p.id,denom,quantity,payment,reference,paid:true,paymentStatus:'confirmed',price:1});
   const stock=async()=>((await admin('/admin/state')).data.products.find(x=>x.id===p.id)).stock[0];
   await importCards(1);
+  let publicState=(await anon('/state')).data;
+  assert.equal(publicState.products.find(x=>x.id===p.id).availability[0],true);
+  assert.equal(publicState.products.find(x=>x.id===p.id).stock[0],0,'Public availability does not disclose quantities');
+  assert.deepEqual(publicState.inventorySummary,[]);assert.deepEqual(publicState.paymentReceipts,[]);
+  state=(await admin('/admin/state')).data;assert.equal(state.inventorySummary.find(x=>String(x.productId)===String(p.id)&&x.value===p.values[0]).available,1);
   await alice('/orders',request('partial',2),'POST',409);assert.equal(await stock(),1);assert.equal(count('reservation_items'),0);
   const race=await Promise.all([alice('/orders',request('race-a'),'POST',null,base),bob('/orders',request('race-b'),'POST',null,peerBase)]);
   assert.deepEqual(race.map(r=>r.status).sort(),[201,409],'Two PHP workers cannot reserve the same last card');
   const owner=race[0].status===201?alice:bob,other=owner===alice?bob:alice,order=race.find(r=>r.status===201).data;
   assert.equal(order.paymentStatus,'pending');assert.equal(order.codesAvailable,false);assert.equal(await stock(),0);
+  publicState=(await anon('/state')).data;assert.equal(publicState.products.find(x=>x.id===p.id).availability[0],false);
+  let serialState=(await admin('/admin/cards/search',{serial:'00000-fulfillment-1'})).data.card;assert.equal(serialState.inventoryStatus,'reserved');assert.equal(serialState.orderId,order.id);assert.ok(serialState.reservationExpiresAt);
   await owner('/orders',request(owner===alice?'race-a':'race-b'),'POST',200);assert.equal(await stock(),0);
   await owner('/orders',{...request(owner===alice?'race-a':'race-b'),quantity:2},'POST',409);
   await owner('/orders/'+order.id+'/codes',undefined,'GET',409);await other('/orders/'+order.id+'/codes',undefined,'GET',404);await anon('/orders/'+order.id+'/codes',undefined,'GET',401);await admin('/orders/'+order.id+'/codes',undefined,'GET',401);
@@ -43,6 +50,7 @@ try{
   await owner('/payments/confirm',{orderId:order.id,paid:true},'POST',404);await admin('/admin/payments/confirm',{orderId:order.id},'POST',404);
   let writes=0;await assert.rejects(copyOrderCodes(order,async path=>(await owner(path,undefined,'GET',409)).data,{writeText:async()=>writes++}));assert.equal(writes,0);
   assert.equal(confirmPayment(order.id,'1','wrong-amount').reason,'amount_mismatch');
+  state=(await admin('/admin/state')).data;assert.equal(state.paymentReceipts.length,1);assert.equal(state.paymentReceipts[0].outcome,'review');assert.equal(state.paymentReceipts[0].reason,'amount_mismatch');
   assert.equal(confirmPayment(order.id,String(order.price),'wrong-currency','Qi','USD').reason,'currency_mismatch');
   assert.equal(confirmPayment(order.id,String(order.price),'wrong-provider','ZainCash').reason,'provider_mismatch');
   await owner('/orders/'+order.id+'/codes',undefined,'GET',409);
@@ -50,6 +58,10 @@ try{
   assert.equal(confirmations.filter(r=>r.duplicate).length,1);assert.ok(confirmations.every(r=>r.outcome==='delivered'));
   const delivered=(await owner('/orders/'+order.id+'/codes')).data;assert.equal(delivered.codes.length,1);assert.equal(delivered.codes[0].code,'FULFILLMENT-SECRET-1');
   assert.match((await owner('/orders/'+order.id+'/codes')).headers.get('cache-control'),/no-store/);assert.equal(count('delivered_cards'),1);
+  serialState=(await admin('/admin/cards/search',{serial:'00000-fulfillment-1'})).data.card;assert.equal(serialState.inventoryStatus,'delivered');assert.equal(serialState.orderId,order.id);assert.equal(serialState.reservationExpiresAt,null);
+  state=(await admin('/admin/state')).data;const soldSummary=state.inventorySummary.find(x=>String(x.productId)===String(p.id)&&x.value===p.values[0]);assert.deepEqual([soldSummary.available,soldSummary.reserved,soldSummary.delivered,soldSummary.total],[0,0,1,1]);
+  await owner('/orders/'+order.id+'/cancel',{},'POST',409);
+  assert.deepEqual((await owner('/state')).data.paymentReceipts,[],'Administrative receipts are never exposed to customers');
   assert.equal(confirmPayment(order.id,String(order.price),'paid-once','Qi','IQD','new-retry-event').duplicate,true);
   assert.equal(confirmPayment(order.id,String(order.price),'extra-payment').reason,'additional_payment');assert.equal(count('delivered_cards'),1);
   assert.throws(()=>confirmPayment(order.id,'1','paid-once'),/مرجع الدفع/,'Changed amount on the same transaction is rejected');
@@ -103,6 +115,18 @@ try{
   assert.equal(confirmPayment(decimal.id,'3702.375','decimal-payment').outcome,'delivered');assert.equal((await bob('/orders/'+decimal.id+'/codes')).data.codes.length,3);
   await importCards(1,1);const incomplete=(await bob('/orders',request('incomplete-allocation',1,1),'POST',201)).data;
   update('inventory_cards',{reserved_order_id:incomplete.id},{reserved_order_id:null});assert.equal(confirmPayment(incomplete.id,String(incomplete.price),'incomplete-payment').reason,'allocation_incomplete');await bob('/orders/'+incomplete.id+'/codes',undefined,'GET',409);
+  // Owner cancellation is authorized, idempotent, releases once, and races safely with settlement.
+  const intruder=client();await intruder('/auth/guest',{});
+  await importCards(2,0);const selfCancelled=(await bob('/orders',request('owner-cancel'),'POST',201)).data;
+  await anon('/orders/'+selfCancelled.id+'/cancel',{},'POST',401);await admin('/orders/'+selfCancelled.id+'/cancel',{},'POST',401);await intruder('/orders/'+selfCancelled.id+'/cancel',{},'POST',404);
+  const stockBeforeCancel=await stock();assert.equal((await bob('/orders/'+selfCancelled.id+'/cancel',{})).data.fulfillmentStatus,'cancelled');assert.equal(await stock(),stockBeforeCancel+1);
+  await bob('/orders/'+selfCancelled.id+'/cancel',{});assert.equal(await stock(),stockBeforeCancel+1,'Repeated owner cancellation cannot increase stock twice');
+  const selfRace=(await bob('/orders',request('owner-payment-race'),'POST',201)).data;
+  const [selfCancel,selfPaid]=await Promise.all([bob('/orders/'+selfRace.id+'/cancel',{},'POST',null),asynchronousConfirm(selfRace.id,String(selfRace.price),'owner-race-paid')]);
+  if(selfPaid.outcome==='delivered'){assert.equal(selfCancel.status,409);assert.equal(count('delivered_cards',{order_id:selfRace.id}),1);}else{assert.equal(selfCancel.status,200);assert.equal(selfPaid.reason,'reservation_cancelled');assert.equal(count('delivered_cards',{order_id:selfRace.id}),0);}
+  const needsReview=(await bob('/orders',request('owner-review'),'POST',201)).data;assert.equal(confirmPayment(needsReview.id,'1','owner-review-payment').outcome,'review');await bob('/orders/'+needsReview.id+'/cancel',{},'POST',409);
+  state=(await admin('/admin/state')).data;assert.ok(state.paymentReceipts.some(r=>r.orderId===needsReview.id&&r.outcome==='review'));assert.ok(!JSON.stringify(state.paymentReceipts).includes('FULFILLMENT-SECRET'));
+  const engines=probe("echo json_encode(Illuminate\\Support\\Facades\\DB::table('information_schema.TABLES')->where('TABLE_SCHEMA',config('database.connections.mariadb.database'))->whereIn('TABLE_NAME',['inventory_cards','orders','order_fulfillments','reservation_items','delivered_cards','payment_receipts'])->pluck('ENGINE')->all());");assert.equal(engines.length,6);assert.ok(engines.every(engine=>engine==='InnoDB'));
   env.ALLOW_PAYMENT_SIMULATION='false';assert.throws(()=>confirmPayment(multiple.id,String(multiple.price),'disabled'),/disabled/);env.ALLOW_PAYMENT_SIMULATION='true';env.APP_ENV='production';assert.throws(()=>confirmPayment(multiple.id,String(multiple.price),'production'),/disabled/);env.APP_ENV='testing';
   console.log('Reservation/delivery passed: two PHP workers, exact stock, payment trust boundary, amount/currency/provider checks, replay safety, owner-only codes, expiry/cancel/reuse, suspension, atomic rollback, multi-card delivery, restart and production simulator denial.');
 }finally{if(peer&&peer.exitCode===null){peer.kill();await new Promise(r=>peer.once('exit',r));}await stop();}

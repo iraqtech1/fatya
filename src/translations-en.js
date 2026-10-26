@@ -372,5 +372,19 @@ export default {
   "بعد الشراء ستجد طلبك هنا ويمكنك العودة إلى تفاصيله في أي وقت": "After a purchase find your order here and revisit its details anytime",
   "البحث في ارشيف الطلبات": "Search order archive",
   "ابحث باسم البطاقة أو رقم الطلب": "Search by card name or order number",
-  "لا توجد طلبات مطابقة للبحث": "No orders match your search"
+  "لا توجد طلبات مطابقة للبحث": "No orders match your search",
+ "نفد المخزون":"Out of stock",
+ "نفد مخزون هذه الفئة":"This denomination is out of stock",
+ "ينتهي الحجز":"Reservation expires",
+ "بانتظار الدفع":"Awaiting payment",
+ "حجز منتهي":"Reservation expired",
+ "دفع يحتاج مراجعة":"Payment needs review",
+ "دفع مؤكد":"Payment confirmed",
+ "لا يوجد تأكيد دفع":"No payment confirmation",
+ "الأكواد تتاح بعد تأكيد الدفع":"Codes become available after payment confirmation",
+ "إلغاء الحجز":"Cancel reservation",
+ "تم إلغاء الحجز":"Reservation cancelled",
+  "حجز بانتظار الدفع":"Reserve pending payment",
+ "حالة الدفع":"Payment status",
+ "لم يتم الدفع":"Unpaid"
 };

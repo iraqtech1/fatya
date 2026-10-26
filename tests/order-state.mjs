@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {deliveredOrder,cancellableOrder,allowedOrderStatuses,orderStateLabel,paymentStateLabel,denominationAvailable} from '../src/order-state.js';
+const reserved={status:'قيد المراجعة',paymentStatus:'pending',fulfillmentStatus:'reserved',codesAvailable:false,reservationExpiresAt:Date.now()+60000};
+assert.equal(cancellableOrder(reserved),true);assert.equal(deliveredOrder(reserved),false);assert.deepEqual(allowedOrderStatuses(reserved),['قيد المراجعة','ملغي']);
+const unpaidSpoof={...reserved,status:'مكتمل',codesAvailable:true};assert.equal(deliveredOrder(unpaidSpoof),false,'A completed label alone never enables code copying or revenue');
+const paid={...reserved,status:'مكتمل',paymentStatus:'confirmed',fulfillmentStatus:'delivered',codesAvailable:true};assert.equal(deliveredOrder(paid),true);assert.equal(cancellableOrder(paid),false);assert.deepEqual(allowedOrderStatuses(paid),['مكتمل']);
+const review={...reserved,paymentStatus:'review'};assert.equal(cancellableOrder(review),false);assert.deepEqual(allowedOrderStatuses(review),['قيد المراجعة']);assert.equal(orderStateLabel(review),'دفع يحتاج مراجعة');
+assert.equal(orderStateLabel(reserved,reserved.reservationExpiresAt),'حجز منتهي');assert.equal(cancellableOrder(reserved,reserved.reservationExpiresAt),false);
+assert.equal(paymentStateLabel({}),'لا يوجد تأكيد دفع');assert.equal(deliveredOrder({status:'مكتمل'}),false,'Legacy demo completion is not proof of payment');assert.equal(deliveredOrder({status:'مكتمل'},false),true,'Explicit static preview behavior is preserved');
+assert.equal(denominationAvailable({stock:[100]},0),false,'Availability fails closed until the server supplies its public boolean');assert.equal(denominationAvailable({availability:[false,true]},1),true);assert.equal(denominationAvailable({availability:[false]},0),false);
+console.log('Payment proof, legacy-order reporting, code-copy gating, cancellation eligibility and safe availability passed.');

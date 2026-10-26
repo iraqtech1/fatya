@@ -3,6 +3,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import * as Vue from 'vue/dist/vue.esm-bundler.js';
 import {isWebStore} from '../src/store-surface.js';
+import * as orderState from '../src/order-state.js';
 import {initialProducts} from '../src/catalog.js';
 
 assert.equal(isWebStore({path:'/',standalone:false}),true);
@@ -16,7 +17,7 @@ const setup=source.slice(source.indexOf('setup(){'),source.indexOf('\n},\ntempla
 assert.ok(setup.endsWith('\n}'));
 let created=0;
 const store=Vue.reactive({products:initialProducts.map(p=>({...p,active:true})),categories:[...new Set(initialProducts.map(p=>p.category))].map((name,id)=>({id,name,en:name,active:true})),settings:{supportPhone:''},orders:[],tickets:[]});
-const context={...Vue,console,WebStore:{},StoreLayout:{},isWebStore:()=>true,accountPages:new Set(['account','orders','payment']),inRoute:(p,prefix)=>p===prefix||p.startsWith(prefix+'/'),routePath:()=> '/',window:{addEventListener(){},removeEventListener(){},scrollTo(){}},document:{querySelector:()=>null},innerWidth:1200,connected:false,connection:Vue.reactive({admin:false,ready:false,customer:null}),store,restoreStoreSession:()=>null,saveStoreSession(){},upsertCustomer(){},refreshStore:async()=>{},matchesCustomer:(o,u)=>!!u&&o.customerId===u.id,createOrder:async()=>{created++;return {id:'FIXTURE-'+created};},createTicket:async()=>{},isAsiacell:p=>p.en==='asiacell',auth:{},t:s=>s,language:Vue.ref('ar'),cardCount:n=>String(n),crypto:globalThis.crypto,setTimeout,clearTimeout,setInterval,clearInterval};
+const context={...Vue,...orderState,console,WebStore:{},StoreLayout:{},isWebStore:()=>true,accountPages:new Set(['account','orders','payment']),inRoute:(p,prefix)=>p===prefix||p.startsWith(prefix+'/'),routePath:()=> '/',window:{addEventListener(){},removeEventListener(){},scrollTo(){}},document:{querySelector:()=>null},innerWidth:1200,connected:false,connection:Vue.reactive({admin:false,ready:false,customer:null}),store,restoreStoreSession:()=>null,saveStoreSession(){},upsertCustomer(){},refreshStore:async()=>{},matchesCustomer:(o,u)=>!!u&&o.customerId===u.id,createOrder:async()=>{created++;return {id:'FIXTURE-'+created};},createTicket:async()=>{},isAsiacell:p=>p.en==='asiacell',auth:{},t:s=>s,language:Vue.ref('ar'),cardCount:n=>String(n),crypto:globalThis.crypto,setTimeout,clearTimeout,setInterval,clearInterval};
 for(const name of source.match(/import \{([^}]+)\} from 'lucide-vue-next'/)[1].split(','))context[name.trim()]={};
 const component=vm.runInNewContext('({'+setup+'})',context);
 const renderer=Vue.createRenderer({insert(){},remove(){},createElement:()=>({}),createText:()=>({}),createComment:()=>({}),setText(){},setElementText(){},parentNode:()=>null,nextSibling:()=>null,patchProp(){}});
@@ -37,5 +38,14 @@ ui.go('orders');assert.equal(ui.authVisible,true);assert.equal(ui.page,'home');a
 await ui.open(ui.products.find(p=>p.en==='asiacell'));
 ui.checkoutAsiacell({product:ui.asiacellProduct,denom:0,quantity:1,amount:5250,method:'Qi',telecom:{recipient:'07700000000'},asiacellDraft:{service:'card'}});
 assert.equal(ui.authVisible,true);await ui.enterStore({id:'fixture-customer',name:'Fixture'});assert.equal(ui.page,'payment');assert.equal(ui.paymentDraft.telecom.recipient,'07700000000');
+// The connected storefront uses current server availability, including changes
+// arriving while a product dialog is open, rather than the original object.
+context.connected=true;ui.paymentDraft=null;
+const buying=store.products.find(p=>p.en==='apple')||store.products.find(p=>p.en!=='asiacell');
+buying.availability=buying.values.map(()=>false);await ui.open(buying);ui.startCheckout();
+assert.equal(ui.paymentDraft,null,'Out-of-stock denominations cannot start checkout');
+const replacement={...buying,availability:buying.values.map(()=>true)};store.products.splice(store.products.indexOf(buying),1,replacement);
+assert.equal(ui.available(buying,0),true,'An open dialog follows refreshed server availability');
+replacement.availability[0]=false;assert.equal(ui.available(buying,0),false);
 app.unmount();
 console.log('Web guest browsing, protected pages, login/register return, cancelled authentication, denomination/quantity retention, telecom checkout and logout passed.');

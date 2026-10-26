@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {registerHooks} from 'node:module';
-import {artisan,start,stop,base,probe} from './laravel-harness.mjs';
+import {artisan,start,stop,base,probe,confirmPayment} from './laravel-harness.mjs';
 import * as Vue from 'vue/dist/vue.esm-bundler.js';
 
 // Exercise the real component setup and store against Laravel, without a DOM
@@ -53,6 +53,14 @@ try{
   failSnapshot=true;const ticket=await createTicket('Connected support','A test message',user);
   assert.ok(store.tickets.some(t=>t.id===ticket.id),'A committed ticket is not reported as failed because polling is offline');
   await refreshStore();assert.equal(store.tickets.length,1);assert.equal(store.orders.length,1);
+  assert.equal(confirmPayment(order.id,String(order.price),'connected-paid').outcome,'delivered');
+  assert.equal(confirmPayment(order.id,String(order.price),'connected-extra').outcome,'review');
+  await refreshStore();assert.equal(store.orders[0].codesAvailable,true);assert.deepEqual(store.paymentReceipts,[]);
+  app=renderer.createApp({...Dashboard,render:()=>null});const fulfillmentDashboard=app.mount({});await waitFor(()=>fulfillmentDashboard.authenticated);
+  assert.equal(fulfillmentDashboard.gross,order.price);assert.equal(fulfillmentDashboard.confirmedPayments,order.price);assert.equal(fulfillmentDashboard.reviewPayments,1);assert.equal(fulfillmentDashboard.receipts.length,2);
+  assert.equal(fulfillmentDashboard.stockRows.find(r=>r.product.id===p.id&&r.index===0).delivered,1);
+  store.orders.unshift({id:'legacy-ui-only',status:'مكتمل',price:99999999,quantity:1});await Vue.nextTick();assert.equal(fulfillmentDashboard.gross,order.price,'Legacy completed labels do not inflate confirmed revenue');
+  app.unmount();app=null;assert.equal(store.paymentReceipts.length,0);assert.equal(store.inventorySummary.length,0,'Leaving administration clears private fulfillment projections');await refreshStore();
   s=await api('/admin/state');const c=s.customers.find(c=>c.id===user.id);
   await api('/admin/customers',{revision:s.revision,data:{...c,name:'Changed by admin'}},'PUT');await refreshStore();assert.equal(connection.customer.name,'Changed by admin');
   s=await api('/admin/state');await api('/admin/customers',{revision:s.revision,data:{...s.customers.find(c=>c.id===user.id),active:false}},'PUT');await refreshStore();
