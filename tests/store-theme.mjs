@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import {registerHooks} from 'node:module';
+
+registerHooks({load(url,context,next){const result=next(url,context);if(url.endsWith('/src/ThemeToggle.js'))return {...result,source:String(result.source).replace('import.meta.env.BASE_URL',"'/'")};return result;}});
+const saved=new Map([['masal-theme','dark'],['masal-dashboard-theme','dark']]);
+globalThis.localStorage={getItem:key=>saved.get(key)??null,setItem:(key,value)=>saved.set(key,value)};
+const events=new Map(),attributes=new Map(),meta=new Map();
+globalThis.location={pathname:'/',hash:''};
+globalThis.document={createElement:()=>({}),documentElement:{dataset:{},toggleAttribute:(key,on)=>{if(on)attributes.set(key,'');else attributes.delete(key);}},querySelector:selector=>({setAttribute:(key,value)=>meta.set(selector+key,value)})};
+globalThis.window={addEventListener:(name,fn)=>events.set(name,fn)};
+globalThis.matchMedia=()=>({matches:false,addEventListener(){}});
+const {dark,webDark,dashboardDark,storeDark}=await import('../src/ThemeToggle.js');
+assert.equal(document.documentElement.dataset.theme,'light','Web remains light by default even if the app preference is dark');
+webDark.value=true;assert.equal(document.documentElement.dataset.theme,'dark');assert.equal(saved.get('masal-web-theme'),'dark');
+assert.ok(!meta.get('meta[name="viewport"]content').includes('maximum-scale'),'Browser store allows pinch zoom');
+webDark.value=false;assert.equal(document.documentElement.dataset.theme,'light');assert.equal(dark.value,true);assert.equal(dashboardDark.value,true,'Web theme does not overwrite app or dashboard choices');
+location.pathname='/app';events.get('fatya:routechange')();assert.equal(document.documentElement.dataset.theme,'dark');storeDark.value=false;assert.equal(dark.value,false);assert.equal(webDark.value,false);
+location.pathname='/';events.get('fatya:routechange')();storeDark.value=true;assert.equal(webDark.value,true);assert.equal(dark.value,false);
+events.get('storage')({key:'masal-web-theme',newValue:'light'});assert.equal(document.documentElement.dataset.theme,'light','Web preference synchronizes across browser tabs');
+location.pathname='/admin';events.get('fatya:routechange')();assert.equal(document.documentElement.dataset.theme,'dark');
+console.log('Independent web/app/admin themes, preference persistence and synchronization, account toggle and browser pinch zoom passed.');

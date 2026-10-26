@@ -1,0 +1,19 @@
+فاتيا — تجهيز صور فحص الموبايل — 26 أكتوبر 2026
+
+الصور النهائية:
+- 33 صورة منتجات وفئات: public/cards/*-fit-1200x750-v1.webp، بينها صور جديدة للرابعة وكورك وSteam التي لم تكن لها صور.
+- 5 صور سلايدر سابقة: public/middle-banners/*-fit-1600x800-v1.webp
+- بانران جديدان: public/middle-banners/fatya-digital-cards-v1-fit-1600x800-v1.webp وfatya-choose-card-v1-fit-1600x800-v1.webp
+- الأصول المولدة محفوظة داخل public/middle-banners/sources وpublic/cards/sources؛ لا تدخل في كاش PWA.
+- ملفات الصور النهائية جميعها WebP، بلا قص أو تغيير لأرقام الكروت والعلامات التجارية الأصلية. حفظت الأصول القديمة بأسمائها، واستخدمت أسماء جديدة للنسخ المرتبة.
+- manifest القياسات والمراجع والإضافات في docs/mobile-image-layout-2026-10-26.json.
+- الصورة الرئيسية وصور الفئات تتشارك قياس 1200×750. ترك هامش حول محتوى صورة المنتج. السلايدرات 1600×800.
+- عرض صور البطاقات المتحركة والمختارة يستخدم contain لحماية أطراف الصور.
+- توليد البانرين والصور الثلاث الناقصة عبر أداة image_gen المدمجة؛ تثبيت القياسات والضغط بـsharp دون إعادة توليد محتوى الصور الأصلية. نصوص توليد المنتجات في docs/generated-product-image-prompts-2026-10-26.txt.
+- النتيجة المنشورة: 27 منتجاً لكل منها صورة، صورتان بالسلايدر العلوي، و6 صور بالوسطي. 40 ملف WebP نهائي بحجم إجمالي 1,781,380 بايت. فُحصت ملفات الصور الأربعون بعد تنزيلها من الموقع والتحقق من قياساتها؛ الأسعار والمخزون والبيانات الأساسية لم تتغير.
+
+Prompt 1 (built-in image_gen; brand reference: public/brand/fatya-logo-green.png):
+Use case: ads-marketing. Create one finished wide 2:1 (1600 x 800 intended canvas) Arabic digital cards store banner for Fatya. The attached image is a BRAND REFERENCE, not an edit target. Use its dark emerald and fresh lime identity, preserve the Fatya brand shape if incorporated, with a premium clean restrained 3D look. Dark emerald background, softly lit floating generic digital gift cards and a tasteful small game controller, balanced generous breathing space, readable at phone width. Exact Arabic headline only: «بطاقاتك بمكان واحد». Exact smaller subtitle only: «رصيد • ألعاب • متاجر عالمية». No prices, discounts, payment success claims, third-party logos, tiny text, phone mockup, or interface chrome. Place all writing and key objects inside central 75% of canvas, at least 12% away from edges and bottom dots. Export a single complete banner image, not a collage or mockup.
+
+Prompt 2 (built-in image_gen; same brand reference):
+Use case: ads-marketing. Create one finished wide 2:1 (1600 x 800 intended canvas) Arabic digital cards store middle carousel banner for Fatya. The attached image is a BRAND REFERENCE. Match the emerald/lime visual identity in a light warm ivory background with restrained pale green gradients, elegant dark emerald typography, a fan of generic emerald digital cards with simple symbolic phone/game/gift motifs and lime accents. Exact large Arabic headline only: «اختَر بطاقتك بسهولة». Exact smaller Arabic subtitle only: «تصفّح الفئات المتوفرة». Refined polished composition, not a screenshot. No prices, discounts, live payment promises, third-party logos, or invented offers. Keep text and essential artwork within central 75%, with generous safe margins for phone display and bottom carousel dots. Single finished banner, no multiple panels.

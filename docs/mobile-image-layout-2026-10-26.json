@@ -1,0 +1,348 @@
+{
+  "created": "2026-10-26",
+  "mapping": {
+    "cards/zain-6000.webp": "cards/zain-6000-fit-1200x750-v1.webp",
+    "cards/zain-2000.webp": "cards/zain-2000-fit-1200x750-v1.webp",
+    "cards/zain-15000.webp": "cards/zain-15000-fit-1200x750-v1.webp",
+    "cards/zain-18000.webp": "cards/zain-18000-fit-1200x750-v1.webp",
+    "cards/asiacell-150k.webp": "cards/asiacell-150k-fit-1200x750-v1.webp",
+    "cards/pubg-30000.webp": "cards/pubg-30000-fit-1200x750-v1.webp",
+    "cards/itunes-60.webp": "cards/itunes-60-fit-1200x750-v1.webp",
+    "cards/itunes-25.webp": "cards/itunes-25-fit-1200x750-v1.webp",
+    "cards/apple-45.webp": "cards/apple-45-fit-1200x750-v1.webp",
+    "cards/playstation-50.webp": "cards/playstation-50-fit-1200x750-v1.webp",
+    "cards/iraqcell-40k.webp": "cards/iraqcell-40k-fit-1200x750-v1.webp",
+    "cards/internet-4g-50k.webp": "cards/internet-4g-50k-fit-1200x750-v1.webp",
+    "cards/hrnis-50.webp": "cards/hrnis-50-fit-1200x750-v1.webp",
+    "cards/roblox-100.webp": "cards/roblox-100-fit-1200x750-v1.webp",
+    "cards/clubs-1000.webp": "cards/clubs-1000-fit-1200x750-v1.webp",
+    "cards/soulchill-199.webp": "cards/soulchill-199-fit-1200x750-v1.webp",
+    "cards/warriors-400.webp": "cards/warriors-400-fit-1200x750-v1.webp",
+    "cards/yalla-ludo-830.webp": "cards/yalla-ludo-830-fit-1200x750-v1.webp",
+    "cards/yalla-ludo-56000.webp": "cards/yalla-ludo-56000-fit-1200x750-v1.webp",
+    "cards/tokens-830.webp": "cards/tokens-830-fit-1200x750-v1.webp",
+    "cards/arena-breakout-60cp.webp": "cards/arena-breakout-60cp-fit-1200x750-v1.webp",
+    "cards/clash-80-gems.webp": "cards/clash-80-gems-fit-1200x750-v1.webp",
+    "cards/fortnite-500v.webp": "cards/fortnite-500v-fit-1200x750-v1.webp",
+    "cards/google-play-2000.webp": "cards/google-play-2000-fit-1200x750-v1.webp",
+    "cards/xbox-5.webp": "cards/xbox-5-fit-1200x750-v1.webp",
+    "cards/careem-100k.webp": "cards/careem-100k-fit-1200x750-v1.webp",
+    "cards/imo-5.webp": "cards/imo-5-fit-1200x750-v1.webp",
+    "cards/babylon-1m.webp": "cards/babylon-1m-fit-1200x750-v1.webp",
+    "cards/genius-tv-6m.webp": "cards/genius-tv-6m-fit-1200x750-v1.webp",
+    "cards/starzplay-year.webp": "cards/starzplay-year-fit-1200x750-v1.webp",
+    "middle-banners/asiacell-card-25000-1600x800.png": "middle-banners/asiacell-card-25000-1600x800-fit-1600x800-v1.webp",
+    "middle-banners/asiacell-card-5000-1600x800.png": "middle-banners/asiacell-card-5000-1600x800-fit-1600x800-v1.webp",
+    "middle-banners/asiacell-card-10000-1600x800.png": "middle-banners/asiacell-card-10000-1600x800-fit-1600x800-v1.webp",
+    "middle-banners/asiacell-card-1000-1600x800.png": "middle-banners/asiacell-card-1000-1600x800-fit-1600x800-v1.webp",
+    "middle-banners/asiacell-card-15000-1600x800.png": "middle-banners/asiacell-card-15000-1600x800-fit-1600x800-v1.webp"
+  },
+  "additions": {
+    "slides": [
+      {
+        "id": "mobile-fit-fatya-digital-v1",
+        "name": "فاتيا — بطاقاتك بمكان واحد",
+        "src": "middle-banners/fatya-digital-cards-v1-fit-1600x800-v1.webp"
+      },
+      {
+        "id": "mobile-fit-fatya-choose-v1",
+        "name": "فاتيا — اختَر بطاقتك بسهولة",
+        "src": "middle-banners/fatya-choose-card-v1-fit-1600x800-v1.webp"
+      }
+    ],
+    "middleSlides": [
+      {
+        "id": "mobile-fit-middle-fatya-choose-v1",
+        "name": "فاتيا — تصفّح الفئات المتوفرة",
+        "src": "middle-banners/fatya-choose-card-v1-fit-1600x800-v1.webp"
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": "cards/zain-6000-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 34162,
+      "role": "product"
+    },
+    {
+      "path": "cards/zain-2000-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 29672,
+      "role": "product"
+    },
+    {
+      "path": "cards/zain-15000-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 46162,
+      "role": "product"
+    },
+    {
+      "path": "cards/zain-18000-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 33904,
+      "role": "product"
+    },
+    {
+      "path": "cards/asiacell-150k-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 55038,
+      "role": "product"
+    },
+    {
+      "path": "cards/pubg-30000-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 39832,
+      "role": "product"
+    },
+    {
+      "path": "cards/itunes-60-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 44888,
+      "role": "product"
+    },
+    {
+      "path": "cards/itunes-25-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 41400,
+      "role": "product"
+    },
+    {
+      "path": "cards/apple-45-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 62664,
+      "role": "product"
+    },
+    {
+      "path": "cards/playstation-50-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 39654,
+      "role": "product"
+    },
+    {
+      "path": "cards/iraqcell-40k-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 39704,
+      "role": "product"
+    },
+    {
+      "path": "cards/internet-4g-50k-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 30224,
+      "role": "product"
+    },
+    {
+      "path": "cards/hrnis-50-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 39096,
+      "role": "product"
+    },
+    {
+      "path": "cards/roblox-100-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 43840,
+      "role": "product"
+    },
+    {
+      "path": "cards/clubs-1000-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 64062,
+      "role": "product"
+    },
+    {
+      "path": "cards/soulchill-199-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 17574,
+      "role": "product"
+    },
+    {
+      "path": "cards/warriors-400-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 55732,
+      "role": "product"
+    },
+    {
+      "path": "cards/yalla-ludo-830-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 41660,
+      "role": "product"
+    },
+    {
+      "path": "cards/yalla-ludo-56000-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 38132,
+      "role": "product"
+    },
+    {
+      "path": "cards/tokens-830-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 60290,
+      "role": "product"
+    },
+    {
+      "path": "cards/arena-breakout-60cp-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 27182,
+      "role": "product"
+    },
+    {
+      "path": "cards/clash-80-gems-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 59822,
+      "role": "product"
+    },
+    {
+      "path": "cards/fortnite-500v-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 41938,
+      "role": "product"
+    },
+    {
+      "path": "cards/google-play-2000-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 31526,
+      "role": "product"
+    },
+    {
+      "path": "cards/xbox-5-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 28194,
+      "role": "product"
+    },
+    {
+      "path": "cards/careem-100k-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 16476,
+      "role": "product"
+    },
+    {
+      "path": "cards/imo-5-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 24476,
+      "role": "product"
+    },
+    {
+      "path": "cards/babylon-1m-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 38188,
+      "role": "product"
+    },
+    {
+      "path": "cards/genius-tv-6m-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 36314,
+      "role": "product"
+    },
+    {
+      "path": "cards/starzplay-year-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 16156,
+      "role": "product"
+    },
+    {
+      "path": "middle-banners/asiacell-card-25000-1600x800-fit-1600x800-v1.webp",
+      "width": 1600,
+      "height": 800,
+      "bytes": 71600,
+      "role": "slider"
+    },
+    {
+      "path": "middle-banners/asiacell-card-5000-1600x800-fit-1600x800-v1.webp",
+      "width": 1600,
+      "height": 800,
+      "bytes": 69440,
+      "role": "slider"
+    },
+    {
+      "path": "middle-banners/asiacell-card-10000-1600x800-fit-1600x800-v1.webp",
+      "width": 1600,
+      "height": 800,
+      "bytes": 42168,
+      "role": "slider"
+    },
+    {
+      "path": "middle-banners/asiacell-card-1000-1600x800-fit-1600x800-v1.webp",
+      "width": 1600,
+      "height": 800,
+      "bytes": 42220,
+      "role": "slider"
+    },
+    {
+      "path": "middle-banners/asiacell-card-15000-1600x800-fit-1600x800-v1.webp",
+      "width": 1600,
+      "height": 800,
+      "bytes": 42266,
+      "role": "slider"
+    },
+    {
+      "path": "middle-banners/fatya-digital-cards-v1-fit-1600x800-v1.webp",
+      "width": 1600,
+      "height": 800,
+      "bytes": 119990,
+      "role": "slider"
+    },
+    {
+      "path": "middle-banners/fatya-choose-card-v1-fit-1600x800-v1.webp",
+      "width": 1600,
+      "height": 800,
+      "bytes": 81978,
+      "role": "slider"
+    },
+    {
+      "path": "cards/al-rabiaa-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 40078,
+      "role": "product"
+    },
+    {
+      "path": "cards/korek-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 37600,
+      "role": "product"
+    },
+    {
+      "path": "cards/steam-fit-1200x750-v1.webp",
+      "width": 1200,
+      "height": 750,
+      "bytes": 56078,
+      "role": "product"
+    }
+  ],
+  "missingProductImages": {
+    "5": "cards/al-rabiaa-fit-1200x750-v1.webp",
+    "7": "cards/korek-fit-1200x750-v1.webp",
+    "8": "cards/steam-fit-1200x750-v1.webp"
+  }
+}

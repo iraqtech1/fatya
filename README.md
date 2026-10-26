@@ -1,10 +1,12 @@
 # فاتيا — التطبيق ولوحة الإدارة
 
-Vue 3 + Vite PWA with a Laravel 13 API and MariaDB database. The customer application and dashboard retain their existing Vue components, design, API routes and response shapes. `#/admin` opens administration.
+Vue 3 + Vite PWA with a Laravel 13 API and MariaDB database. The customer application and dashboard retain their existing Vue components, design, API routes and response shapes. `/admin` opens administration on the connected deployment; the static GitHub Pages preview retains `#/admin`.
 
 لإكمال العمل من جهاز الشركة، ابدأ بـ[دليل التنصيب والتشغيل على Windows](docs/company-setup-ar.txt)، ثم اقرأ [ملف المتابعة: المنجز والباقي ونتائج الفحوصات](docs/project-handoff-ar.txt). أمثلة كلمات المرور في الدليل نصوص بديلة فقط؛ أنشئ بيانات بيئتك محلياً.
 
 ## Requirements and development
+
+The browser storefront uses the responsive Fatya Premium layout and allows visitors to browse the shared catalog and product details without an account. The default is light with the shared scenic theme control offering dark mode; web, PWA and administrator theme preferences are saved separately. Arabic, Sorani Kurdish (`ckb`, RTL) and English (LTR) are available from the browser header and sign-in screens. The content fills the viewport with responsive gutters and 2/3/4/6/8 product columns. Purchase, account and order access require the existing customer login or registration. Login resumes the selected denomination, quantity and payment method without submitting an order automatically. Both surfaces use the same `/api` endpoints, customer session and MariaDB database. Installed PWAs and `/app` keep the application interface; `/admin` keeps administration.
 
 - PHP 8.3+ with the Laravel-required extensions, PDO MySQL and Argon2id password support. Sodium and PDO SQLite are needed only when importing old SQLite accounts.
 - Composer 2, Node.js 22.13+ for frontend builds, and MariaDB 12.3.3 (the version verified for this migration).

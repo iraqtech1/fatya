@@ -12,10 +12,10 @@ import {withPreviewAccount} from './preview-account.js';
 export const auth=connected?createRemoteAuth():withPreviewAccount(createPreviewAuth());
 export default {
   components:{ChevronRight,User,Smartphone,Mail,ShieldCheck,ArrowLeft,LockKeyhole,Eye,EyeOff,StoreBrandMark},
-  props:{request:Number},
+  props:{request:Number,initialView:{type:String,default:'login'}},
   emits:['enter'],
   setup(props,{emit}){
-    const view=ref('login'),name=ref(''),phone=ref(''),password=ref(''),visible=ref(false),email=ref(''),code=ref(''),notice=ref(''),error=ref(''),busy=ref(false),heading=ref(null),otpInput=ref(null),challenge=ref(null),now=ref(Date.now());
+    const view=ref(props.initialView==='register'?'register':'login'),name=ref(''),phone=ref(''),password=ref(''),visible=ref(false),email=ref(''),code=ref(''),notice=ref(''),error=ref(''),busy=ref(false),heading=ref(null),otpInput=ref(null),challenge=ref(null),now=ref(Date.now());
     let timer;
     const remaining=computed(()=>Math.max(0,Math.ceil(((challenge.value?.resendAt||0)-now.value)/1000)));
     const expired=computed(()=>!!challenge.value&&now.value>=challenge.value.expiresAt);
@@ -25,7 +25,7 @@ export default {
     function cleanCode(value){code.value=digits(value).replace(/\D/g,'').slice(0,6);}
     async function focus(){await nextTick();(view.value==='otp'?otpInput.value:heading.value)?.focus();window.scrollTo({top:0,behavior:'instant'});}
     async function change(next){auth.cancel();challenge.value=null;view.value=next;password.value='';visible.value=false;error.value='';notice.value='';code.value='';await focus();}
-    watch(()=>props.request,()=>{name.value='';phone.value='';email.value='';change('login');});
+    watch(()=>props.request,()=>{name.value='';phone.value='';email.value='';change(props.initialView==='register'?'register':'login');});
     onMounted(()=>{timer=setInterval(()=>now.value=Date.now(),1000);});
     onBeforeUnmount(()=>{clearInterval(timer);auth.cancel();});
     function allowed(mobile){const customer=store.customers.find(c=>normalizePhone(c.phone)===mobile);if(customer&&!customer.active)throw Error("هذا الحساب موقوف راجع إدارة المتجر");}

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import english from '../src/translations-en.js';
+import kurdish from '../src/translations-ku.js';
 const saved=new Map([['masal-language','en']]);
 globalThis.localStorage={getItem:key=>saved.get(key)??null,setItem:(key,value)=>saved.set(key,value)};
 globalThis.document={documentElement:{},createElement:()=>({}),title:''};
@@ -15,9 +16,16 @@ setLanguage('invalid');assert.equal(language.value,'ar');
 setLanguage('en');assert.equal(saved.get('masal-language'),'en');
 location.hash='#/admin/overview';events.get('hashchange')();assert.equal(document.documentElement.dir,'rtl','Dashboard direction stays Arabic');
 location.hash='#/';events.get('hashchange')();assert.equal(document.documentElement.dir,'ltr','Store restores chosen language');
+location.pathname='/admin/settings';location.hash='';events.get('fatya:routechange')();assert.equal(document.documentElement.dir,'rtl','Clean dashboard paths keep Arabic direction');
+location.pathname='/ar/about';events.get('fatya:routechange')();assert.equal(document.documentElement.lang,'ar','Clean marketing paths keep Arabic');
+location.pathname='/';events.get('fatya:routechange')();assert.equal(document.documentElement.dir,'ltr','Clean store path restores chosen language');
 const reload=await import('../src/i18n.js?restore');assert.equal(reload.language.value,'en');
-for(const file of ['main','AsiacellFlow','StoreCards','AccountPage','OrderArchive','PaymentMethods','AuthGate','StoreHeader','CardDeck','BannerSlider','MobileDock','PullToRefresh','PwaControls','SplashIntro','ThemeToggle']){
+setLanguage('ku');assert.equal(document.documentElement.dir,'rtl');assert.equal(document.documentElement.lang,'ckb');assert.equal(t('تسجيل الدخول'),'چوونەژوورەوە');assert.equal(saved.get('masal-language'),'ku');assert.equal(cardCount(2),'2 کارت');assert.equal(denominations(2),'2 بەهای بەردەست');assert.equal(t('Custom user content'),'Custom user content');
+const reloadKu=await import('../src/i18n.js?restore-ku');assert.equal(reloadKu.language.value,'ku');
+for(const key of Object.keys(english))assert.ok(kurdish[key],'Kurdish covers dynamic customer messages: '+key);
+location.pathname='/admin';events.get('fatya:routechange')();assert.equal(document.documentElement.lang,'ar');location.pathname='/';events.get('fatya:routechange')();assert.equal(document.documentElement.lang,'ckb');
+for(const file of ['main','WebStore','StorePreferences','AsiacellFlow','StoreCards','AccountPage','OrderArchive','PaymentMethods','PaymentPreview','AuthGate','StoreHeader','CardDeck','BannerSlider','MobileDock','PullToRefresh','PwaControls','SplashIntro','ThemeToggle']){
  const source=readFileSync('src/'+file+'.js','utf8').replaceAll('&quot;','"');
- for(const match of source.matchAll(/\bt\(["']([^"']+)["']\)/g))if(/[\u0600-\u06ff]/.test(match[1]))assert.ok(english[match[1]],file+': missing translation '+match[1]);
+ for(const match of source.matchAll(/\bt\(["']([^"']+)["']\)/g))if(/[\u0600-\u06ff]/.test(match[1]))for(const [locale,dictionary] of [['en',english],['ku',kurdish]])assert.ok(dictionary[match[1]],file+': missing '+locale+' translation '+match[1]);
 }
 console.log('Language switching, persistence, direction, custom content and UI translation coverage checks passed.');

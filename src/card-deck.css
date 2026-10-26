@@ -23,7 +23,7 @@
 .app-shell .hero .deck-stage.is-dragging .deck-card{transition:none}
 
 /* صورة البطاقة داخل الكارت المميز — خلفية كاملة مع تدرّج للقراءة */
-.app-shell .hero .deck-card-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;border-radius:inherit}
+.app-shell .hero .deck-card-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:0;border-radius:inherit}
 .app-shell .hero .deck-card-with-art{overflow:hidden}
 .app-shell .hero .deck-card-with-art::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(255deg,rgba(14,5,9,.9) 6%,rgba(14,5,9,.6) 52%,rgba(14,5,9,.2))}
 .app-shell .hero .deck-card-with-art>span,.app-shell .hero .deck-card-with-art>strong{position:relative;z-index:2;color:#fff}

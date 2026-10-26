@@ -1,19 +1,20 @@
 import {t,language} from './i18n.js';
-import {ref,computed,onMounted,onUnmounted} from 'vue/dist/vue.esm-bundler.js';
+import {ref,computed,watch,onMounted,onUnmounted} from 'vue/dist/vue.esm-bundler.js';
 import {ChevronUp,ChevronDown} from 'lucide-vue-next';
 import './card-deck.css';
 import {deckSwipeStep} from './deck-gesture.js';
 
 export default {
   components:{ChevronUp,ChevronDown},
-  props:{products:Array},
+  props:{products:Array,variant:{type:String,default:'app'}},
   emits:['select'],
   setup(props,{emit}){
     const dragY=ref(0),dragging=ref(false);
     const active=ref(0),hovered=ref(false),focused=ref(false),reduced=ref(false);
-    const current=computed(()=>props.products[active.value]);
+    const current=computed(()=>props.products[active.value]||props.products[0]||{name:''});
+    watch(()=>props.products.length,length=>{active.value=length?active.value%length:0;});
     let timer,media,start=null,moved=false;
-    const move=step=>active.value=(active.value+step+props.products.length)%props.products.length;
+    const move=step=>{if(props.products.length)active.value=(active.value+step+props.products.length)%props.products.length;};
     const offset=i=>{let n=(i-active.value+props.products.length)%props.products.length;return n>props.products.length/2?n-props.products.length:n};
     const style=i=>{const n=offset(i);return {'--slot':n,'--drag-y':dragY.value+'px','--tilt':`${n===0?-3:n%2===0?-12:10}deg`,zIndex:10-Math.abs(n),opacity:Math.abs(n)>2?0:1,visibility:Math.abs(n)>2?'hidden':'visible'}};
     function begin(x,y,id,kind){start={x,y,id,kind};moved=false;dragY.value=0;hovered.value=true}
@@ -35,7 +36,7 @@ export default {
     onUnmounted(()=>{clearInterval(timer);media?.removeEventListener('change',motion)});
     return {t,language,dragging,active,current,hovered,focused,reduced,move,offset,style,down,drag,up,cancel,touchDown,touchDrag,touchUp,reset,select,key};
   },
-  template:`<section class="card-deck" :aria-label="t(&quot;الكارتات المميزة&quot;)" aria-roledescription="carousel" @mouseenter="hovered=true" @mouseleave="hovered=false" @focusin="focused=true" @focusout="focused=false" @keydown="key">
+  template:`<section class="card-deck" :class="{'web-card-deck':variant==='web'}" :aria-label="t(&quot;الكارتات المميزة&quot;)" aria-roledescription="carousel" @mouseenter="hovered=true" @mouseleave="hovered=false" @focusin="focused=true" @focusout="focused=false" @keydown="key">
     <div class="deck-stage" :class="{'is-dragging':dragging}" @touchstart="touchDown" @touchmove="touchDrag" @touchend="touchUp" @touchcancel="reset" @pointerdown="down" @pointermove="drag" @pointerup="up" @pointercancel="cancel" @lostpointercapture="cancel">
       <button v-for="(p,i) in products" :key="p.id" class="deck-card" :class="{'deck-current':i===active,'deck-white':i%2===1,'deck-card-with-art':!!p.image}" :style="style(i)" :tabindex="Math.abs(offset(i))<=2?0:-1" :aria-hidden="Math.abs(offset(i))>2" :aria-label="i===active?t(&quot;اختيار بطاقة &quot;)+t(p.name):t(&quot;عرض بطاقة &quot;)+t(p.name)" @click="select(p,i)">
         <img v-if="p.image" class="deck-card-art" :src="p.image" :alt="t(p.name)" loading="lazy"/>

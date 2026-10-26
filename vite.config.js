@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import {readFileSync} from 'node:fs';
+const imageLayout=JSON.parse(readFileSync(new URL('./docs/mobile-image-layout-2026-10-26.json',import.meta.url),'utf8'));
 
 export default defineConfig({
   server:{proxy:{'/api':{target:process.env.FATYA_API_PROXY||'http://127.0.0.1:3001'}}},
@@ -22,6 +24,7 @@ export default defineConfig({
     },
     workbox: {
       globPatterns: ['**/*.{js,css,html,svg,png,webp,ttf}'],
+      globIgnores: ['**/middle-banners/sources/**','**/cards/sources/**',...Object.keys(imageLayout.mapping).map(src=>'**/'+src)],
       cleanupOutdatedCaches: true,
       skipWaiting: true,
       clientsClaim: true,

@@ -1,0 +1,178 @@
+html[data-fatya-web]{--web-bg:#fcfdfb;--web-surface:#ffffff;--web-ink:#173c30;--web-muted:#617166;--web-line:#dfe7df;--web-brand:#034037;--web-accent:#527a31;--web-soft:#edf2e9;--web-hover:#e0ead8;--web-action:#034037;--web-action-ink:#ffffff}
+html[data-fatya-web][data-theme=dark]{--web-bg:#061a14;--web-surface:#102b22;--web-ink:#edf7ee;--web-muted:#aac3b6;--web-line:#315345;--web-brand:#9be3be;--web-accent:#c3ee4c;--web-soft:#17382b;--web-hover:#244b36;--web-action:#c3ee4c;--web-action-ink:#163323}
+/* The browser store is a light, responsive storefront; PWA styles stay separate. */
+html[data-fatya-web]{color-scheme:light dark;background:var(--web-bg);--wine:var(--web-brand);--muted:var(--web-muted);--border:var(--web-line);color:var(--web-ink)}
+html[data-fatya-web] body,html[data-fatya-web] #masal-content{background:var(--web-bg);color:var(--web-ink);height:auto;overflow:visible}
+html[data-fatya-web] .web-store-shell{background:var(--web-bg);min-height:100dvh;overflow:visible;padding:0;color:var(--web-ink);--wine:var(--web-brand);--muted:var(--web-muted);--border:var(--web-line)}
+html[data-fatya-web] #app .web-premium,html[data-fatya-web] #app .web-premium *{font-weight:400!important}
+html[data-fatya-web] #app .web-premium :is(h1,h2,h3,strong,b),html[data-fatya-web] #app .web-premium h1 em{font-weight:700!important}
+.web-shop-main{margin-right:auto}
+.web-premium{font-family:Cairo,Arial,sans-serif;background:var(--web-bg);color:var(--web-ink);line-height:1.7}
+.web-premium *{box-sizing:border-box}
+.web-container{width:100%;margin-inline:auto;padding-inline:clamp(18px,3.5vw,88px)}
+.web-premium button,.web-premium a,.web-premium input,.web-premium select{font:inherit}
+.web-premium button{cursor:pointer;color:inherit}
+.web-premium a{color:inherit;text-decoration:none}
+.web-premium button:focus-visible,.web-premium a:focus-visible{outline:2px solid #328361;outline-offset:5px}
+.web-header{display:flex;align-items:center;gap:30px;min-height:116px;background:var(--web-bg);border:0;position:static;box-shadow:none}
+.web-brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.web-brand>svg,.web-brand>.store-brand-mark{width:49px;height:49px}
+.web-brand span{display:flex;flex-direction:column;gap:0}
+.web-brand strong{font-size:28px;font-weight:800;line-height:1.4}
+.web-brand small{font:9px/1.8 Arial,sans-serif;letter-spacing:2px}
+.web-search{display:flex;align-items:center;gap:10px;padding:10px 15px;border:1px solid var(--web-line);border-radius:12px;background:var(--web-surface);margin-inline:auto;flex:1;max-width:380px;color:var(--web-muted)}
+.web-search input{width:100%;min-width:0;font-size:13px;border:0;border-radius:0;background:transparent;box-shadow:none;padding:0;color:var(--web-ink);outline-offset:5px}
+.web-search button{display:grid;place-items:center;padding:0;background:none;border:0;color:var(--web-brand)}
+.web-account-actions{display:flex;align-items:center;gap:18px;font-size:12px;flex-shrink:0}
+.web-account-actions button{display:flex;align-items:center;gap:7px;background:transparent;border:0;padding:7px 0;white-space:nowrap}
+.web-account-actions .web-register{border:1px solid var(--web-brand);border-radius:9px;padding:8px 13px}
+.web-nav{display:flex;align-items:center;gap:28px;flex-wrap:wrap;min-height:54px;padding-block:10px;border-bottom:1px solid var(--web-line)}
+.web-nav button{display:flex;gap:6px;align-items:center;background:none;border:0;border-bottom:2px solid transparent;padding:6px 0;font-size:12px;color:var(--web-muted)}
+.web-nav button[aria-pressed=true]{color:var(--web-brand);border-bottom-color:var(--web-brand);font-weight:700}
+html[data-fatya-web] #app .web-nav button:not([aria-pressed=true]){border-bottom-color:transparent!important}
+html[data-fatya-web] #app header.web-header{background:var(--web-bg);border:0}
+html[data-fatya-web] #app .web-card-fan button{border:0!important}
+.web-nav button:last-child{margin-inline-start:auto}
+.web-editorial-hero{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:50px;min-height:438px;padding-block:48px}
+.web-kicker{font:10px/1.7 Arial,sans-serif;letter-spacing:3px;color:var(--web-muted)}
+.web-hero-copy h1{font-size:53px;line-height:1.6;font-weight:700;color:var(--web-ink);margin:18px 0 16px;letter-spacing:-1.5px}
+.web-hero-copy h1 em{font-style:normal;color:var(--web-accent)}
+.web-hero-copy p{font-size:14px;line-height:2.1;max-width:380px;color:var(--web-muted);margin:0 0 25px}
+.web-premium .web-primary{display:inline-flex;justify-content:center;align-items:center;gap:18px;background:var(--web-action);color:var(--web-action-ink);border:1px solid var(--web-action);border-radius:10px;padding:12px 20px;font-size:13px;box-shadow:none}
+.web-card-fan{position:relative;height:320px;isolation:isolate}
+.web-card-fan:before{content:'';position:absolute;inset:35px;background:radial-gradient(ellipse,#d9edca,transparent 70%);z-index:-1}
+.web-card-fan button{position:absolute;width:76%;aspect-ratio:1.6;inset-inline-start:12%;top:45px;padding:0;border:0;background:var(--web-surface);border-radius:13px;box-shadow:0 15px 35px #173c3018;overflow:hidden;transform:rotate(-14deg)}
+.web-card-fan button:nth-child(2){transform:rotate(12deg);top:85px}
+.web-card-fan button:nth-child(3){transform:rotate(-4deg);top:115px}
+.web-card-fan img{width:100%;height:100%;object-fit:contain;display:block}
+.web-brand-row{display:flex;justify-content:space-between;align-items:center;gap:22px;flex-wrap:wrap;border-block:1px solid var(--web-line);padding-block:23px;font:700 17px/1.5 Arial,sans-serif;color:var(--web-muted)}
+.web-collection{padding-block:40px;scroll-margin-top:25px}
+.web-section-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:25px}
+.web-section-heading h2{font-size:26px;color:var(--web-ink);margin:5px 0 0;font-weight:700}
+.web-section-heading p{font-size:13px;color:var(--web-muted);margin:6px 0 0}
+.web-sort{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--web-muted)}
+.web-sort select{font-size:12px;color:var(--web-ink);background:var(--web-surface);border:1px solid var(--web-line);border-radius:8px;padding:8px}
+.web-products{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px 23px}
+.web-product{min-width:0;background:transparent}
+.web-product-art{width:100%;padding:8px;border:0;background:var(--web-soft);border-radius:15px;overflow:hidden;display:block;aspect-ratio:1.6;transition:background .15s}
+.web-product-art:hover{background:var(--web-hover)}
+.web-product-art img{display:block;width:100%;height:100%;object-fit:contain;border-radius:8px}
+.web-product-heading{padding:14px 2px 0}
+.web-product h3{font-size:15px;color:var(--web-ink);font-weight:700;margin:0 0 2px}
+.web-product-heading>span{font-size:11px;color:var(--web-muted)}
+.web-product-bottom{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:16px;padding-inline:2px;font-size:12px}
+.web-product-bottom small{font-size:10px;color:var(--web-muted)}
+.web-product-bottom b{font-size:14px;font-variant-numeric:tabular-nums;color:var(--web-ink)}
+.web-product-bottom button{display:flex;align-items:center;gap:4px;background:transparent;border:0;padding:4px 0;border-bottom:1px solid #809b6b;border-radius:0;font-size:11px;color:var(--web-brand)}
+.web-feedback{padding:16px;background:var(--web-soft);color:var(--web-ink);border-radius:10px;font-size:14px}
+.web-feedback button{background:transparent;border:0;text-decoration:underline}
+.web-empty{padding:55px 20px;text-align:center;color:var(--web-muted)}
+.web-empty h3{font-size:19px;margin:15px 0}
+.web-footer{margin-top:35px;border-top:1px solid var(--web-line);padding-block:28px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--web-muted)}
+.web-footer strong{font-size:23px;color:var(--web-ink)}
+.web-footer p{margin:2px 0}
+.web-footer>div:last-child{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.web-footer button{background:none;border:0;padding:0}
+html[data-fatya-web] .web-store-shell main:not(.web-shop-main){height:auto;overflow:visible;padding:0;width:100%;margin-inline:auto}
+html[data-fatya-web] .web-store-shell .content{max-width:none;padding:35px 44px;min-height:430px;margin:0}
+html[data-fatya-web] .web-store-shell :is(.toast,dialog){font-family:Cairo,Arial,sans-serif}
+html[data-fatya-web] dialog.card-purchase-dialog{background:var(--web-surface);color:var(--web-ink);border:1px solid var(--web-line);border-radius:20px;max-width:520px;max-height:88dvh;box-shadow:0 25px 90px #173c3029}
+html[data-fatya-web] dialog h2{color:var(--web-ink)}
+html[data-fatya-web] .web-auth-wrap{min-height:100dvh;background:var(--web-bg);padding-top:18px}
+html[data-fatya-web] .web-auth-back{display:flex;align-items:center;gap:9px;margin:0 25px 15px auto;border:1px solid var(--web-line);border-radius:10px;background:var(--web-surface);color:var(--web-brand);font:13px Cairo,Arial,sans-serif;padding:9px 15px}
+html[data-fatya-web] .phone-auth{min-height:calc(100dvh - 75px)}
+@media(max-width:1020px){.web-container{padding-inline:28px}.web-header{gap:20px}.web-account-actions{gap:12px;font-size:11px}.web-nav{gap:20px}.web-editorial-hero{gap:20px}.web-hero-copy h1{font-size:43px}.web-card-fan{height:290px}.web-products{gap:28px 16px}.web-product-bottom{flex-wrap:wrap}.web-sort{flex-direction:column;align-items:flex-end;gap:4px}}
+@media(max-width:760px){.web-header{flex-wrap:wrap;padding-block:20px;gap:18px}.web-header .web-search{order:3;flex-basis:100%;max-width:none}.web-account-actions{margin-inline-start:auto}.web-nav{gap:13px}.web-nav button{font-size:11px}.web-nav button:last-child{margin-inline-start:0}.web-products{grid-template-columns:repeat(3,minmax(0,1fr))}.web-editorial-hero{min-height:370px}.web-hero-copy h1{font-size:34px;letter-spacing:-1px}.web-hero-copy p{font-size:12px}.web-card-fan{height:260px}.web-card-fan button{width:90%;inset-inline-start:3%;top:35px}.web-card-fan button:nth-child(2){top:65px}.web-card-fan button:nth-child(3){top:95px}.web-brand-row{font-size:13px}.web-footer{gap:20px}.web-footer>div:last-child{gap:13px}}
+@media(max-width:520px){.web-container{padding-inline:18px}.web-brand strong{font-size:24px}.web-brand small{font-size:8px;letter-spacing:1px}.web-brand>svg,.web-brand>.store-brand-mark{width:38px;height:38px}.web-account-actions{font-size:10px;gap:9px}.web-account-actions svg{width:16px}.web-account-actions .web-register{padding:6px 9px}.web-nav{gap:12px;padding-block:10px}.web-editorial-hero{grid-template-columns:1fr;gap:0;padding-block:35px 15px}.web-hero-copy h1{font-size:40px;line-height:1.5;margin-top:13px}.web-hero-copy p{font-size:13px;max-width:300px}.web-card-fan{height:265px;max-width:350px;width:100%;margin-inline:auto}.web-card-fan button{width:72%;inset-inline-start:14%}.web-brand-row{justify-content:center;gap:18px;font-size:12px;padding-block:18px}.web-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:25px 13px}.web-section-heading{align-items:flex-start;gap:10px}.web-section-heading h2{font-size:22px}.web-sort select{max-width:140px;font-size:11px}.web-sort{font-size:10px}.web-product h3{font-size:13px}.web-product-heading>span{font-size:10px}.web-product-bottom b{font-size:13px}.web-product-bottom{margin-top:10px}.web-product-art{padding:5px;border-radius:10px}.web-footer{align-items:flex-start;font-size:11px}.web-footer>div:last-child{align-items:flex-end;flex-direction:column;gap:10px}html[data-fatya-web] .web-store-shell .content{padding:25px 18px}html[data-fatya-web] .web-search input{font-size:16px}}
+@media(prefers-reduced-motion:reduce){.web-product-art{transition:none}}
+
+/* Shared app theme controls, fluid desktop width, and touch layouts. */
+html:root[data-fatya-web] body,html:root[data-fatya-web] #masal-content,html:root[data-fatya-web] #app .web-store-shell{background:var(--web-bg)!important;color:var(--web-ink)!important}
+html:root[data-fatya-web] #app .web-premium{background:var(--web-bg);color:var(--web-ink);overflow-wrap:anywhere}
+html:root[data-fatya-web] #app .web-premium :is(h1,h2,h3,strong,b){color:var(--web-ink)!important}
+html:root[data-fatya-web] #app .web-hero-copy h1 em{color:var(--web-accent)!important}
+html:root[data-fatya-web] #app header.web-header{background:var(--web-bg)!important;height:auto;display:grid;grid-template-columns:auto minmax(180px,1fr) auto auto;gap:24px}
+html:root[data-fatya-web] #app .web-premium :is(input,select){color:var(--web-ink)!important;background:var(--web-surface)!important;border-color:var(--web-line)!important}
+html:root[data-fatya-web] #app .web-premium input::placeholder{color:var(--web-muted)!important;opacity:1}
+html:root[data-fatya-web] #app .web-search{border-color:var(--web-line);background:var(--web-surface);max-width:560px;width:100%;min-width:0}
+.web-editorial-hero{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.web-hero-copy h1{font-size:clamp(38px,3.4vw,68px)}
+.web-hero-copy p{max-width:550px}
+.web-card-fan{width:100%;max-width:660px;justify-self:center;height:clamp(290px,24vw,430px)}
+.web-header>*{min-width:0}
+.web-preferences{display:flex;align-items:center;gap:10px;flex-shrink:0;justify-content:flex-end}
+.web-language{display:flex;align-items:center;gap:6px;border:1px solid var(--web-line);border-radius:11px;padding:4px 8px;background:var(--web-surface);color:var(--web-ink);min-height:44px}
+.web-language select{border:0;border-radius:0;padding:4px 0;font-size:12px;max-width:100px;width:auto}
+.web-preferences .theme-toggle{min-width:44px;min-height:44px;margin:0}
+.web-account-actions button{min-height:44px;white-space:normal;overflow-wrap:anywhere}
+.web-nav button{min-height:44px}
+.web-auth-toolbar{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:0 clamp(16px,3.5vw,88px) 15px}
+.web-auth-toolbar .web-auth-back{margin:0;min-height:44px}
+html:root[data-fatya-web][data-theme=dark] #app .web-auth-wrap{background:var(--web-bg)}
+html:root[data-fatya-web] #app .web-auth-back{background:var(--web-surface);color:var(--web-brand);border-color:var(--web-line)}
+html:root[data-fatya-web] #app .web-premium .web-primary{background:var(--web-action);color:var(--web-action-ink);border-color:var(--web-action)}
+html:root[data-fatya-web] #app .web-premium .web-product-bottom button{color:var(--web-brand)}
+html:root[data-fatya-web] #app .web-premium .web-nav button[aria-pressed=true]{color:var(--web-brand);border-color:var(--web-brand)}
+html:root[data-fatya-web] #app .web-account-actions .web-register{border-color:var(--web-brand)}
+html:root[data-fatya-web] #app .web-premium .pagination button{background:var(--web-surface);color:var(--web-ink);border-color:var(--web-line)}
+html:root[data-fatya-web] #app .web-premium .pagination button.active{background:var(--web-action);color:var(--web-action-ink)}
+html:root[data-fatya-web][data-theme=dark] #app dialog.card-purchase-dialog{background:var(--web-surface);color:var(--web-ink)}
+.web-product-bottom{flex-wrap:wrap}
+.web-product-heading>span,.web-product-bottom small{font-size:11px}
+.web-product-art{min-height:0}
+.web-product-bottom button{min-height:40px}
+html[dir=ltr] .web-premium :is(.web-primary,.web-search,.web-product-bottom)>svg{transform:scaleX(-1)}
+html[dir=ltr] .web-premium .web-primary svg,html[dir=ltr] .web-premium .web-product-bottom button svg{transform:scaleX(-1)}
+@media(min-width:1800px){.web-products{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(min-width:2400px){.web-products{grid-template-columns:repeat(8,minmax(0,1fr))}}
+@media(max-width:1100px){html:root[data-fatya-web] #app header.web-header{grid-template-columns:auto 1fr auto;gap:18px;padding-block:18px}.web-header .web-account-actions{justify-self:center;font-size:12px}.web-header .web-search{grid-column:1/-1;grid-row:2;order:0;max-width:none}.web-header .web-preferences{grid-column:3;grid-row:1}.web-header .web-brand{grid-column:1;grid-row:1}.web-header .web-account-actions{grid-column:2;grid-row:1}}
+@media(max-width:760px){.web-container{padding-inline:22px}.web-hero-copy h1{font-size:36px}.web-card-fan{height:280px}.web-nav{gap:10px 18px}.web-section-heading h2{line-height:1.6}.web-products{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){html:root[data-fatya-web] #app header.web-header{grid-template-columns:minmax(0,1fr) auto;gap:12px}.web-header .web-preferences{grid-column:2;grid-row:1}.web-header .web-account-actions{grid-column:1/-1;grid-row:3;justify-self:stretch;justify-content:center;margin:0;gap:25px}.web-header .web-search{grid-row:2}.web-header .web-brand{gap:7px}.web-brand small{letter-spacing:.7px;font-size:8px}.web-brand strong{font-size:23px}.web-brand>.store-brand-mark{width:38px;height:38px}.web-preferences{gap:7px}.web-language{padding-inline:6px;gap:3px}.web-language>svg{display:none}.web-language select{font-size:12px;max-width:87px}.web-nav{justify-content:center;gap:4px 16px;padding-block:7px}.web-nav button{font-size:12px;min-height:44px}.web-nav button:last-child{margin:0}.web-editorial-hero{grid-template-columns:1fr;gap:0;padding-block:30px 10px;min-height:0}.web-hero-copy h1{font-size:clamp(32px,8vw,43px);letter-spacing:-.5px;line-height:1.6}.web-hero-copy p{font-size:14px;max-width:100%;line-height:1.9}.web-card-fan{height:255px;max-width:360px;margin-inline:auto}.web-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:25px 14px}.web-product h3{font-size:14px;line-height:1.8}.web-product-bottom{gap:4px;font-size:12px}.web-product-bottom button{font-size:12px;min-height:44px}.web-product-bottom b{font-size:14px}.web-section-heading{align-items:flex-start;flex-wrap:wrap}.web-sort{font-size:11px}.web-sort select{max-width:155px;font-size:12px;min-height:44px}.web-search input{min-height:26px;font-size:16px}.web-brand-row{gap:16px}.web-footer{gap:18px;align-items:flex-start}.web-auth-toolbar{flex-wrap:wrap;padding-inline:16px}.web-auth-toolbar .web-auth-back{font-size:12px;padding-inline:10px}.web-collection{padding-block:27px}}
+@media(max-width:360px){.web-container{padding-inline:14px}.web-preferences{gap:5px}.web-language select{max-width:76px}.web-brand strong{font-size:21px}.web-brand>.store-brand-mark{width:32px;height:32px}.web-brand small{font-size:7px}.web-product-bottom{align-items:flex-start;flex-direction:column}.web-footer{flex-wrap:wrap}.web-footer>div:last-child{align-items:flex-start}}
+@media(min-width:601px) and (max-width:900px){.web-products{grid-template-columns:repeat(3,minmax(0,1fr))}}
+html[dir=ltr] .web-auth-back svg,html[dir=ltr] .web-store-shell .account-back>svg{transform:scaleX(-1)}
+html[data-fatya-web][data-theme=light]{color-scheme:light}
+html[data-fatya-web][data-theme=dark]{color-scheme:dark}
+
+/* Quiet floating symbols occupy the artwork area, behind the real controls. */
+.web-editorial-hero{position:relative;isolation:isolate}
+.web-hero-copy{position:relative;z-index:1}
+.web-card-fan{z-index:1}
+.web-hero-decoration{position:absolute;inset-block:16px 22px;inset-inline:35% 0;z-index:0;pointer-events:none;overflow:clip;--doodle-ink:#72977b;--doodle-fill:#eaf2e77d;--doodle-edge:#b5cbb454;--doodle-shadow:#0340370b}
+.web-hero-doodle{position:absolute;inset-inline-start:var(--doodle-x);top:var(--doodle-y);display:grid;place-items:center;width:var(--doodle-size);height:var(--doodle-size);margin-inline-start:calc(var(--doodle-size) / -2);margin-top:calc(var(--doodle-size) / -2);border:1px solid var(--doodle-edge);border-radius:28%;color:var(--doodle-ink);background:var(--doodle-fill);box-shadow:0 7px 20px var(--doodle-shadow);opacity:.55;transform:translate3d(0,0,0) rotate(var(--doodle-angle));animation:web-doodle-drift var(--doodle-duration) ease-in-out var(--doodle-delay) infinite alternate}
+.web-hero-doodle svg{display:block;width:52%;height:52%;opacity:.8}
+html[data-fatya-web][data-theme=dark] .web-hero-decoration{--doodle-ink:#8db792;--doodle-fill:#214b343d;--doodle-edge:#8bb57a29;--doodle-shadow:#0000001f}
+@keyframes web-doodle-drift{from{transform:translate3d(0,5px,0) rotate(var(--doodle-angle))}to{transform:translate3d(5px,-9px,0) rotate(calc(var(--doodle-angle) + 8deg))}}
+@media(max-width:1100px){.web-hero-decoration{inset-inline-start:42%}.web-hero-doodle{opacity:.45;width:calc(var(--doodle-size) * .85);height:calc(var(--doodle-size) * .85)}}
+@media(max-width:600px){.web-hero-decoration{inset-inline:0;inset-block-start:auto;inset-block-end:12px;height:255px}.web-hero-doodle{opacity:.4;width:34px;height:34px;margin-inline-start:-17px;margin-top:-17px}.web-hero-doodle:nth-child(n+13){display:none}}
+@media(prefers-reduced-motion:reduce){.web-hero-doodle{animation:none;transform:rotate(var(--doodle-angle))}}
+
+/* Reuse the application's swipe deck, with full-size artwork for the web. */
+.web-hero-deck{position:relative;z-index:1;width:100%;max-width:660px;justify-self:center;min-width:0}
+.web-premium .web-card-deck{width:100%;max-width:none;margin:0;color:var(--web-ink)}
+.web-card-deck .deck-stage{position:relative;height:clamp(300px,31vw,470px);width:100%;overflow:visible;mask-image:none;-webkit-mask-image:none;touch-action:none;cursor:grab}
+.web-card-deck .deck-stage:active{cursor:grabbing}
+.web-card-deck .deck-card{position:absolute;left:50%;top:50%;width:74%;max-width:440px;height:auto;padding:8px;border:1px solid var(--web-line);border-radius:16px;background:var(--web-surface);box-shadow:0 10px 25px #0340371a;overflow:hidden;transform:translate(-50%,calc(-50% + var(--slot) * 43px + var(--drag-y,0px))) rotate(calc(var(--slot) * 9deg)) scale(.9);transition:transform .5s ease,opacity .4s ease;user-select:none;-webkit-user-select:none}
+.web-card-deck .deck-card.deck-current{transform:translate(-50%,calc(-50% + var(--drag-y,0px))) rotate(-2deg) scale(1)}
+.web-card-deck .deck-card .deck-card-art{position:static;display:block;width:100%;height:auto;aspect-ratio:1.6;object-fit:contain;border-radius:9px;pointer-events:none;-webkit-user-drag:none}
+.web-card-deck .deck-card>span,.web-card-deck .deck-card>strong,.web-card-deck .deck-card::after{display:none}
+.web-card-deck .deck-stage.is-dragging .deck-card{transition:none}
+.web-card-deck .deck-controls{display:flex;justify-content:center;align-items:center;gap:15px;margin-top:0;color:var(--web-ink)}
+.web-card-deck .deck-controls button{display:grid;place-items:center;width:44px;height:44px;margin:0;padding:0;background:var(--web-surface);border:1px solid var(--web-line);border-radius:50%;color:var(--web-brand)}
+.web-card-deck .deck-controls>span{min-width:105px;text-align:center;font-size:13px}
+.web-card-deck .deck-controls small{display:block;font-size:11px;color:var(--web-muted)}
+html[data-fatya-web] #app .web-card-deck .deck-hint{font-size:11px!important;line-height:1.9;color:var(--web-muted)!important;text-align:center;margin-top:10px!important}
+html[data-fatya-web][data-theme=dark] .web-card-deck .deck-card{background:var(--web-surface);box-shadow:0 10px 28px #0005}
+@media(max-width:1100px){.web-card-deck .deck-card{width:78%}.web-card-deck .deck-stage{height:330px}}
+@media(max-width:600px){.web-hero-deck{max-width:420px;margin-inline:auto}.web-card-deck .deck-stage{height:290px}.web-card-deck .deck-card{width:76%;padding:5px;border-radius:12px;transform:translate(-50%,calc(-50% + var(--slot) * 35px + var(--drag-y,0px))) rotate(calc(var(--slot) * 8deg)) scale(.9)}.web-card-deck .deck-card.deck-current{transform:translate(-50%,calc(-50% + var(--drag-y,0px))) rotate(-2deg) scale(1)}.web-hero-decoration{inset-block-end:80px}}
+@media(prefers-reduced-motion:reduce){.web-card-deck .deck-card{transition:none}}
+html[data-fatya-web] #app .web-card-deck .deck-card{background:var(--web-surface);border-color:var(--web-line)!important}
+html[data-fatya-web] #app .web-card-deck .deck-controls button{background:var(--web-surface);color:var(--web-brand);border-color:var(--web-line)}
+html[data-fatya-web] #app .web-card-deck .deck-controls button:hover{background:var(--web-soft)}
+
+/* Keep decoration above the caption, counter, and carousel controls. */
+.web-editorial-hero .web-hero-decoration{inset-block-end:130px}
+@media(max-width:600px){.web-editorial-hero .web-hero-decoration{inset-block-end:100px}}
+html:root[data-fatya-web] #app .web-preferences .theme-web-toggle{display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;margin:0;border:1px solid var(--web-line)!important;border-radius:11px;background:var(--web-surface)!important;color:var(--web-brand)!important;box-shadow:none!important;line-height:1}
+html:root[data-fatya-web] #app .web-preferences .theme-web-toggle:hover{background:var(--web-soft)!important}
+html:root[data-fatya-web] #app .web-preferences .theme-web-toggle svg{display:block;width:20px;height:20px}

@@ -45,12 +45,12 @@
       "color": "#173f39",
       "tag": "الأكثر طلباً",
       "unit": "د.ع",
-      "image": "cards/zain-6000.webp",
+      "image": "cards/zain-6000-fit-1200x750-v1.webp",
       "denomImages": [
-        "cards/zain-2000.webp",
-        "cards/zain-6000.webp",
-        "cards/zain-15000.webp",
-        "cards/zain-18000.webp"
+        "cards/zain-2000-fit-1200x750-v1.webp",
+        "cards/zain-6000-fit-1200x750-v1.webp",
+        "cards/zain-15000-fit-1200x750-v1.webp",
+        "cards/zain-18000-fit-1200x750-v1.webp"
       ],
       "values": [
         2000,
@@ -80,12 +80,12 @@
       "color": "#c1343a",
       "tag": "شحن رصيد",
       "unit": "د.ع",
-      "image": "cards/asiacell-150k.webp",
+      "image": "cards/asiacell-150k-fit-1200x750-v1.webp",
       "denomImages": [
         null,
         null,
         null,
-        "cards/asiacell-150k.webp"
+        "cards/asiacell-150k-fit-1200x750-v1.webp"
       ],
       "values": [
         5000,
@@ -115,7 +115,7 @@
       "color": "#282d3b",
       "tag": "شدّات UC",
       "unit": "UC",
-      "image": "cards/pubg-30000.webp",
+      "image": "cards/pubg-30000-fit-1200x750-v1.webp",
       "values": [
         60,
         325,
@@ -141,11 +141,11 @@
       "color": "#4b4550",
       "tag": "المتجر الأمريكي",
       "unit": "USD",
-      "image": "cards/itunes-60.webp",
+      "image": "cards/itunes-60-fit-1200x750-v1.webp",
       "denomImages": [
-        "cards/itunes-25.webp",
-        "cards/apple-45.webp",
-        "cards/itunes-60.webp"
+        "cards/itunes-25-fit-1200x750-v1.webp",
+        "cards/apple-45-fit-1200x750-v1.webp",
+        "cards/itunes-60-fit-1200x750-v1.webp"
       ],
       "values": [
         25,
@@ -172,11 +172,11 @@
       "color": "#254c9a",
       "tag": "المتجر الأمريكي",
       "unit": "USD",
-      "image": "cards/playstation-50.webp",
+      "image": "cards/playstation-50-fit-1200x750-v1.webp",
       "denomImages": [
         null,
         null,
-        "cards/playstation-50.webp"
+        "cards/playstation-50-fit-1200x750-v1.webp"
       ],
       "values": [
         10,
@@ -203,7 +203,7 @@
       "color": "#7a1e2e",
       "tag": "اشتراك ألياف",
       "unit": "د.ع",
-      "image": "cards/iraqcell-40k.webp",
+      "image": "cards/iraqcell-40k-fit-1200x750-v1.webp",
       "values": [
         40000
       ],
@@ -223,7 +223,7 @@
       "color": "#1f6f8b",
       "tag": "رصيد إنترنت",
       "unit": "د.ع",
-      "image": "cards/internet-4g-50k.webp",
+      "image": "cards/internet-4g-50k-fit-1200x750-v1.webp",
       "values": [
         50000
       ],
@@ -243,7 +243,7 @@
       "color": "#2f6b4f",
       "tag": "اشتراك شهري",
       "unit": "Mbps",
-      "image": "cards/hrnis-50.webp",
+      "image": "cards/hrnis-50-fit-1200x750-v1.webp",
       "values": [
         50
       ],
@@ -263,7 +263,7 @@
       "color": "#e2231a",
       "tag": "Robux",
       "unit": "USD",
-      "image": "cards/roblox-100.webp",
+      "image": "cards/roblox-100-fit-1200x750-v1.webp",
       "values": [
         100
       ],
@@ -283,7 +283,7 @@
       "color": "#0f9d8f",
       "tag": "شحن ألعاب",
       "unit": "رصيد",
-      "image": "cards/clubs-1000.webp",
+      "image": "cards/clubs-1000-fit-1200x750-v1.webp",
       "values": [
         1000
       ],
@@ -303,7 +303,7 @@
       "color": "#8e44ad",
       "tag": "شحن ألعاب",
       "unit": "جواهر",
-      "image": "cards/soulchill-199.webp",
+      "image": "cards/soulchill-199-fit-1200x750-v1.webp",
       "values": [
         199
       ],
@@ -323,7 +323,7 @@
       "color": "#c0392b",
       "tag": "شحن ألعاب",
       "unit": "عملة",
-      "image": "cards/warriors-400.webp",
+      "image": "cards/warriors-400-fit-1200x750-v1.webp",
       "values": [
         400
       ],
@@ -343,10 +343,10 @@
       "color": "#e84393",
       "tag": "عملات لودو",
       "unit": "عملة",
-      "image": "cards/yalla-ludo-830.webp",
+      "image": "cards/yalla-ludo-830-fit-1200x750-v1.webp",
       "denomImages": [
-        "cards/yalla-ludo-830.webp",
-        "cards/yalla-ludo-56000.webp"
+        "cards/yalla-ludo-830-fit-1200x750-v1.webp",
+        "cards/yalla-ludo-56000-fit-1200x750-v1.webp"
       ],
       "values": [
         830,
@@ -370,7 +370,7 @@
       "color": "#16a085",
       "tag": "توكنز ألعاب",
       "unit": "توكن",
-      "image": "cards/tokens-830.webp",
+      "image": "cards/tokens-830-fit-1200x750-v1.webp",
       "values": [
         830
       ],
@@ -390,7 +390,7 @@
       "color": "#2c3e50",
       "tag": "نقاط CP",
       "unit": "CP",
-      "image": "cards/arena-breakout-60cp.webp",
+      "image": "cards/arena-breakout-60cp-fit-1200x750-v1.webp",
       "values": [
         60
       ],
@@ -410,7 +410,7 @@
       "color": "#f39c12",
       "tag": "جواهر",
       "unit": "جواهر",
-      "image": "cards/clash-80-gems.webp",
+      "image": "cards/clash-80-gems-fit-1200x750-v1.webp",
       "values": [
         80
       ],
@@ -430,7 +430,7 @@
       "color": "#6c3fc5",
       "tag": "V-Bucks",
       "unit": "V-Bucks",
-      "image": "cards/fortnite-500v.webp",
+      "image": "cards/fortnite-500v-fit-1200x750-v1.webp",
       "values": [
         500
       ],
@@ -450,7 +450,7 @@
       "color": "#01875f",
       "tag": "رصيد جوجل",
       "unit": "د.ع",
-      "image": "cards/google-play-2000.webp",
+      "image": "cards/google-play-2000-fit-1200x750-v1.webp",
       "values": [
         2000
       ],
@@ -470,7 +470,7 @@
       "color": "#107c10",
       "tag": "رصيد إكس بوكس",
       "unit": "USD",
-      "image": "cards/xbox-5.webp",
+      "image": "cards/xbox-5-fit-1200x750-v1.webp",
       "values": [
         5
       ],
@@ -490,7 +490,7 @@
       "color": "#00a651",
       "tag": "رصيد كريم",
       "unit": "د.ع",
-      "image": "cards/careem-100k.webp",
+      "image": "cards/careem-100k-fit-1200x750-v1.webp",
       "values": [
         100000
       ],
@@ -510,7 +510,7 @@
       "color": "#2f8fff",
       "tag": "رصيد imo",
       "unit": "USD",
-      "image": "cards/imo-5.webp",
+      "image": "cards/imo-5-fit-1200x750-v1.webp",
       "values": [
         5
       ],
@@ -530,7 +530,7 @@
       "color": "#9b1c31",
       "tag": "اشتراك شهري",
       "unit": "شهر",
-      "image": "cards/babylon-1m.webp",
+      "image": "cards/babylon-1m-fit-1200x750-v1.webp",
       "values": [
         1
       ],
@@ -550,7 +550,7 @@
       "color": "#0e7490",
       "tag": "اشتراك 6 أشهر",
       "unit": "شهر",
-      "image": "cards/genius-tv-6m.webp",
+      "image": "cards/genius-tv-6m-fit-1200x750-v1.webp",
       "values": [
         6
       ],
@@ -570,7 +570,7 @@
       "color": "#111827",
       "tag": "اشتراك سنوي",
       "unit": "شهر",
-      "image": "cards/starzplay-year.webp",
+      "image": "cards/starzplay-year-fit-1200x750-v1.webp",
       "values": [
         12
       ],
@@ -590,6 +590,12 @@
       "color": "#7749a5",
       "tag": "بطاقات تعبئة",
       "unit": "د.ع",
+      "image": "cards/al-rabiaa-fit-1200x750-v1.webp",
+      "denomImages": [
+        "cards/al-rabiaa-fit-1200x750-v1.webp",
+        "cards/al-rabiaa-fit-1200x750-v1.webp",
+        "cards/al-rabiaa-fit-1200x750-v1.webp"
+      ],
       "values": [
         5000,
         10000,
@@ -615,6 +621,12 @@
       "color": "#0076aa",
       "tag": "شحن رصيد",
       "unit": "د.ع",
+      "image": "cards/korek-fit-1200x750-v1.webp",
+      "denomImages": [
+        "cards/korek-fit-1200x750-v1.webp",
+        "cards/korek-fit-1200x750-v1.webp",
+        "cards/korek-fit-1200x750-v1.webp"
+      ],
       "values": [
         5000,
         10000,
@@ -640,6 +652,12 @@
       "color": "#203447",
       "tag": "المتجر الأمريكي",
       "unit": "USD",
+      "image": "cards/steam-fit-1200x750-v1.webp",
+      "denomImages": [
+        "cards/steam-fit-1200x750-v1.webp",
+        "cards/steam-fit-1200x750-v1.webp",
+        "cards/steam-fit-1200x750-v1.webp"
+      ],
       "values": [
         5,
         10,
@@ -661,27 +679,27 @@
   "middleSlides": [
     {
       "id": "middle-asiacell-25000",
-      "src": "middle-banners/asiacell-card-25000-1600x800.png",
+      "src": "middle-banners/asiacell-card-25000-1600x800-fit-1600x800-v1.webp",
       "name": "آسياسيل — 25,000 دينار"
     },
     {
       "id": "middle-asiacell-5000",
-      "src": "middle-banners/asiacell-card-5000-1600x800.png",
+      "src": "middle-banners/asiacell-card-5000-1600x800-fit-1600x800-v1.webp",
       "name": "آسياسيل — 5,000 دينار"
     },
     {
       "id": "middle-asiacell-10000",
-      "src": "middle-banners/asiacell-card-10000-1600x800.png",
+      "src": "middle-banners/asiacell-card-10000-1600x800-fit-1600x800-v1.webp",
       "name": "آسياسيل — 10,000 دينار"
     },
     {
       "id": "middle-asiacell-1000",
-      "src": "middle-banners/asiacell-card-1000-1600x800.png",
+      "src": "middle-banners/asiacell-card-1000-1600x800-fit-1600x800-v1.webp",
       "name": "آسياسيل — 1,000 دينار"
     },
     {
       "id": "middle-asiacell-15000",
-      "src": "middle-banners/asiacell-card-15000-1600x800.png",
+      "src": "middle-banners/asiacell-card-15000-1600x800-fit-1600x800-v1.webp",
       "name": "آسياسيل — 15,000 دينار"
     }
   ],

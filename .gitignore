@@ -5,6 +5,7 @@ dist/
 !.env.example
 .sites-runtime/
 .openai/
+.deploy-tools/
 
 server/data/
 backend/public/assets/

@@ -1,4 +1,5 @@
 import {api,connected} from './api.js';
+import {routeHref} from './routing.js';
 import {ref} from 'vue/dist/vue.esm-bundler.js';
 import {User,LockKeyhole,Eye,EyeOff,ArrowLeft,CreditCard,Smartphone,Gamepad2,Headphones,Monitor,Cpu} from 'lucide-vue-next';
 import './admin-login.css';
@@ -12,12 +13,12 @@ export default {
       if(busy.value)return;busy.value=true;error.value='';
       try{if(connected)await api('/admin/login',{username:username.value.trim(),password:password.value});else if(username.value.trim()!=='iraq'||password.value!=='iraq')throw Error("اسم المستخدم أو كلمة المرور غير صحيح");password.value='';emit('login');}catch(e){error.value=e.message;}finally{busy.value=false;}
     }
-    return {username,password,visible,error,busy,submit};
+    return {routeHref,username,password,visible,error,busy,submit};
   },
   template:`<main class="masal-login">
     <div class="masal-login-frame">
       <section class="masal-login-form-panel" aria-labelledby="admin-login-title">
-        <a href="#" class="masal-login-brand"><span><MasalMark/></span><b>فاتيا<small>FATYA</small></b></a>
+        <a :href="routeHref('/')" class="masal-login-brand"><span><MasalMark/></span><b>فاتيا<small>FATYA</small></b></a>
         <div class="masal-login-form-content">
           <span class="masal-login-symbol"><LockKeyhole :size="23"/></span>
           <h1 id="admin-login-title">تسجيل الدخول</h1><p>ادخل لحسابك في لوحة فاتيا</p>
@@ -29,7 +30,7 @@ export default {
             <p v-if="error" class="masal-login-error" role="alert">{{error}}</p>
             <button class="masal-login-submit" type="submit" :disabled="busy">دخول <ArrowLeft :size="18"/></button>
           </form>
-          <a class="masal-login-store" href="#">الرجوع للتطبيق <ArrowLeft :size="15"/></a>
+          <a class="masal-login-store" :href="routeHref('/')">الرجوع للتطبيق <ArrowLeft :size="15"/></a>
         </div>
 
       </section>
