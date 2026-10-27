@@ -397,5 +397,6 @@ export default {
 "أضف الموقع للشاشة الرئيسية لتفعيل الإشعارات":"Add this site to your home screen to enable notifications",
 "مفعّلة":"Enabled",
 "غير مفعّلة":"Disabled",
-"تعذّر تفعيل الإشعارات راجع سماح المتصفح وإعدادات الخدمة":"Could not enable notifications. Check browser permissions and service settings."
+"تعذّر تفعيل الإشعارات راجع سماح المتصفح وإعدادات الخدمة":"Could not enable notifications. Check browser permissions and service settings.",
+"بانتظار رد الدعم":"Waiting for support reply"
 };

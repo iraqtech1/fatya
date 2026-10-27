@@ -77,4 +77,25 @@ class CustomerDeletionTest extends TestCase
             DB::table($table)->where('id', $row['id'])->delete();
         }
     }
+
+    public function test_status_toggle_preserves_data_and_old_sessions_stay_revoked_after_reactivation(): void
+    {
+        [$s, $customer, $other, $session] = $this->fixture();
+        DB::table('orders')->insert(['id' => 'preserved-order', 'customer_id' => $customer['id'], 'reference' => 'status-test', 'payload' => Store::json(['id' => 'preserved-order', 'customerId' => $customer['id'], 'reference' => 'status-test'])]);
+        $body = ['id' => $customer['id'], 'active' => false, 'revision' => $s['revision']];
+        $this->withHeaders(['X-Fatya-Request' => '1'])->postJson('/api/admin/customers/status', $body)->assertStatus(401);
+        $this->admin();
+        $this->postJson('/api/admin/customers/status', [...$body, 'active' => 'false'])->assertStatus(400);
+        $this->postJson('/api/admin/customers/status', [...$body, 'revision' => 0])->assertStatus(409);
+        $this->postJson('/api/admin/customers/status', $body)->assertOk()->assertJsonPath('customers.0.active', false)->assertJsonPath('customers.1.active', true);
+        $this->assertDatabaseCount('customers', 2);
+        $this->assertDatabaseCount('customer_credentials', 1);
+        $this->assertDatabaseCount('customer_notifications', 1);
+        $this->assertDatabaseHas('orders', ['id' => 'preserved-order']);
+        $this->assertDatabaseMissing('auth_tokens', ['customer_id' => $customer['id']]);
+        $this->assertDatabaseCount('otp_challenges', 0);
+        $revision = app(Store::class)->read()['revision'];
+        $this->postJson('/api/admin/customers/status', ['id' => $customer['id'], 'active' => true, 'revision' => $revision])->assertOk()->assertJsonPath('customers.0.active', true);
+        $this->withUnencryptedCookie('masal_customer', $session)->getJson('/api/auth/me')->assertStatus(401);
+    }
 }

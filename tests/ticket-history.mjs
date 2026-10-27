@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import vm from 'node:vm';
+import * as Vue from 'vue';
+import {renderToString} from 'vue/server-renderer';
+const require=createRequire(import.meta.url),vueRequire=createRequire(require.resolve('vue/package.json'));
+const {compile}=vueRequire('@vue/compiler-dom');
+const PagedList={props:['items','size'],setup:(props,{slots})=>()=>slots.default({items:props.items})};
+const source=readFileSync('src/TicketHistory.js','utf8').replace(/^import .*;\r?\n/gm,'').replace('export function','function').replace('export default','const component=');
+const {component,ticketCode}=vm.runInNewContext(source+';({component,ticketCode})',{t:s=>s,PagedList,Ticket:{render:()=>null}});
+component.render=Function('Vue',compile(component.template,{mode:'function',prefixIdentifiers:true}).code)(Vue);delete component.template;
+const items=[{id:'TICKET-cb53f555-2c7c-42c6-99fc-b6c7fd00208e',status:'مفتوحة',subject:'عنوان <script>bad</script>',message:'رسالة طويلة\nسطر ثان',reply:'رد الدعم',date:'2026-10-27'},{id:'TICKET-test-2',status:'مغلقة',subject:'Second',message:'Fixture'}];
+const before=JSON.stringify(items),html=await renderToString(Vue.createSSRApp(component,{items})),text=html.replace(/<[^>]*>/g,'');
+assert.equal(ticketCode(items[0].id),'#FD00208E');assert.ok(text.includes('#FD00208E'));assert.ok(!text.includes(items[0].id),'The full identifier must not expand the visible ticket card');
+assert.ok(html.includes(items[0].id),'Full identifier remains available to assistive technology');assert.ok(html.includes('&lt;script&gt;'));assert.ok(!html.includes('<script>bad'));
+for(const label of ['تذاكري','عنوان الرسالة','رسالتك','رد الإدارة:','بانتظار رد الدعم'])assert.ok(text.includes(label));
+assert.equal(JSON.stringify(items),before);assert.ok(html.includes('support-ticket-field'));console.log('Ticket cards retain identifiers, show compact references, escape user content and frame message/reply fields.');

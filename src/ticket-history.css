@@ -1,0 +1,22 @@
+#app .support-ticket-history{--ticket-bg:#f0f7ef;--ticket-field:#fbfdf9;--ticket-border:#bdd4bf;--ticket-ink:#164436;--ticket-muted:#587466;margin-block:28px 12px;padding:20px;border:1px solid var(--ticket-border);border-radius:20px;background:var(--ticket-bg);color:var(--ticket-ink);min-width:0}
+#app .support-ticket-heading,#app .support-ticket-meta{height:auto;min-height:0;width:auto;max-width:none;position:static;background:transparent;box-shadow:none;border:0;border-radius:0;padding:0}
+#app .support-ticket-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 0 16px;margin-bottom:16px;border-bottom:1px solid var(--ticket-border)}
+#app .support-ticket-heading h2{display:flex;align-items:center;gap:9px;font-size:18px;margin:0;color:var(--ticket-ink)}
+#app .support-ticket-heading>span{display:grid;place-items:center;min-width:30px;height:30px;padding-inline:8px;border:1px solid var(--ticket-border);border-radius:10px;font-size:12px;color:var(--ticket-ink);background:var(--ticket-field)}
+#app .support-ticket-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+#app .support-ticket-history .support-ticket-card{min-width:0;padding:18px;border:1px solid var(--ticket-border);border-radius:16px;background:var(--ticket-field);box-shadow:0 4px 16px #16443608;color:var(--ticket-ink)}
+#app .support-ticket-meta{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-bottom:14px}
+#app .support-ticket-number{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ticket-border);border-radius:8px;padding:6px 9px;background:var(--ticket-bg);font-size:12px;color:var(--ticket-ink)}
+#app .support-ticket-number b{font-size:12px;letter-spacing:.04em}
+#app .support-ticket-status{padding:5px 9px;border-radius:8px;background:#e3eed5;color:#3c602b;font-size:11px}
+#app .support-ticket-status.is-closed{background:var(--ticket-bg);color:var(--ticket-muted)}
+#app .support-ticket-meta time{margin-inline-start:auto;font-size:11px;color:var(--ticket-muted)}
+#app .support-ticket-field{padding:13px 15px;margin-top:10px;border:1px solid var(--ticket-border);border-radius:12px;background:var(--ticket-bg);min-width:0}
+#app .support-ticket-field .support-ticket-label{display:block;margin-bottom:7px;font-size:11px;color:var(--ticket-muted)}
+#app .support-ticket-field h3,#app .support-ticket-field p{margin:0;font-size:14px;line-height:1.9;color:var(--ticket-ink);white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+#app .support-ticket-field h3{font-size:15px}
+#app .support-ticket-answer{border-inline-start:3px solid #7c9e47}
+#app .support-ticket-history .support-ticket-waiting{margin:12px 2px 0;font-size:11px;color:var(--ticket-muted)}
+html[data-theme=dark] #app .support-ticket-history{--ticket-bg:#143429;--ticket-field:#0e271e;--ticket-border:#3f6654;--ticket-ink:#e2f0df;--ticket-muted:#b3c9ba;background:var(--ticket-bg)}
+html[data-theme=dark] #app .support-ticket-status{background:#30462c;color:#d3e8b7}
+@media(max-width:720px){#app .support-ticket-grid{grid-template-columns:1fr}#app .support-ticket-history{padding:14px;border-radius:16px}#app .support-ticket-history .support-ticket-card{padding:13px}#app .support-ticket-field{padding:11px}#app .support-ticket-heading h2{font-size:16px}}

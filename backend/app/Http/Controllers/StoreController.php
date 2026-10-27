@@ -291,6 +291,27 @@ class StoreController extends Controller
 
             return $json($ticket, 201);
         }
+        if ($path === '/api/admin/customers/status' && $req->isMethod('POST')) {
+            $this->accounts->session($req, 'admin');
+            $this->revision($s, $b);
+            $id = CatalogEditor::text($b['id'] ?? null, 100);
+            $index = array_search($id, array_column($s['customers'], 'id'), true);
+            if ($index === false) {
+                throw new ApiError('العميل غير موجود', 404);
+            }
+            if (! is_bool($b['active'] ?? null)) {
+                throw new ApiError('حالة الحساب غير صحيحة');
+            }
+            $s['customers'][$index]['active'] = $b['active'];
+            if (! $b['active']) {
+                DB::table('auth_tokens')->where('customer_id', $id)->delete();
+                $this->removeChallenges($id);
+            }
+            $this->store->event($s, $b['active'] ? 'تم تفعيل حساب عميل' : 'تم إيقاف حساب عميل');
+            $this->store->save($s);
+
+            return $json($this->publicState($req, $s, true));
+        }
         if ($path === '/api/admin/customers/delete' && $req->isMethod('POST')) {
             $this->accounts->session($req, 'admin');
             $this->revision($s, $b);
