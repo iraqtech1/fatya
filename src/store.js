@@ -17,6 +17,8 @@ export const store=reactive({
   settings:connected?{...defaultSettings}:readPreviewSettings(previewSettingsStorage),
 });
 if(!connected&&typeof window!=='undefined')subscribePreviewSettings(previewSettingsStorage,window,next=>Object.assign(store.settings,next));
+if(!connected)try{const rows=JSON.parse(previewSettingsStorage?.getItem('fatya-web-slides-v1')||'null');if(Array.isArray(rows))store.settings.webSlides=rows;}catch{}
+if(!connected&&typeof window!=='undefined')window.addEventListener('storage',event=>{if(event.key==='fatya-web-slides-v1')try{const rows=JSON.parse(event.newValue);if(Array.isArray(rows))store.settings.webSlides=rows;}catch{}});
 export function savePreviewStoreSettings(settings){Object.assign(store.settings,savePreviewSettings(settings,previewSettingsStorage));}
 watch(()=>store.categories.map(c=>c.name),names=>CATEGORIES.splice(0,CATEGORIES.length,...names),{flush:'sync'});
 export const number=n=>new Intl.NumberFormat('en-US').format(n);

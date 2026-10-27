@@ -36,7 +36,7 @@ class CatalogEditor
 
     public function update(array &$s, string $collection, array $d): ?array
     {
-        if (! array_key_exists($collection, Store::TABLES) && $collection !== 'settings') {
+        if (! array_key_exists($collection, Store::TABLES) && ! in_array($collection, ['settings', 'webSlides'])) {
             throw new ApiError('غير موجود', 404);
         }
         $old = collect($s[$collection] ?? [])->firstWhere('id', $d['id'] ?? null);
@@ -84,6 +84,7 @@ class CatalogEditor
                 $item = ['id' => $id, 'name' => $name, 'role' => $role, 'active' => $d['active']];
                 break;
             case 'settings':
+                $webSlides = $s['settings']['webSlides'] ?? null;
                 $name = self::text($d['name'] ?? null, 60);
                 $email = self::text($d['supportEmail'] ?? null, 254);
                 if (! $name || ! is_int($d['lowStock'] ?? null) || $d['lowStock'] < 0 || $d['lowStock'] > 10000 || ($email && ! preg_match('/^\S+@\S+\.\S+$/', $email))) {
@@ -91,8 +92,12 @@ class CatalogEditor
                 }
                 $s['settings'] = ['name' => $name, 'supportEmail' => $email, 'supportPhone' => self::text($d['supportPhone'] ?? null, 30), 'lowStock' => $d['lowStock'], 'privacyText' => self::text($d['privacyText'] ?? $s['settings']['privacyText'], 10000), 'aboutText' => self::text($d['aboutText'] ?? $s['settings']['aboutText'], 10000)];
 
+                if ($webSlides !== null) {
+                    $s['settings']['webSlides'] = $webSlides;
+                }
+
                 return null;
-            case 'slides': case 'middleSlides':
+            case 'slides': case 'middleSlides': case 'webSlides':
                 if (! array_is_list($d) || count($d) > 10) {
                     throw new ApiError('الحد الأقصى 10 صور');
                 }
@@ -102,12 +107,24 @@ class CatalogEditor
                         throw new ApiError('بيانات غير صحيحة');
                     }
                     self::image($slide['src'] ?? null);
-                    $slides[] = ['id' => self::text($slide['id'] ?? null, 100), 'name' => self::text($slide['name'] ?? null, 200), 'src' => $slide['src']];
+                    $row = ['id' => self::text($slide['id'] ?? null, 100), 'name' => self::text($slide['name'] ?? null, 200), 'src' => $slide['src']];
+                    if ($collection === 'webSlides') {
+                        $product = collect($s['products'])->first(fn ($p) => (string) $p['id'] === (string) ($slide['productId'] ?? ''));
+                        if (! $product || ! $row['id'] || ! $row['src']) {
+                            throw new ApiError('اختر بطاقة وصورة صحيحة لسلايدر الموقع');
+                        }
+                        $row['productId'] = $product['id'];
+                    }
+                    $slides[] = $row;
                 }
                 if (count(array_unique(array_column($slides, 'id'))) !== count($slides)) {
                     throw new ApiError('معرّف صورة مكرر');
                 }
-                $s[$collection] = $slides;
+                if ($collection === 'webSlides') {
+                    $s['settings']['webSlides'] = $slides;
+                } else {
+                    $s[$collection] = $slides;
+                }
 
                 return null;
             case 'products':

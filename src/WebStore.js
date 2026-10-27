@@ -1,3 +1,4 @@
+import {webSlideCards} from './web-slides.js';
 import {computed,ref,watch} from 'vue/dist/vue.esm-bundler.js';
 import {Search,UserRound,ArrowLeft,ArrowUpLeft,ShoppingBag,Headphones,Grid2X2,Gamepad2,Wifi,Ticket,Smartphone,CreditCard,Gift,Joystick,Coins,Music2,Globe2} from 'lucide-vue-next';
 import StoreBrandMark from './StoreBrandMark.js';
@@ -33,11 +34,12 @@ export default {
    if(sort.value==='name')rows.sort((a,b)=>t(a.name).localeCompare(t(b.name),language.value==='ku'?'ckb':language.value));
    return rows;
   });
-  const heroProducts=computed(()=>['Steam','KoreK','Zain'].map(name=>props.products.find(p=>p.en?.toLowerCase()===name.toLowerCase())).filter(Boolean));
+  const heroProducts=computed(()=>webSlideCards(props.settings,props.products));
+  function selectHero(card){const product=props.products.find(p=>String(p.id)===String(card.productId));if(product)emit('select',product);}
   const brands=computed(()=>props.products.filter(p=>['zain','korek','steam','apple','ps','asiacell'].includes(p.en?.toLowerCase())).slice(0,6));
   const number=n=>new Intl.NumberFormat('en-US').format(n);
   function browse(category='الكل'){emit('browse',category,search.value);}
-  return {connected,heroDecorations,t,language,denominations,routeHref,search,sort,browsing,showingHome,result,heroProducts,brands,number,browse};
+  return {selectHero,connected,heroDecorations,t,language,denominations,routeHref,search,sort,browsing,showingHome,result,heroProducts,brands,number,browse};
  },
  template:`<div class="web-premium" :dir="language==='en'?'ltr':'rtl'">
  <header class="web-header web-container">
@@ -48,7 +50,7 @@ export default {
  </header>
  <nav class="web-nav web-container" :aria-label="t('تصنيفات متجر الويب')"><button :aria-pressed="category==='الكل'&&browsing" @click="search='';browse('الكل')">{{t('كل البطاقات')}}</button><button v-for="c in categories" :key="c.id" :aria-pressed="category===c.name&&browsing" @click="search='';browse(c.name)">{{t(c.name)}}</button><button @click="$emit('navigate','support')"><Headphones :size="17"/>{{t('المساعدة')}}</button></nav>
  <main v-if="browsing" class="web-container web-shop-main">
-  <section v-if="showingHome" class="web-editorial-hero"><div class="web-hero-decoration" aria-hidden="true"><span v-for="(mark,index) in heroDecorations" :key="index" class="web-hero-doodle" :style="{'--doodle-x':mark.x+'%','--doodle-y':mark.y+'%','--doodle-size':mark.size+'px','--doodle-angle':mark.angle+'deg','--doodle-duration':mark.duration+'s','--doodle-delay':mark.delay+'s'}"><component :is="mark.icon" :stroke-width="1.35"/></span></div><div class="web-hero-copy"><span class="web-kicker">FATYA / DIGITAL STORE</span><h1>{{t('عالمك الرقمي،')}}<br><em>{{t('باختيارك.')}}</em></h1><p>{{t('من رصيدك اليومي إلى ألعابك المفضلة. اكتشف البطاقات واختَر الفئة اللي تناسبك.')}}</p><a class="web-primary" href="#web-collection">{{t('اكتشف البطاقات')}}<ArrowLeft :size="19"/></a></div><div class="web-hero-deck"><CardDeck v-if="heroProducts.length" :products="heroProducts" variant="web" @select="$emit('select',$event)"/></div></section>
+  <section v-if="showingHome" class="web-editorial-hero"><div class="web-hero-decoration" aria-hidden="true"><span v-for="(mark,index) in heroDecorations" :key="index" class="web-hero-doodle" :style="{'--doodle-x':mark.x+'%','--doodle-y':mark.y+'%','--doodle-size':mark.size+'px','--doodle-angle':mark.angle+'deg','--doodle-duration':mark.duration+'s','--doodle-delay':mark.delay+'s'}"><component :is="mark.icon" :stroke-width="1.35"/></span></div><div class="web-hero-copy"><span class="web-kicker">FATYA / DIGITAL STORE</span><h1>{{t('عالمك الرقمي،')}}<br><em>{{t('باختيارك.')}}</em></h1><p>{{t('من رصيدك اليومي إلى ألعابك المفضلة. اكتشف البطاقات واختَر الفئة اللي تناسبك.')}}</p><a class="web-primary" href="#web-collection">{{t('اكتشف البطاقات')}}<ArrowLeft :size="19"/></a></div><div class="web-hero-deck"><CardDeck v-if="heroProducts.length" :products="heroProducts" variant="web" @select="selectHero"/></div></section>
   <div v-if="showingHome&&brands.length" class="web-brand-row" :aria-label="t('شركات البطاقات')"><span v-for="p in brands" :key="p.id">{{p.en}}</span></div>
   <section id="web-collection" class="web-collection" :aria-label="t('مجموعة البطاقات')"><div class="web-section-heading"><div><span class="web-kicker">THE COLLECTION</span><h2>{{showingHome?t('اختيارات فاتيا'):category==='الكل'?t('كل البطاقات'):t(category)}}</h2><p v-if="query">{{t('نتائج البحث عن')}} «{{query}}»</p></div><label class="web-sort">{{t('ترتيب البطاقات')}}<select v-model="sort" :aria-label="t('ترتيب بطاقات الويب')"><option value="default">{{t('الترتيب الافتراضي')}}</option><option value="price">{{t('السعر من الأقل')}}</option><option value="name">{{t('حسب الاسم')}}</option></select></label></div>
    <p v-if="loading" class="web-feedback" role="status">{{t('جارٍ تحميل البطاقات…')}}</p><p v-if="error" class="web-feedback" role="alert">{{error}} <button @click="$emit('refresh')">{{t('إعادة المحاولة')}}</button></p>

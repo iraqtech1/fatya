@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {webSlideRows,webSlideCards} from '../src/web-slides.js';
+const products=[{id:1,en:'Steam',name:'Steam',image:'cards/original.webp',active:true},{id:2,en:'Zain',name:'Zain',image:'cards/zain.webp',active:true}];
+assert.equal(webSlideRows({},products).length,2);
+const settings={webSlides:[{id:'a',name:'Custom',src:'cards/web.webp',productId:1},{id:'b',name:'Second',src:'cards/second.webp',productId:1}]};
+const cards=webSlideCards(settings,products);
+assert.deepEqual(cards.map(p=>p.id),['a','b'],'Each image has its own identity even when linked to the same product');
+assert.equal(cards[0].productId,1);assert.equal(cards[0].image,'cards/web.webp');assert.equal(products[0].image,'cards/original.webp');
+products[0].image='cards/changed-product.webp';assert.equal(webSlideCards(settings,products)[0].image,'cards/web.webp');
+assert.equal(webSlideCards({webSlides:[]},products).length,0,'Deleting all web images must not restore the defaults');
+products[0].active=false;assert.equal(webSlideCards(settings,products).length,0,'Inactive products cannot be opened from a web slide');
+console.log('Web slider images, ordering, empty state, product links and product-image independence passed.');
