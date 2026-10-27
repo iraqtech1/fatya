@@ -291,6 +291,29 @@ class StoreController extends Controller
 
             return $json($ticket, 201);
         }
+        if ($path === '/api/admin/customers/delete' && $req->isMethod('POST')) {
+            $this->accounts->session($req, 'admin');
+            $this->revision($s, $b);
+            $id = CatalogEditor::text($b['id'] ?? null, 100);
+            $customer = collect($s['customers'])->firstWhere('id', $id);
+            if (! $customer) {
+                throw new ApiError('العميل غير موجود', 404);
+            }
+            if (($b['confirm'] ?? false) !== true) {
+                throw new ApiError('يجب تأكيد حذف العميل');
+            }
+            if (DB::table('orders')->where('customer_id', $id)->exists() || DB::table('tickets')->where('customer_id', $id)->exists()) {
+                throw new ApiError('هذا العميل مرتبط بطلبات أو تذاكر دعم ولا يمكن حذفه للحفاظ على السجلات يمكنك إيقاف حسابه من تعديل', 409);
+            }
+            $this->removeChallenges($id);
+            DB::table('auth_tokens')->where('customer_id', $id)->delete();
+            DB::table('customers')->where('id', $id)->delete();
+            $s['customers'] = array_values(array_filter($s['customers'], fn ($c) => $c['id'] !== $id));
+            $this->store->event($s, 'تم حذف حساب عميل');
+            $this->store->save($s);
+
+            return $json($this->publicState($req, $s, true));
+        }
         if (str_starts_with($path, '/api/admin/') && $req->isMethod('PUT')) {
             $this->accounts->session($req, 'admin');
             $this->revision($s, $b);
