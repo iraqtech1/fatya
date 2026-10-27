@@ -36,7 +36,7 @@ class CatalogEditor
 
     public function update(array &$s, string $collection, array $d): ?array
     {
-        if (! array_key_exists($collection, Store::TABLES) && ! in_array($collection, ['settings', 'webSlides'])) {
+        if (! array_key_exists($collection, Store::TABLES) && ! in_array($collection, ['settings', 'webSlides', 'faqs'])) {
             throw new ApiError('غير موجود', 404);
         }
         $old = collect($s[$collection] ?? [])->firstWhere('id', $d['id'] ?? null);
@@ -85,6 +85,7 @@ class CatalogEditor
                 break;
             case 'settings':
                 $webSlides = $s['settings']['webSlides'] ?? null;
+                $faqs = $s['settings']['faqs'] ?? null;
                 $name = self::text($d['name'] ?? null, 60);
                 $email = self::text($d['supportEmail'] ?? null, 254);
                 if (! $name || ! is_int($d['lowStock'] ?? null) || $d['lowStock'] < 0 || $d['lowStock'] > 10000 || ($email && ! preg_match('/^\S+@\S+\.\S+$/', $email))) {
@@ -95,6 +96,30 @@ class CatalogEditor
                 if ($webSlides !== null) {
                     $s['settings']['webSlides'] = $webSlides;
                 }
+                if ($faqs !== null) {
+                    $s['settings']['faqs'] = $faqs;
+                }
+
+                return null;
+            case 'faqs':
+                if (! array_is_list($d) || count($d) > 30) {
+                    throw new ApiError('الحد الأقصى 30 سؤالاً');
+                }
+                $faqs = [];
+                foreach ($d as $faq) {
+                    if (! is_array($faq)) {
+                        throw new ApiError('السؤال والجواب غير صحيحين');
+                    }
+                    $entry = ['id' => self::text($faq['id'] ?? null, 100), 'question' => self::text($faq['question'] ?? null, 200), 'answer' => self::text($faq['answer'] ?? null, 4000)];
+                    if (! $entry['id'] || ! $entry['question'] || ! $entry['answer']) {
+                        throw new ApiError('اكتب السؤال والجواب');
+                    }
+                    $faqs[] = $entry;
+                }
+                if (count(array_unique(array_column($faqs, 'id'))) !== count($faqs)) {
+                    throw new ApiError('معرّف سؤال مكرر');
+                }
+                $s['settings']['faqs'] = $faqs;
 
                 return null;
             case 'slides': case 'middleSlides': case 'webSlides':

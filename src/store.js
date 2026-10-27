@@ -16,6 +16,7 @@ export const store=reactive({
   orders:connected?[]:readPreviewOrders(previewSettingsStorage),customers:[],tickets:[],imports:[],suppliers:[],events:[],notifications:[],inventorySummary:[],paymentReceipts:[],
   settings:connected?{...defaultSettings}:readPreviewSettings(previewSettingsStorage),
 });
+if(!connected)try{const rows=JSON.parse(previewSettingsStorage?.getItem('fatya-faqs-v1')||'null');if(Array.isArray(rows))store.settings.faqs=rows;}catch{}
 if(!connected&&typeof window!=='undefined')subscribePreviewSettings(previewSettingsStorage,window,next=>Object.assign(store.settings,next));
 if(!connected)try{const rows=JSON.parse(previewSettingsStorage?.getItem('fatya-web-slides-v1')||'null');if(Array.isArray(rows))store.settings.webSlides=rows;}catch{}
 if(!connected&&typeof window!=='undefined')window.addEventListener('storage',event=>{if(event.key==='fatya-web-slides-v1')try{const rows=JSON.parse(event.newValue);if(Array.isArray(rows))store.settings.webSlides=rows;}catch{}});

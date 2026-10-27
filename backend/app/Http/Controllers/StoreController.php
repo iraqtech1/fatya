@@ -340,7 +340,7 @@ class StoreController extends Controller
             $this->revision($s, $b);
             $collection = substr($path, strlen('/api/admin/'));
             $data = $b['data'] ?? null;
-            if (! is_array($data) || (! in_array($collection, ['slides', 'middleSlides', 'webSlides']) && array_is_list($data))) {
+            if (! is_array($data) || (! in_array($collection, ['slides', 'middleSlides', 'webSlides', 'faqs']) && array_is_list($data))) {
                 throw new ApiError('بيانات غير صحيحة');
             }
             if ($collection === 'orders') {

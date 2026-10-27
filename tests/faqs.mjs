@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import vm from 'node:vm';
+import * as Vue from 'vue';
+import {renderToString} from 'vue/server-renderer';
+import {faqRows,faqText,defaultFaqs} from '../src/faqs.js';
+assert.equal(faqRows({}).length,3);assert.deepEqual(faqRows({faqs:[]}),[]);
+const copy=faqRows({});copy[0].question='changed';assert.notEqual(defaultFaqs[0].question,'changed');
+assert.equal(faqText(defaultFaqs[0],'question',s=>'translated:'+s),'translated:'+defaultFaqs[0].question);
+assert.equal(faqText({...defaultFaqs[0],question:'Custom text'},'question',s=>'translated:'+s),'Custom text');
+const require=createRequire(import.meta.url),vueRequire=createRequire(require.resolve('vue/package.json')),{compile}=vueRequire('@vue/compiler-dom');
+const source=readFileSync('src/QuickAnswers.js','utf8').replace(/^import .*;\r?\n/gm,'').replace('export default','const component=');
+const component=vm.runInNewContext(source+';component',{computed:Vue.computed,Headphones:{inheritAttrs:false,render:()=>null},t:s=>s,faqRows,faqText});
+component.render=Function('Vue',compile(component.template,{mode:'function',prefixIdentifiers:true}).code)(Vue);delete component.template;
+const html=await renderToString(Vue.createSSRApp(component,{settings:{faqs:[{id:'custom',question:'Question <script>',answer:'Answer <img onerror="bad">\nsecond line'}]}}));
+assert.ok(html.includes('Question &lt;script&gt;'));assert.ok(html.includes('&lt;img'));assert.ok(!html.includes('<script>'));assert.ok(!html.includes(defaultFaqs[0].question));
+console.log('Custom FAQs replace defaults, empty lists stay empty, default translations persist, and custom text is escaped.');
