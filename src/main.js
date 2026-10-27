@@ -1,4 +1,5 @@
 import MasalMark from './MasalMark.js';
+import {disconnectPush} from './push-notifications.js';
 import {routePath,inRoute} from './routing.js';
 import './viewport.js';
 import {api,connected} from './api.js';
@@ -72,7 +73,7 @@ if(restored?.user)upsertCustomer(restored.user);
 function requestAuth(mode='login',destination='home'){authView.value=mode==='register'?'register':'login';pendingPage.value=destination;authRequest.value++;authVisible.value=true;}
 async function cancelAuth(){authVisible.value=false;if(pendingCheckout.value){pendingCheckout.value=null;await returnCheckout();}}
 async function enterStore(user){if(connected)await refreshStore().catch(e=>notify(e.message));session.value=user;entered.value=true;upsertCustomer(user);authVisible.value=false;if(pendingCheckout.value){paymentDraft.value=pendingCheckout.value;pendingCheckout.value=null;go('payment');}else go(webMode.value?pendingPage.value:'home');}
-async function accountAccess(){if(connected){try{await api('/auth/logout',{});}catch(e){notify(e.message);return;}await refreshStore().catch(()=>{});}session.value=null;entered.value=false;paymentDraft.value=null;paymentReceipt.value='';pendingCheckout.value=null;pendingPage.value='home';authVisible.value=false;toast.value='';authRequest.value++;if(webMode.value)go('home');}
+async function accountAccess(){if(connected){try{await disconnectPush();await api('/auth/logout',{});}catch(e){notify(e.message);return;}await refreshStore().catch(()=>{});}session.value=null;entered.value=false;paymentDraft.value=null;paymentReceipt.value='';pendingCheckout.value=null;pendingPage.value='home';authVisible.value=false;toast.value='';authRequest.value++;if(webMode.value)go('home');}
 const profileError=ref('');
 const supportPhoneHref=computed(()=>{const phone=store.settings.supportPhone.replace(/[٠-٩]/g,c=>String(c.charCodeAt(0)-1632)).replace(/[۰-۹]/g,c=>String(c.charCodeAt(0)-1776)).replace(/[^+0-9]/g,'');return phone?'tel:'+phone:'';});
 async function saveProfile({name,email,done}){try{const updated=await auth.updateProfile({...session.value,name,email});session.value=updated;upsertCustomer(updated);profileError.value='';done();notify('تم حفظ الملف الشخصي');}catch(error){profileError.value=error.message;}}

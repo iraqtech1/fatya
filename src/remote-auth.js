@@ -3,7 +3,7 @@ export function createRemoteAuth(){
   let challengeId='';
   return {
     async login(data){return api('/auth/login',data);},
-    async register(data){return api('/auth/register',data);},
+    async register(data){const result=await api('/auth/register',data);if(result.challengeId)challengeId=result.challengeId;return result;},
     async start(data){const challenge=await api('/auth/start',data);challengeId=challenge.challengeId;return challenge;},
     async resetPassword(code,password){const result=await api('/auth/reset-password',{challengeId,code,password});challengeId='';return result;},
     async verify(code){return api('/auth/verify',{challengeId,code});},

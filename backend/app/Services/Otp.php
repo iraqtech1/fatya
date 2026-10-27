@@ -5,12 +5,14 @@ namespace App\Services;
 use App\Exceptions\ApiError;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class Otp
 {
-    public function issue(array $s, array $b, bool $resend): array
+    public function issue(array $s, array $b, bool $resend, ?string $ip = null): array
     {
         $previous = $resend ? DB::table('otp_challenges')->where('id', CatalogEditor::text($b['challengeId'] ?? null, 100))->lockForUpdate()->first() : null;
         $id = $resend ? ($previous->id ?? '') : (string) Str::uuid();
@@ -47,23 +49,51 @@ class Otp
                 throw new ApiError('طريقة التحقق غير صحيحة');
             }
         }
+        $passwordHash = $prior['passwordHash'] ?? null;
+        if (! $resend && $mode === 'register' && config('fatya.require_registration_otp')) {
+            Accounts::validatePassword($b['password'] ?? null);
+            $passwordHash = Hash::make($b['password']);
+        }
         $code = (string) random_int(100000, 999999);
         $challenge = ['account' => $account, 'mode' => $mode, 'code' => hash('sha256', $code), 'expiresAt' => $now + 300000, 'resendAt' => $now + 60000, 'attempts' => 0];
+        if ($passwordHash) {
+            $challenge['passwordHash'] = $passwordHash;
+        }
         $development = config('fatya.development_otp') && ! app()->isProduction();
         if (! $development) {
-            $url = config('fatya.otp_url');
-            $token = config('fatya.otp_token');
-            if (! $url || ! $token || ! str_starts_with($url, 'https://')) {
-                throw new ApiError('خدمة إرسال رموز التحقق غير مهيأة', 503);
+            $rateKey = 'fatya:otp-phone:'.hash('sha256', $account['phone']);
+            if (RateLimiter::tooManyAttempts($rateKey, 1)) {
+                throw new ApiError('انتظر قبل طلب رمز جديد', 429);
             }
-            try {
-                $result = Http::timeout(10)->withToken($token)->post($url, ['phone' => $account['phone'], 'code' => $code]);
-            } catch (ConnectionException) {
-                throw new ApiError('تعذّر إرسال الرمز', 502);
+            if (config('fatya.otp_provider') === 'takeed') {
+                if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                    throw new ApiError('تعذّر التحقق من عنوان الاتصال', 422);
+                }
+                try {
+                    $result = app(Takeed::class)->client()->post('/otp/send', ['phone' => '+964'.substr($account['phone'], 1), 'code' => $code, 'user_ip' => $ip, 'target' => config('fatya.takeed_target')]);
+                } catch (ConnectionException) {
+                    // Do not retry sends: a timed-out request may already have delivered a code.
+                    throw new ApiError('تعذّر إرسال الرمز حاول لاحقاً', 502);
+                }
+                if (! $result->successful()) {
+                    throw new ApiError($result->status() === 402 ? 'رصيد رسائل التحقق غير كافٍ تواصل مع الدعم' : 'تعذّر إرسال الرمز حاول لاحقاً', $result->status() === 429 ? 429 : 503);
+                }
+            } else {
+                $url = config('fatya.otp_url');
+                $token = config('fatya.otp_token');
+                if (! $url || ! $token || ! str_starts_with($url, 'https://')) {
+                    throw new ApiError('خدمة إرسال رموز التحقق غير مهيأة', 503);
+                }
+                try {
+                    $result = Http::timeout(10)->withToken($token)->post($url, ['phone' => $account['phone'], 'code' => $code]);
+                } catch (ConnectionException) {
+                    throw new ApiError('تعذّر إرسال الرمز', 502);
+                }
+                if (! $result->successful()) {
+                    throw new ApiError('تعذّر إرسال الرمز', 502);
+                }
             }
-            if (! $result->successful()) {
-                throw new ApiError('تعذّر إرسال الرمز', 502);
-            }
+            RateLimiter::hit($rateKey, 60);
         }
         DB::table('otp_challenges')->where('expires', '<=', $now)->delete();
         DB::table('otp_challenges')->updateOrInsert(['id' => $id], ['payload' => Store::json($challenge), 'expires' => $challenge['expiresAt']]);

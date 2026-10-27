@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import * as Vue from 'vue/dist/vue.esm-bundler.js';
+const source=readFileSync('src/AuthGate.js','utf8').replaceAll('\r\n','\n');
+const setup=source.slice(source.indexOf('setup(props,{emit}){'),source.indexOf('\n  },\n  template:')+4);
+let events=[],verified=0;
+const auth={cancel(){},register:async()=>({challengeId:'fixture',mode:'register',expiresAt:Date.now()+300000,resendAt:Date.now()+60000}),verify:async code=>{assert.equal(code,'123456');verified++;return {id:'verified-customer'};}};
+const context={...Vue,auth,store:{customers:[]},t:s=>s,language:Vue.ref('ar'),normalizePhone:s=>s,window:{scrollTo(){}},setInterval:()=>1,clearInterval,Date};
+const component=vm.runInNewContext('({'+setup+'})',context);
+const renderer=Vue.createRenderer({insert(){},remove(){},createElement:()=>({}),createText:()=>({}),createComment:()=>({}),setText(){},setElementText(){},parentNode:()=>null,nextSibling:()=>null,patchProp(){}});
+const app=renderer.createApp({...component,props:['request','initialView'],emits:['enter'],render:()=>null},{request:1,initialView:'register',onEnter:user=>events.push(user)});
+const ui=app.mount({});
+ui.phone='07712345678';ui.password='fixture-password';ui.name='Fixture';
+await ui.submit();assert.equal(ui.view,'otp');assert.equal(events.length,0,'A challenge must not be mistaken for an authenticated customer');assert.equal(ui.password,'');
+ui.code='123456';await ui.submit();assert.equal(verified,1);assert.equal(events[0].id,'verified-customer');
+app.unmount();console.log('Registration waits for OTP, clears plaintext password, and enters only after verification.');

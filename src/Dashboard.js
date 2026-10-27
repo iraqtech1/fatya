@@ -6,6 +6,7 @@ import {api,connected} from './api.js';
 import {deliveredOrder,allowedOrderStatuses,orderStateLabel,paymentStateLabel,inventoryStateLabel,paymentReviewLabel,orderTime} from './order-state.js';
 import {routePath,routeHref,navigateRoute} from './routing.js';
 import PagedList from './PagedList.js';
+import OtpBalanceCard from './OtpBalanceCard.js';
 import {ref,computed,watch,onMounted,onBeforeUnmount,nextTick} from 'vue/dist/vue.esm-bundler.js';
 import {LayoutDashboard,Layers,ShoppingBag,Users,Wallet,CreditCard,Headphones,BarChart3,Settings,Package,Upload,Link,Search,ChevronLeft,Plus,X,ArrowUpLeft,Download,Menu,CheckCircle2,AlertCircle,Clock,Eye,Pencil,Globe,ArrowRight,LogOut} from 'lucide-vue-next';
 import {store,connection,setStoreRole,refreshStore,saveAdmin,savePreviewStoreSettings,importStock,CATEGORIES,number,isoDate,record} from './store.js';
@@ -34,7 +35,7 @@ const sections=[
   {id:'settings',name:'الإعدادات',icon:Settings},
 ];
 export default {
-  components:{SearchableFilter,PagedList,AdminLogin,SliderManager,Layers,ShoppingBag,Users,Wallet,CreditCard,Headphones,BarChart3,Settings,Package,Upload,Link,Search,ChevronLeft,Plus,X,ArrowUpLeft,Download,Menu,CheckCircle2,AlertCircle,Clock,Eye,Pencil,Globe,ArrowRight,LogOut},
+  components:{OtpBalanceCard,SearchableFilter,PagedList,AdminLogin,SliderManager,Layers,ShoppingBag,Users,Wallet,CreditCard,Headphones,BarChart3,Settings,Package,Upload,Link,Search,ChevronLeft,Plus,X,ArrowUpLeft,Download,Menu,CheckCircle2,AlertCircle,Clock,Eye,Pencil,Globe,ArrowRight,LogOut},
   setup(){
     const authenticated=ref(false);
     if(!connected)try{authenticated.value=sessionStorage.getItem('masal-admin-session')==='demo';}catch{}
@@ -147,7 +148,7 @@ export default {
   <div class="admin-content">
   <section class="admin-hero"><div><span dir="ltr">{{isoDate()}} / FATYA DASHBOARD</span><h1>{{title}}</h1><p>{{description}}</p></div><div><button v-if="section==='overview'" @click="go('inventory')"><Upload :size="17"/> استيراد الكارتات</button><button v-if="section==='categories'" @click="show('category')"><Plus :size="17"/> إضافة تصنيف</button><button v-if="section==='cards'" @click="show(cardsTab==='companies'?'company':'product')"><Plus :size="17"/> {{cardsTab==='companies'?'إضافة شركة':'إضافة بطاقة'}}</button><button v-if="section==='customers'" @click="show('customer')"><Plus :size="17"/> إضافة عميل</button><button v-if="section==='suppliers'" @click="show('supplier')"><Plus :size="17"/> إضافة مورّد</button><button v-if="section==='orders'||section==='reports'" @click="exportReport"><Download :size="17"/> تصدير Excel</button><a :href="routeHref('/app')" target="_blank" rel="noopener noreferrer"><Globe :size="17"/> فتح التطبيق</a></div></section>
   <SliderManager v-if="section==='slider'" key="top"/><SliderManager v-if="section==='middle-slider'" key="middle" placement="middle"/><div v-if="connected&&connection.error" class="admin-session-note" role="alert"><AlertCircle :size="15"/> {{connection.error}}</div>
-  <div v-if="section==='overview'" class="admin-stats"><button v-for="s in stats" :key="s.section" :class="{'is-selected':selectedStat===s.section}" :aria-expanded="selectedStat===s.section" aria-controls="admin-stat-content" @click="selectStat(s.section)"><div><span>{{s.label}}</span><component :is="s.icon" :size="18"/></div><strong dir="ltr">{{s.value}} <small>{{s.unit}}</small></strong><p>{{s.note}}</p></button></div>
+  <div v-if="section==='overview'" class="admin-stats"><button v-for="s in stats" :key="s.section" :class="{'is-selected':selectedStat===s.section}" :aria-expanded="selectedStat===s.section" aria-controls="admin-stat-content" @click="selectStat(s.section)"><div><span>{{s.label}}</span><component :is="s.icon" :size="18"/></div><strong dir="ltr">{{s.value}} <small>{{s.unit}}</small></strong><p>{{s.note}}</p></button><OtpBalanceCard/></div>
   <section id="admin-stat-content" :aria-labelledby="section==='overview'&&selectedStat?'admin-stat-title':undefined">
   <div v-if="section==='overview'&&selectedStat" class="admin-stat-heading"><h2 id="admin-stat-title">{{selectedStatTitle}}</h2><div><button v-if="selectedStat==='reports'||selectedStat==='orders'" class="admin-secondary" @click="exportReport"><Download :size="16"/> تصدير Excel</button><button v-if="selectedStat==='customers'" class="admin-secondary" @click="show('customer')"><Plus :size="16"/> إضافة عميل</button><button class="admin-stat-close" @click="selectStat(selectedStat)"><X :size="16"/> إغلاق التفاصيل</button></div></div>
   <template v-if="contentSection==='overview'">

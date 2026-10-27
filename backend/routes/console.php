@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\OrderFulfillment;
+use App\Services\PushDelivery;
 use App\Services\Store;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -22,3 +23,8 @@ Artisan::command('fatya:expire-reservations', function (OrderFulfillment $fulfil
     $this->info('Expired reservations released: '.$fulfillment->expire());
 })->purpose('Release unpaid expired inventory reservations');
 Schedule::command('fatya:expire-reservations')->everyMinute()->withoutOverlapping();
+
+Artisan::command('fatya:push-deliver', function (PushDelivery $delivery) {
+    $this->info(json_encode($delivery->run(), JSON_THROW_ON_ERROR));
+})->purpose('Deliver committed customer notifications through Takeed');
+Schedule::command('fatya:push-deliver')->everyMinute()->withoutOverlapping();

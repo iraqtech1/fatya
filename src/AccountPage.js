@@ -7,8 +7,9 @@ import {storeDark as dark} from './ThemeToggle.js';
 import './account.css';
 import DeveloperAbout from './DeveloperAbout.js';
 import OrderArchive from './OrderArchive.js';
+import PushSettings from './PushSettings.js';
 export default {
-  components:{OrderArchive,Archive,DeveloperAbout,ThemeScene,UserRoundPen,ShieldCheck,Info,LogOut,Moon,Languages,ChevronDown,ChevronLeft,ArrowRight,User},
+  components:{PushSettings,OrderArchive,Archive,DeveloperAbout,ThemeScene,UserRoundPen,ShieldCheck,Info,LogOut,Moon,Languages,ChevronDown,ChevronLeft,ArrowRight,User},
   props:{user:Object,error:String,orders:{type:Array,default:()=>[]}},emits:['save','logout','browse'],
   setup(props,{emit}){
     const view=ref('menu'),name=ref(''),email=ref('');
@@ -19,6 +20,7 @@ export default {
   template:`<section class="account-page" :aria-label="t(&quot;حسابي&quot;)">
   <template v-if="view==='menu'"><div class="account-identity"><span><User :size="28"/></span><div><h2 v-if="user.name&&!(user.previewId&&user.name==='حساب تجريبي')">{{t(user.name)}}</h2><p v-if="user.phone" dir="ltr">{{user.phone}}</p></div></div>
   <div class="account-menu">
+  <PushSettings/>
   <button class="account-row" @click="edit"><span class="account-row-icon"><UserRoundPen/></span><span>{{t("الملف الشخصي")}}</span><ChevronLeft class="account-chevron"/></button>
   <button class="account-row" @click="view='archive'"><span class="account-row-icon"><Archive/></span><span>{{t('ارشيف الطلبات')}}</span><ChevronLeft class="account-chevron"/></button>
   <button class="account-row" @click="view='privacy'"><span class="account-row-icon"><ShieldCheck/></span><span>{{t("الخصوصية والشروط")}}</span><ChevronLeft class="account-chevron"/></button>

@@ -15,6 +15,7 @@ backend/public/fonts/
 backend/public/icons/
 backend/public/middle-banners/
 backend/public/payments/
+backend/public/push/
 backend/public/index.html
 backend/public/*.png
 backend/public/*.svg

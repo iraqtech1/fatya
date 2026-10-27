@@ -1,5 +1,7 @@
 import {t,language} from './i18n.js';
-import {ref,onMounted,onBeforeUnmount} from 'vue/dist/vue.esm-bundler.js';
+import {ref,watch,onMounted,onBeforeUnmount} from 'vue/dist/vue.esm-bundler.js';
+import {connection} from './store.js';
+import {syncPushCustomer} from './push-notifications.js';
 import {useRegisterSW} from 'virtual:pwa-register/vue';
 import {WifiOff} from 'lucide-vue-next';
 
@@ -7,6 +9,7 @@ export default {
   props:{allowInstall:{type:Boolean,default:true}},
   components:{WifiOff},
   setup(){
+    watch(()=>connection.ready&&!connection.admin?connection.customer?.id:null,id=>syncPushCustomer(id),{immediate:true});
     const offline=ref(!navigator.onLine);
     let registration,timer;
     function checkUpdate(){if(navigator.onLine&&!document.hidden)registration?.update().catch(()=>{});}

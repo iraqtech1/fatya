@@ -10,6 +10,7 @@ use App\Services\Inventory;
 use App\Services\OrderFulfillment;
 use App\Services\Otp;
 use App\Services\Store;
+use App\Services\Takeed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -36,6 +37,19 @@ class StoreController extends Controller
             DB::select('SELECT 1');
 
             return response()->json(['ok' => true]);
+        }
+
+        if ($path === '/api/admin/otp/balance' && $request->isMethod('GET')) {
+            $this->accounts->session($request, 'admin');
+            if ($request->boolean('refresh')) {
+                $key = 'fatya:otp-balance-refresh:'.$request->ip();
+                if (RateLimiter::tooManyAttempts($key, 1)) {
+                    throw new ApiError('انتظر قليلاً قبل تحديث الرصيد', 429);
+                }
+                RateLimiter::hit($key, 5);
+            }
+
+            return response()->json(app(Takeed::class)->balance($request->boolean('refresh')))->header('Cache-Control', 'no-store');
         }
 
         return DB::transaction(function () use ($request, $path) {
@@ -98,6 +112,11 @@ class StoreController extends Controller
         $b = $req->isMethod('GET') ? [] : $req->json()->all();
         $json = fn ($data, $status = 200) => response()->json($data, $status, [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $notifications = app(CustomerNotifications::class);
+        if ($path === '/api/push/config' && $req->isMethod('GET')) {
+            $customer = $this->accounts->customer($req, $s);
+
+            return $json(app(Takeed::class)->clientConfig($customer['id']));
+        }
         if ($path === '/api/notifications/read' && $req->isMethod('POST')) {
             $customer = $this->accounts->customer($req, $s);
 
@@ -156,6 +175,9 @@ class StoreController extends Controller
             Accounts::validatePassword($password);
             $c = collect($s['customers'])->firstWhere('phone', $phone);
             if ($path === '/api/auth/register') {
+                if (config('fatya.require_registration_otp')) {
+                    return $json($this->otp->issue($s, [...$b, 'mode' => 'register'], false, $req->ip()));
+                }
                 if ($c) {
                     throw new ApiError('هذا الرقم مسجّل بالفعل');
                 }
@@ -189,7 +211,7 @@ class StoreController extends Controller
             return $json(Accounts::identity($this->accounts->customer($req, $s)));
         }
         if (in_array($path, ['/api/auth/start', '/api/auth/resend']) && $req->isMethod('POST')) {
-            return $json($this->otp->issue($s, $b, $path === '/api/auth/resend'));
+            return $json($this->otp->issue($s, $b, $path === '/api/auth/resend', $req->ip()));
         }
         if ($path === '/api/auth/reset-password' && $req->isMethod('POST')) {
             $challenge = $this->otp->verify($b, true);
@@ -214,6 +236,9 @@ class StoreController extends Controller
                 $s['customers'][] = $c;
                 $this->store->event($s, 'انضم حساب جديد');
                 $this->store->save($s);
+                if (isset($challenge['passwordHash'])) {
+                    DB::table('customer_credentials')->updateOrInsert(['customer_id' => $c['id']], ['password' => $challenge['passwordHash']]);
+                }
             }
             if (! ($c['active'] ?? false) || $c['phone'] !== $challenge['account']['phone']) {
                 throw new ApiError('الحساب موقوف', 403);

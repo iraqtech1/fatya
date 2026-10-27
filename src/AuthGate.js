@@ -38,10 +38,14 @@ export default {
           challenge.value=await auth.start({mode:'reset',phone:phone.value});now.value=Date.now();code.value='';password.value='';view.value='otp';await focus();return;
         }
         if(view.value==='otp'){
+          if(challenge.value?.mode==='register'){
+            const user=await auth.verify(code.value);password.value='';emit('enter',user);return;
+          }
           await auth.resetPassword(code.value,password.value);await change('login');notice.value="تم تغيير كلمة المرور سجّل الدخول بكلمة المرور الجديدةة";return;
         }
         const data={phone:phone.value,password:password.value,name:name.value,email:email.value};
         const user=await (view.value==='register'?auth.register(data):auth.login(data));
+        if(user?.challengeId){challenge.value=user;now.value=Date.now();code.value='';password.value='';view.value='otp';await focus();return;}
         password.value='';emit('enter',user);
       }catch(e){error.value=e.message;}finally{busy.value=false;}
     }
@@ -51,7 +55,7 @@ export default {
       busy.value=true;error.value='';
       try{allowed(displayPhone.value);challenge.value=await auth.resend();now.value=Date.now();code.value='';await focus();}catch(e){error.value=e.message;}finally{busy.value=false;}
     }
-    function back(){change('reset');}
+    function back(){change(challenge.value?.mode==='register'?'register':'reset');}
     return {t,language,store,view,name,phone,password,visible,email,code,notice,error,busy,heading,otpInput,challenge,remaining,expired,displayPhone,change,submit,resend,back,cleanCode,cleanPhone};
   },
   template:`<div class="auth-shell phone-auth" :class="{'auth-login':view==='login','auth-register':view==='register','auth-reset':view==='reset'}">
@@ -69,11 +73,11 @@ export default {
           <template v-if="view==='register'"><label for="auth-name">{{t("الاسم الكامل")}}</label><div class="auth-field"><User :size="20"/><input id="auth-name" v-model="name" autocomplete="name" :placeholder="t(&quot;اسمك الكامل&quot;)" required maxlength="80"/></div></template>
           <template v-if="view!=='otp'"><label for="auth-phone">{{t("رقم الهاتف / واتساب")}}</label><div class="auth-field"><Smartphone :size="20"/><input id="auth-phone" :value="phone" @input="cleanPhone" type="tel" inputmode="numeric" autocomplete="tel-national" dir="ltr" placeholder="07XXXXXXXXX" required minlength="11" maxlength="11" pattern="07[3-9][0-9]{8}" :title="t(&quot;رقم هاتف عراقي من 11 رقماً يبدأ بـ07&quot;)" aria-describedby="auth-phone-help"/></div><small id="auth-phone-help" class="auth-help">{{t("استخدم رقمك العراقي المرتبط بواتساب من 11 رقماً يبدأ بـ07")}}</small></template>
           <template v-if="view==='otp'"><label for="auth-otp">{{t("رمز التحقق")}}</label><div class="auth-field auth-otp-field"><ShieldCheck :size="21"/><input id="auth-otp" ref="otpInput" :value="code" @input="cleanCode($event.target.value)" type="text" inputmode="numeric" autocomplete="one-time-code" dir="ltr" placeholder="000000" required minlength="6" maxlength="6" pattern="[0-9]{6}" aria-describedby="auth-otp-help"/></div><small id="auth-otp-help" class="auth-help">{{expired?t("انتهت صلاحية الرمز اطلب رمزاً جديداً"):t("الرمز صالح لمدة 5 دقائق")}}</small></template>
-          <template v-if="view!=='reset'"><label for="auth-password">{{view==='otp'?t("كلمة المرور الجديدة"):t("كلمة المرور")}}</label><div class="auth-field"><LockKeyhole :size="20"/><input id="auth-password" v-model="password" :type="visible?'text':'password'" :autocomplete="view==='login'?'current-password':'new-password'" dir="ltr" required minlength="8" maxlength="128" :placeholder="t('كلمة المرور')"/><button type="button" @click="visible=!visible" :aria-label="t(visible?'إخفاء كلمة المرور':'إظهار كلمة المرور')" :aria-pressed="visible"><EyeOff v-if="visible" :size="20"/><Eye v-else :size="20"/></button></div><small class="auth-help">{{t("كلمة المرور يجب أن تكون من 8 أرقام أو حروف فما فوق")}}</small></template>
+          <template v-if="view!=='reset'&&(view!=='otp'||challenge?.mode!=='register')"><label for="auth-password">{{view==='otp'?t("كلمة المرور الجديدة"):t("كلمة المرور")}}</label><div class="auth-field"><LockKeyhole :size="20"/><input id="auth-password" v-model="password" :type="visible?'text':'password'" :autocomplete="view==='login'?'current-password':'new-password'" dir="ltr" required minlength="8" maxlength="128" :placeholder="t('كلمة المرور')"/><button type="button" @click="visible=!visible" :aria-label="t(visible?'إخفاء كلمة المرور':'إظهار كلمة المرور')" :aria-pressed="visible"><EyeOff v-if="visible" :size="20"/><Eye v-else :size="20"/></button></div><small class="auth-help">{{t("كلمة المرور يجب أن تكون من 8 أرقام أو حروف فما فوق")}}</small></template>
           <p v-if="notice" class="auth-help" role="status">{{t(notice)}}</p>
           <button v-if="view==='login'" type="button" class="auth-edit auth-recovery" @click="change('reset')" :disabled="busy">{{t("استرجاع كلمة المرور")}}</button>
           <p v-if="error" class="auth-error" role="alert">{{t(error)}}</p>
-          <button class="primary auth-action" :disabled="busy||(view==='otp'&&(code.length!==6||expired))">{{busy?t("لحظة"):view==='otp'?t("حفظ كلمة المرور الجديدة"):view==='reset'?t("إظهار رمز التحقق"):view==='reset'?t("استرجاع كلمة المرور"):view==='register'?t("إنشاء حساب"):t("تسجيل الدخول")}}<ArrowLeft :size="19"/></button>
+          <button class="primary auth-action" :disabled="busy||(view==='otp'&&(code.length!==6||expired))">{{busy?t("لحظة"):view==='otp'?t(challenge?.mode==='register'?"تأكيد رقم الهاتف":"حفظ كلمة المرور الجديدة"):view==='reset'?t("إرسال رمز التحقق"):view==='reset'?t("استرجاع كلمة المرور"):view==='register'?t("إنشاء حساب"):t("تسجيل الدخول")}}<ArrowLeft :size="19"/></button>
         </form>
         <div v-if="view==='otp'" class="auth-verification"><p>{{t("لم يصلك الرمز؟")}} <button type="button" @click="resend" :disabled="busy||remaining>0">{{remaining>0?t("إعادة الإرسال بعد ")+remaining+t(" ثانية"):t("إعادة إرسال الرمز")}}</button></p><div v-if="challenge?.previewCode" class="auth-preview-note" role="status"><strong>{{t("رمز التحقق")}}</strong><span>{{t("واتساب غير مربوط بهذه النسخة لم تُرسل رسالة؛ استخدم الرمز التالي:")}}</span><b dir="ltr">{{challenge?.previewCode}}</b></div></div>
       </div>

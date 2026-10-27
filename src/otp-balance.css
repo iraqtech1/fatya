@@ -1,0 +1,8 @@
+.admin-stats:has(.admin-otp-card){grid-template-columns:repeat(3,minmax(0,1fr))}
+.admin-otp-card{margin:0;padding:18px;min-height:142px}
+.admin-otp-card>div{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--admin-muted);font-size:12px}
+.admin-otp-card>div svg{color:var(--admin-wine);flex-shrink:0}
+.admin-otp-card footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;color:var(--admin-muted);font-size:11px}
+.admin-otp-card footer button{display:flex;align-items:center;gap:5px;border:1px solid var(--admin-border);border-radius:7px;padding:6px 8px;color:var(--admin-wine)}
+.admin-otp-card .otp-empty{color:#ae6617}
+@media(max-width:600px){.admin-stats:has(.admin-otp-card){grid-template-columns:repeat(2,minmax(0,1fr))}.admin-otp-card{padding:15px}}

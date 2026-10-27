@@ -130,3 +130,9 @@ php artisan fatya:import-sqlite /absolute/private/path/masal.sqlite
 - https://laravel.com/framework/docs/deployment
 - https://laravel.com/framework/docs/releases
 - https://mariadb.org/download/
+
+## ربط الرسائل بتاريخ 27 أكتوبر 2026
+
+نُشر ربط تأكيد لرموز واتساب، توثيق التسجيل، إشعارات الجهاز الاختيارية، وكارت رصيد OTP الإداري. تفاصيل التشغيل في `docs/messaging-ar.md`. حُفظ المفتاح في `.env` الخاص خارج الويب وGit، مع الحفاظ على APP_KEY. نُفذ ترحيل تتبع الإرسال فقط، وأعيد Cron لأمر `schedule:run` المعتاد كل دقيقة. حزمة الإعدادات الخاصة على الخادم بصلاحيات 0600، ونسخة البيئة السابقة خاصة أيضاً. لا تحتوي حزمة الواجهة على أسرار.
+
+ملفات الحزمة وتقارير البصمات داخل `C:/Users/Abd/Documents/ChatGPT/fatya-deploy-2026-10-26/messaging-20261027`. أظهر فحص الخادم رصيد 0 رسالة؛ يلزم تعبئة رصيد تطبيق fatyh. رفضت خدمة Web Push الدومين `https://fatyh.net` بالسبب `origin_not_allowed` وقت الربط؛ يلزم إضافته من لوحة تأكيد قبل اختبار الاستلام. لم تُرسل رسالة OTP حقيقية أو إشعار إلى عملاء الإنتاج خلال النشر. ملف Firebase المقدم جرى التحقق من صلاحيته، ولم يُنشر داخل كود المتصفح؛ ويب/PWA يستخدم Web Push وفق دليل المزود.

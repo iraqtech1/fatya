@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+const calls=[];let opted=false;
+const sdk={login:async()=>calls.push('identify'),init:async()=>calls.push('init'),logout:async()=>calls.push('logout'),Notifications:{requestPermission:async()=>calls.push('subscribe')},User:{PushSubscription:{get optedIn(){return opted;},optIn:async()=>{calls.push('opt-in');opted=true;},optOut:async()=>{calls.push('opt-out');opted=false;}}}};
+const notification={permission:'default',requestPermission:async()=>{calls.push('permission');notification.permission='granted';return 'granted';}};
+const context={connected:true,reactive:x=>x,api:async()=>({enabled:true,appId:'fixture',externalId:'opaque-identity'}),Notification:notification,PushManager:function(){},navigator:{serviceWorker:{getRegistration:async()=>({pushManager:{getSubscription:async()=>({unsubscribe:async()=>calls.push('unsubscribe')})}})}},window:{Takeed:sdk},document:{}};
+const source=readFileSync('src/push-notifications.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export const ','const ').replaceAll('export async function ','async function ');
+vm.createContext(context);const ui=vm.runInContext(source+';({pushState,syncPushCustomer,togglePush,disconnectPush})',context);
+await ui.syncPushCustomer('fixture-customer');assert.deepEqual(calls,[],'An account login must not trigger a permission prompt');
+await ui.togglePush();assert.equal(ui.pushState.enabled,true);assert.equal(calls[0],'permission');assert.ok(calls.indexOf('opt-in')<calls.indexOf('subscribe'),'Opt-in must clear previous opt-out before creating a subscription');
+await ui.togglePush();assert.equal(ui.pushState.enabled,false);
+calls.length=0;await ui.togglePush();assert.equal(ui.pushState.enabled,true);assert.ok(calls.indexOf('opt-in')<calls.indexOf('subscribe'));
+await ui.disconnectPush();assert.equal(ui.pushState.enabled,false);assert.ok(calls.includes('unsubscribe'));assert.equal(calls.at(-1),'logout');
+console.log('Push permission requires a click, re-enabling creates a subscription, and logout detaches the device.');

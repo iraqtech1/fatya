@@ -386,5 +386,16 @@ export default {
  "تم إلغاء الحجز":"Reservation cancelled",
   "حجز بانتظار الدفع":"Reserve pending payment",
  "حالة الدفع":"Payment status",
- "لم يتم الدفع":"Unpaid"
+ "لم يتم الدفع":"Unpaid",
+"خدمة الإرسال غير مهيأة":"Messaging service is not configured",
+"رصيد رسائل التحقق غير كافٍ تواصل مع الدعم":"Verification credit is unavailable. Contact support.",
+"تعذّر إرسال الرمز حاول لاحقاً":"Could not send the code. Try later.",
+"تعذّر التحقق من عنوان الاتصال":"Could not verify your connection address",
+"إرسال رمز التحقق":"Send verification code",
+"تفعيل إشعارات الجهاز":"Enable device notifications",
+"إيقاف إشعارات الجهاز":"Disable device notifications",
+"أضف الموقع للشاشة الرئيسية لتفعيل الإشعارات":"Add this site to your home screen to enable notifications",
+"مفعّلة":"Enabled",
+"غير مفعّلة":"Disabled",
+"تعذّر تفعيل الإشعارات راجع سماح المتصفح وإعدادات الخدمة":"Could not enable notifications. Check browser permissions and service settings."
 };

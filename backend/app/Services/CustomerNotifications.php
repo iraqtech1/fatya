@@ -25,7 +25,7 @@ class CustomerNotifications
         if ($reference && DB::table('customer_notifications')->where('customer_id', $customer)->where('reference', $reference)->exists()) {
             return;
         }
-        DB::table('customer_notifications')->insert(['id' => (string) Str::uuid(), 'customer_id' => $customer, 'title' => $title, 'body' => $body, 'reference' => $reference, 'created' => (int) (microtime(true) * 1000), 'unread' => true]);
+        DB::table('customer_notifications')->insert(['id' => (string) Str::uuid(), 'customer_id' => $customer, 'title' => $title, 'body' => $body, 'reference' => $reference, 'created' => (int) (microtime(true) * 1000), 'unread' => true, 'push_status' => app(Takeed::class)->enabled() ? 'pending' : 'none']);
     }
 
     public function forCustomer(string $customer): array
