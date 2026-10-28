@@ -11,12 +11,14 @@ class Inventory
 {
     public function summary(): array
     {
-        return DB::table('inventory_cards')->selectRaw('product_id, denomination, COUNT(*) AS total, SUM(CASE WHEN sold_order_id IS NOT NULL THEN 1 ELSE 0 END) AS delivered, SUM(CASE WHEN sold_order_id IS NULL AND reserved_order_id IS NOT NULL THEN 1 ELSE 0 END) AS reserved, SUM(CASE WHEN sold_order_id IS NULL AND reserved_order_id IS NULL THEN 1 ELSE 0 END) AS available')->groupBy('product_id', 'denomination')->get()->map(fn ($r) => ['productId' => $r->product_id, 'value' => (float) $r->denomination, 'total' => (int) $r->total, 'delivered' => (int) $r->delivered, 'reserved' => (int) $r->reserved, 'available' => (int) $r->available])->all();
+        $today = now('Asia/Baghdad')->toDateString();
+
+        return DB::table('inventory_cards')->selectRaw('product_id, denomination, COUNT(*) AS total, SUM(CASE WHEN sold_order_id IS NOT NULL THEN 1 ELSE 0 END) AS delivered, SUM(CASE WHEN sold_order_id IS NULL AND reserved_order_id IS NOT NULL THEN 1 ELSE 0 END) AS reserved, SUM(CASE WHEN sold_order_id IS NULL AND reserved_order_id IS NULL AND (expires_on IS NULL OR expires_on >= ?) THEN 1 ELSE 0 END) AS available, SUM(CASE WHEN sold_order_id IS NULL AND reserved_order_id IS NULL AND expires_on < ? THEN 1 ELSE 0 END) AS expired', [$today, $today])->groupBy('product_id', 'denomination')->get()->map(fn ($r) => ['productId' => $r->product_id, 'value' => (float) $r->denomination, 'total' => (int) $r->total, 'delivered' => (int) $r->delivered, 'reserved' => (int) $r->reserved, 'available' => (int) $r->available, 'expired' => (int) $r->expired])->all();
     }
 
     public function refreshStock(array &$s): void
     {
-        $rows = DB::table('inventory_cards')->whereNull('reserved_order_id')->whereNull('sold_order_id')->selectRaw('product_id, denomination, COUNT(*) AS available')->groupBy('product_id', 'denomination')->get();
+        $rows = DB::table('inventory_cards')->whereNull('reserved_order_id')->whereNull('sold_order_id')->where(fn ($q) => $q->whereNull('expires_on')->orWhere('expires_on', '>=', now('Asia/Baghdad')->toDateString()))->selectRaw('product_id, denomination, COUNT(*) AS available')->groupBy('product_id', 'denomination')->get();
         foreach ($s['products'] as &$p) {
             $p['stock'] = array_map(fn ($value) => (int) ($rows->first(fn ($r) => $r->product_id === (string) $p['id'] && (float) $r->denomination === (float) $value)->available ?? 0), $p['values']);
         }

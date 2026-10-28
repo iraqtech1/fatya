@@ -152,7 +152,7 @@ class OrderFulfillment
             if (DB::table('order_fulfillments')->join('orders', 'orders.id', '=', 'order_fulfillments.order_id')->where('orders.customer_id', $customer['id'])->where('order_fulfillments.state', 'reserved')->count() >= 5) {
                 throw new ApiError('أكمل أو ألغِ طلباتك المحجوزة أولاً', 429);
             }
-            $cards = DB::table('inventory_cards')->where('product_id', (string) $p['id'])->where('denomination', $p['values'][$denom])->whereNull('reserved_order_id')->whereNull('sold_order_id')->orderBy('id')->limit($quantity)->lockForUpdate()->get();
+            $cards = DB::table('inventory_cards')->where('product_id', (string) $p['id'])->where('denomination', $p['values'][$denom])->whereNull('reserved_order_id')->whereNull('sold_order_id')->where(fn ($q) => $q->whereNull('expires_on')->orWhere('expires_on', '>=', now('Asia/Baghdad')->toDateString()))->orderBy('id')->limit($quantity)->lockForUpdate()->get();
             if ($cards->count() !== $quantity) {
                 throw new ApiError('المخزون غير كافٍ لهذه الفئة', 409);
             }
@@ -238,7 +238,7 @@ class OrderFulfillment
             })->lockForUpdate()->get();
             if ($existing->isNotEmpty()) {
                 foreach ($existing as $receipt) {
-                    if ($receipt->order_id !== $payment->orderId || $receipt->transaction_id !== $payment->transactionId || $receipt->amount !== $amount || $receipt->currency !== $payment->currency) {
+                    if ($receipt->order_id !== $payment->orderId || $receipt->transaction_id !== $payment->transactionId || self::amount((string) $receipt->amount) !== $amount || $receipt->currency !== $payment->currency) {
                         throw new ApiError('مرجع الدفع مستخدم بتفاصيل مختلفة', 409);
                     }
                 }
@@ -252,7 +252,7 @@ class OrderFulfillment
             $reason = match (true) {
                 ! $f => 'legacy_order_without_reservation',
                 $f->provider !== $payment->provider => 'provider_mismatch',
-                $f->amount !== $amount => 'amount_mismatch',
+                self::amount((string) $f->amount) !== $amount => 'amount_mismatch',
                 $f->currency !== $payment->currency => 'currency_mismatch',
                 $f->state === 'delivered' => 'additional_payment',
                 $f->state !== 'reserved' => 'reservation_'.$f->state,
@@ -263,6 +263,9 @@ class OrderFulfillment
             if (! $reason) {
                 $cards = DB::table('inventory_cards')->where('reserved_order_id', $payment->orderId)->whereNull('sold_order_id')->orderBy('id')->lockForUpdate()->get();
                 if ($cards->count() !== $f->quantity) {
+                    $reason = 'allocation_incomplete';
+                }
+                if ($cards->contains(fn ($card) => $card->expires_on !== null && $card->expires_on < now('Asia/Baghdad')->toDateString())) {
                     $reason = 'allocation_incomplete';
                 }
                 $expected = DB::table('reservation_items')->where('order_id', $payment->orderId)->orderBy('card_id')->pluck('card_id')->all();
@@ -279,6 +282,15 @@ class OrderFulfillment
             $outcome = $reason ? 'review' : 'delivered';
             DB::table('payment_receipts')->insert(['id' => (string) Str::uuid(), 'order_id' => $payment->orderId, 'provider' => $payment->provider, 'transaction_id' => $payment->transactionId, 'event_id' => $payment->eventId, 'amount' => $amount, 'currency' => $payment->currency, 'outcome' => $outcome, 'reason' => $reason, 'received_at' => now()->timestamp]);
             if (! $reason) {
+                $knownCost = ! $cards->contains(fn ($card) => $card->unit_cost === null);
+                $cost = BigDecimal::zero()->toScale(3);
+                foreach ($cards as $card) {
+                    if ($card->unit_cost !== null) {
+                        $cost = $cost->plus((string) $card->unit_cost);
+                    }
+                }
+                $s['orders'][$i]['costTotal'] = $knownCost ? (string) $cost : null;
+                $s['orders'][$i]['profitBeforeFees'] = $knownCost ? (string) BigDecimal::of($amount)->minus($cost) : null;
                 foreach ($cards as $card) {
                     DB::table('delivered_cards')->insert(['card_id' => $card->id, 'order_id' => $payment->orderId, 'delivered_at' => now()->timestamp]);
                 }

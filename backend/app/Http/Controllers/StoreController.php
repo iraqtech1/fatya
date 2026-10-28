@@ -68,6 +68,7 @@ class StoreController extends Controller
 
     private function publicState(Request $req, array $s, bool $admin = false): array
     {
+        $this->inventory->refreshStock($s);
         if ($admin) {
             $s['inventorySummary'] = $this->inventory->summary();
             $s['paymentReceipts'] = app(OrderFulfillment::class)->receipts();
@@ -91,6 +92,10 @@ class StoreController extends Controller
         foreach (['orders', 'tickets'] as $key) {
             $s[$key] = $customer ? array_values(array_filter($s[$key], fn ($item) => $item['customerId'] === $customer['id'])) : [];
         }
+        foreach ($s['orders'] as &$order) {
+            unset($order['costTotal'], $order['profitBeforeFees']);
+        }
+        unset($order);
         foreach (['customers', 'imports', 'suppliers', 'companies', 'events', 'inventorySummary', 'paymentReceipts'] as $key) {
             $s[$key] = [];
         }

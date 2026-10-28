@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {parseStockText,stockRows,readStockFile} from '../src/stock-order-files.js';
+const raw=parseStockText('PIN,serial,expiry\r\n"0000123456789012","000001",\r\n"00002","a,b",2027-01-01');
+assert.equal(raw[1][0],'0000123456789012');assert.equal(raw[2][1],'a,b');
+assert.deepEqual(stockRows(raw,{}),[{sourceRow:2,pin:'0000123456789012',serial:'000001',expiry:''},{sourceRow:3,pin:'00002',serial:'a,b',expiry:'2027-01-01'}]);
+assert.deepEqual(parseStockText('0001\t0002\t\n0003\t0004\t'),[['0001','0002',''],['0003','0004','']]);
+assert.equal(stockRows([['0001']],{skipHeader:false,serialColumn:-1,expiryColumn:-1})[0].pin,'0001');
+assert.throws(()=>parseStockText('"broken'),/اقتباس/);
+assert.throws(()=>stockRows(raw,{pinColumn:1,serialColumn:1}),/مختلف/);
+await assert.rejects(()=>readStockFile({name:'cards.xls',size:10}),/XLSX/);
+await assert.rejects(()=>readStockFile({name:'cards.csv',size:15000001}),/15 MB/);
+assert.equal((await readStockFile({name:'cards.csv',size:20,text:async()=> '\uFEFFpin,serial\n0001,0002'}))[0][0],'pin');
+console.log('Procurement files: zero preservation, column mapping, quoted CSV/TSV, file limits and malformed input passed.');
