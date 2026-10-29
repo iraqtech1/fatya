@@ -131,6 +131,14 @@ html[dir=ltr] .web-premium .web-primary svg,html[dir=ltr] .web-premium .web-prod
 @media(max-width:360px){.web-container{padding-inline:14px}.web-preferences{gap:5px}.web-language select{max-width:76px}.web-brand strong{font-size:21px}.web-brand>.store-brand-mark{width:32px;height:32px}.web-brand small{font-size:7px}.web-product-bottom{align-items:flex-start;flex-direction:column}.web-footer{flex-wrap:wrap}.web-footer>div:last-child{align-items:flex-start}}
 @media(min-width:601px) and (max-width:900px){.web-products{grid-template-columns:repeat(3,minmax(0,1fr))}}
 html[dir=ltr] .web-auth-back svg,html[dir=ltr] .web-store-shell .account-back>svg{transform:scaleX(-1)}
+
+/* Web authentication keeps its store-back and preferences toolbar in the page flow. */
+@media(max-width:800px){
+ html[data-fatya-web] #app .web-auth-wrap{display:flex;flex-direction:column}
+ html[data-fatya-web] #app .web-auth-toolbar{flex-shrink:0}
+ html[data-fatya-web][data-fatya-store] #app .web-auth-wrap :is(.auth-login,.auth-register,.auth-reset){position:relative;inset:auto;height:auto;min-height:0;overflow:visible;flex:1;display:flex}
+ html[data-fatya-web][data-fatya-store] #app .web-auth-wrap :is(.auth-login,.auth-register,.auth-reset) .auth-panel{height:auto;min-height:0;flex:1;overflow:visible}
+}
 html[data-fatya-web][data-theme=light]{color-scheme:light}
 html[data-fatya-web][data-theme=dark]{color-scheme:dark}
 
