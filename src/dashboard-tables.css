@@ -1,0 +1,4 @@
+.admin-shell .admin-table-wrap{max-height:min(65vh,640px);max-height:min(65dvh,640px);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;position:relative}
+.admin-shell .admin-table-wrap table{border-collapse:separate;border-spacing:0}
+.admin-shell .admin-table-wrap thead th{position:sticky;top:0;z-index:2;box-shadow:0 1px 0 var(--admin-border,#c4d9d2)}
+.admin-shell .admin-table-wrap:focus-visible{outline:2px solid #268464;outline-offset:3px}
