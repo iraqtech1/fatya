@@ -95,7 +95,7 @@ class DigitalPublications
                 }
                 $ready = $configured && $o && $o['available'] && ($o['cost'] === $saved['cost']) && config('digital.manual_topup_enabled');
                 // No wholesale price, raw provider details, connection settings or credentials enter public state.
-                $p['providerServices'][] = ['id' => $r->id, 'type' => $saved['type'], 'title' => $o['title'] ?? $saved['title'], 'description' => $o['description'] ?? $saved['description'] ?? '', 'price' => (string) $r->retail, 'purchasable' => (bool) $ready, 'payment' => 'Manual'];
+                $p['providerServices'][] = ['id' => $r->id, 'type' => $saved['type'], 'title' => $o['title'] ?? $saved['title'], 'description' => $o['description'] ?? $saved['description'] ?? '', 'images' => $o['images'] ?? $saved['images'] ?? [], 'serviceInfo' => $o['serviceInfo'] ?? $saved['serviceInfo'] ?? [], 'price' => (string) $r->retail, 'purchasable' => (bool) $ready, 'payment' => 'Manual'];
             } unset($p);
         }
     }

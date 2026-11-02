@@ -49,3 +49,8 @@ assert.equal(manual.method,'Manual');assert.equal(manual.product.providerPublica
 assert.deepEqual(imported.values,product.values,'Publication does not rewrite card denominations');
 assert.throws(()=>buildAsiacellCheckout({...imported,providerServices:imported.providerServices.map(p=>({...p,purchasable:false}))},{service:'direct',index:0,recipient:'07700000000'},false));
 console.log('Published provider services appear independently of payment gateways, retain service identity and use manual payment only.');
+
+imported.providerServices[0].images=['https://cdn.example.com/card.png'];
+imported.providerServices[0].serviceInfo=[{label:'duration_days',value:'7'}];
+assert.equal(serviceOffers(imported,'direct',false)[0].image,'https://cdn.example.com/card.png');
+assert.deepEqual(serviceOffers(imported,'direct',false)[0].serviceInfo,[{label:'duration_days',value:'7'}]);

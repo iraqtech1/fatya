@@ -9,6 +9,7 @@ use App\Services\DigitalProviders;
 use App\Services\DigitalPublications;
 use App\Services\DigitalSales;
 use App\Services\OrderFulfillment;
+use App\Services\StockOrders;
 use App\Services\Store;
 use App\Services\VerifiedPayment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,7 +56,7 @@ class DigitalPublicationTest extends TestCase
 
     private function catalog(int $cost = 4500): array
     {
-        return ['status' => 'ok', 'products' => [['id' => 71, 'type' => 'topup', 'title' => 'Direct 5000', 'price' => $cost, 'show2site' => 1, 'description' => 'Fixture description', 'customInfo' => 'stored privately'], ['id' => 71, 'type' => 'bundle', 'title' => 'Bundle 5000', 'price' => $cost, 'show2site' => 1]]];
+        return ['status' => 'ok', 'products' => [['id' => 70, 'type' => 'topup', 'title' => 'Parent', 'price' => 0, 'show2site' => 1, 'image' => '/media/parent.png'], ['id' => 71, 'parent_id' => 70, 'type' => 'topup', 'title' => 'Direct 5000', 'price' => $cost, 'show2site' => 1, 'description' => 'Fixture description', 'duration_days' => 7, 'customInfo' => 'stored privately'], ['id' => 71, 'type' => 'bundle', 'title' => 'Bundle 5000', 'price' => $cost, 'show2site' => 1]]];
     }
 
     private function publish(array $catalog, string $type = 'topup', bool $published = true, int $version = 0): array
@@ -95,6 +96,11 @@ class DigitalPublicationTest extends TestCase
         $this->assertTrue($services[0]['purchasable']);
         $this->assertArrayNotHasKey('cost', $services[0]);
         $this->assertArrayNotHasKey('providerId', $services[0]);
+        $direct = collect($services)->firstWhere('type', 'topup');
+        $this->assertSame(['https://masal-co.com/media/parent.png'], $direct['images']);
+        $this->assertSame('7', collect($direct['serviceInfo'])->firstWhere('label', 'duration_days')['value']);
+        $this->assertSame('5250.000', StockOrders::money($direct['price']));
+        $this->assertArrayNotHasKey('supplierDetails', $direct);
         $this->assertSame([5000], $s['products'][0]['values']);
         $this->assertSame([0], $s['products'][0]['stock']);
         $this->publish($c, 'topup', false, 1);

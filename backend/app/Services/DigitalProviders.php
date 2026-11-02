@@ -194,8 +194,18 @@ class DigitalProviders
                 throw new ApiError('كتالوج الشركة يتضمن معرّف خدمة مكرراً', 502);
             }
             $identities[$identity] = true;
-            $offers[] = ['providerId' => (string) $id, 'title' => CatalogEditor::text($row['title'] ?? '', 200), 'description' => is_string($row['description'] ?? null) ? CatalogEditor::text($row['description'], 2000) : '', 'type' => strtolower($type), 'parentId' => isset($row['parent_id']) ? (string) $row['parent_id'] : null, 'cost' => $cost, 'costBasis' => 'catalog_snapshot', 'available' => $available, 'provinceId' => $provider === 'rabiaa' ? $province : null];
+            $offers[] = ['providerId' => (string) $id, 'title' => CatalogEditor::text($row['title'] ?? '', 200), 'type' => strtolower($type), 'parentId' => isset($row['parent_id']) ? (string) $row['parent_id'] : null, 'cost' => $cost, 'costBasis' => 'catalog_snapshot', 'available' => $available, 'provinceId' => $provider === 'rabiaa' ? $province : null, ...ProviderCatalogMetadata::read($row, (string) config('digital.'.$provider.'.base'))];
         }
+        $byId = collect($offers)->keyBy(fn ($o) => $o['type'].':'.$o['providerId']);
+        foreach ($offers as &$o) {
+            if (! $o['images'] && $o['parentId']) {
+                $parent = $byId->get($o['type'].':'.$o['parentId']);
+                if ($parent && $parent['images']) {
+                    $o['images'] = $parent['images'];
+                    $o['imageSource'] = 'category';
+                }
+            }
+        } unset($o);
         $snapshot = ['provider' => $provider, 'offers' => $offers, 'provinceId' => $province, 'syncedAt' => now()->toIso8601String()];
         $snapshot['hash'] = hash('sha256', Store::json($snapshot));
         DB::transaction(function () use ($provider, $snapshot, $version, $province, $raw) {
