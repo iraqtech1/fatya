@@ -40,3 +40,12 @@ for(const checkout of [direct,bundle]){
 }
 assert.deepEqual(product.stock,originalStock,'Sample services never consume recharge card inventory');
 console.log('Asiacell service routing, configured card prices, sample isolation, recipient validation and order details passed.');
+
+const imported={...product,providerServices:[{id:'pub-direct',type:'topup',title:'شحن 10000',price:'11000.000',purchasable:true,description:'خدمة مستوردة'},{id:'pub-bundle-a',type:'bundle',title:'باقة A',price:'5000.000',purchasable:true},{id:'pub-bundle-b',type:'bundle',title:'باقة B',price:'5000.000',purchasable:true}]};
+assert.equal(serviceOffers(imported,'direct',false).length,1);
+assert.equal(serviceOffers(imported,'bundles',false).length,2,'Distinct packages sharing a price never overwrite one another');
+const manual=buildAsiacellCheckout(imported,{service:'bundles',index:1,recipient:'07700000000'},false);
+assert.equal(manual.method,'Manual');assert.equal(manual.product.providerPublicationId,'pub-bundle-b');assert.equal(manual.amount,5000);assert.equal(manual.denom,0);assert.equal(manual.demoOnly,false);assert.equal(manual.product.digitalOffers[0].type,'bundle');
+assert.deepEqual(imported.values,product.values,'Publication does not rewrite card denominations');
+assert.throws(()=>buildAsiacellCheckout({...imported,providerServices:imported.providerServices.map(p=>({...p,purchasable:false}))},{service:'direct',index:0,recipient:'07700000000'},false));
+console.log('Published provider services appear independently of payment gateways, retain service identity and use manual payment only.');

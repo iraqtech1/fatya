@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiError;
 use App\Services\Accounts;
 use App\Services\DigitalConnections;
+use App\Services\DigitalManualPayments;
 use App\Services\DigitalProviders;
+use App\Services\DigitalPublications;
 use App\Services\DigitalSales;
 use App\Services\ImportCategories;
 use App\Services\ImportFileReader;
@@ -21,7 +23,7 @@ class ProcurementController extends Controller
     public function __invoke(Request $request, string $path)
     {
         app(Accounts::class)->session($request, 'admin');
-        if (in_array($path, ['exports', 'exports/review', 'exports/renew', 'exports/download'], true) && ! $request->isMethod('GET')) {
+        if (in_array($path, ['digital/manual-payment', 'exports', 'exports/review', 'exports/renew', 'exports/download'], true) && ! $request->isMethod('GET')) {
             $key = 'private-exports:'.$path.':'.$request->ip();
             if (RateLimiter::tooManyAttempts($key, 12)) {
                 throw new ApiError('انتظر دقيقة قبل إعادة محاولة تصدير الأكواد', 429);
@@ -61,7 +63,9 @@ class ProcurementController extends Controller
             ['POST', 'stock-orders/review'] => app(StockWorkflow::class)->review($b),
             ['POST', 'stock-orders/preview'] => $stock->preview($b),
             ['POST', 'stock-orders/approve'] => $stock->approve($b),
-            ['GET', 'digital'] => ['connections' => $providers->status(), 'offers' => $providers->offers(), 'executions' => app(DigitalSales::class)->executions(), 'purchaseEnabled' => (bool) config('digital.purchases_enabled')],
+            ['GET', 'digital'] => ['connections' => $providers->status(), 'offers' => $providers->offers(), 'catalogs' => app(DigitalPublications::class)->catalogs(), 'publications' => app(DigitalPublications::class)->listing(), 'executions' => app(DigitalSales::class)->executions(), 'purchaseEnabled' => (bool) config('digital.purchases_enabled')],
+            ['PUT', 'digital/publications'] => app(DigitalPublications::class)->save($b),
+            ['POST', 'digital/manual-payment'] => app(DigitalManualPayments::class)->confirm($b),
             ['PUT', 'digital/connections'] => app(DigitalConnections::class)->save($b),
             ['POST', 'digital/reconcile'] => app(DigitalSales::class)->reconcile($b),
             ['POST', 'digital/catalog'] => $providers->catalog((string) ($b['provider'] ?? ''), $b['provinceId'] ?? null),

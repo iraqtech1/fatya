@@ -135,7 +135,7 @@ class OrderFulfillment
             }
             $old = collect($s['orders'])->first(fn ($o) => $o['customerId'] === $customer['id'] && $o['reference'] === $reference);
             if ($old) {
-                if ($old['productId'] !== ($b['productId'] ?? null) || $old['quantity'] !== ($b['quantity'] ?? null) || $old['payment'] !== ($b['payment'] ?? null) || (isset($old['denomIndex']) && $old['denomIndex'] !== ($b['denom'] ?? null))) {
+                if (($old['publicationId'] ?? null) !== ($b['publicationId'] ?? null) || $old['productId'] !== ($b['productId'] ?? null) || $old['quantity'] !== ($b['quantity'] ?? null) || $old['payment'] !== ($b['payment'] ?? null) || (isset($old['denomIndex']) && $old['denomIndex'] !== ($b['denom'] ?? null))) {
                     throw new ApiError('مرجع الطلب مستخدم بتفاصيل مختلفة', 409);
                 }
 
@@ -149,11 +149,14 @@ class OrderFulfillment
             if (! $p || ! is_int($denom) || $denom < 0 || $denom >= count($p['values']) || ! is_int($quantity) || $quantity < 1 || $quantity > 20) {
                 throw new ApiError('تفاصيل الطلب غير صحيحة');
             }
-            if (! in_array($b['payment'] ?? null, ['Qi', 'ZainCash'], true)) {
+            if (! in_array($b['payment'] ?? null, isset($b['publicationId']) ? ['Manual'] : ['Qi', 'ZainCash'], true)) {
                 throw new ApiError('وسيلة الدفع غير صحيحة');
             }
             if (DB::table('order_fulfillments')->join('orders', 'orders.id', '=', 'order_fulfillments.order_id')->where('orders.customer_id', $customer['id'])->where('order_fulfillments.state', 'reserved')->count() >= 5) {
                 throw new ApiError('أكمل أو ألغِ طلباتك المحجوزة أولاً', 429);
+            }
+            if (isset($b['publicationId'])) {
+                return app(DigitalPublications::class)->reserve($s, $customer, $b, $p);
             }
             $digital = app(DigitalSales::class)->mapping((string) $p['id'], $denom);
             if ($digital) {
@@ -238,7 +241,8 @@ class OrderFulfillment
                     throw new ApiError('مرجع الدفع غير صحيح', 422);
                 }
             }
-            if (! in_array($payment->provider, ['Qi', 'ZainCash'], true) || ! preg_match('/^[A-Z]{3}$/D', $payment->currency)) {
+            $manualApproved = $payment->provider === 'Manual' && DB::table('digital_manual_payments')->where('order_id', $payment->orderId)->where('request_id', $payment->eventId)->where('receipt_reference', $payment->transactionId)->where('amount', $amount)->exists();
+            if ((! in_array($payment->provider, ['Qi', 'ZainCash'], true) && ! $manualApproved) || ! preg_match('/^[A-Z]{3}$/D', $payment->currency)) {
                 throw new ApiError('تأكيد دفع غير صحيح', 422);
             }
             $existing = DB::table('payment_receipts')->where('provider', $payment->provider)->where(function ($q) use ($payment) {

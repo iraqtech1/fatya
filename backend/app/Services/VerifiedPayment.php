@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-/** Internal input from a future authenticated gateway adapter; never hydrate from HTTP JSON. */
+/** Internal trusted payment evidence. Manual receipts additionally require a step-up approved DB record; never hydrate HTTP JSON. */
 final readonly class VerifiedPayment
 {
     public function __construct(

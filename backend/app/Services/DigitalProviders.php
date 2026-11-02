@@ -63,7 +63,7 @@ class DigitalProviders
         return $c;
     }
 
-    public function request(string $provider, string $path, array $query = [], bool $post = false): mixed
+    public function request(string $provider, string $path, array $query = [], bool $post = false, ?string $manualOrderId = null): mixed
     {
         $c = $this->settings($provider);
         try {
@@ -73,7 +73,7 @@ class DigitalProviders
             if (! in_array($path, $allowed[$provider], true)) {
                 throw new \RuntimeException;
             }
-            if ($post && $path !== '/api/v1/checkEligibility' && ! config('digital.purchases_enabled')) {
+            if ($post && $path !== '/api/v1/checkEligibility' && ! config('digital.purchases_enabled') && ! DigitalManualPayments::approved($manualOrderId, $provider)) {
                 throw new ApiError('تنفيذ المشتريات الخارجية غير مفعّل', 409);
             }
             $r = $post ? $http->post($url, $query) : $http->get($url, $query);
@@ -194,17 +194,17 @@ class DigitalProviders
                 throw new ApiError('كتالوج الشركة يتضمن معرّف خدمة مكرراً', 502);
             }
             $identities[$identity] = true;
-            $offers[] = ['providerId' => (string) $id, 'title' => CatalogEditor::text($row['title'] ?? '', 200), 'type' => strtolower($type), 'parentId' => isset($row['parent_id']) ? (string) $row['parent_id'] : null, 'cost' => $cost, 'costBasis' => 'catalog_snapshot', 'available' => $available, 'provinceId' => $provider === 'rabiaa' ? $province : null];
+            $offers[] = ['providerId' => (string) $id, 'title' => CatalogEditor::text($row['title'] ?? '', 200), 'description' => is_string($row['description'] ?? null) ? CatalogEditor::text($row['description'], 2000) : '', 'type' => strtolower($type), 'parentId' => isset($row['parent_id']) ? (string) $row['parent_id'] : null, 'cost' => $cost, 'costBasis' => 'catalog_snapshot', 'available' => $available, 'provinceId' => $provider === 'rabiaa' ? $province : null];
         }
         $snapshot = ['provider' => $provider, 'offers' => $offers, 'provinceId' => $province, 'syncedAt' => now()->toIso8601String()];
         $snapshot['hash'] = hash('sha256', Store::json($snapshot));
-        DB::transaction(function () use ($provider, $snapshot, $version, $province) {
+        DB::transaction(function () use ($provider, $snapshot, $version, $province, $raw) {
             app(Store::class)->read(true);
             if ($this->settings($provider)['version'] !== $version) {
                 throw new ApiError('مفتاح الربط تغير أثناء جلب الكتالوج', 409);
             }
             $key = $provider === 'rabiaa' ? $provider.':'.$province : $provider;
-            DB::table('digital_catalog')->updateOrInsert(['connection' => $key], ['snapshot' => Store::json($snapshot), 'synced' => time()]);
+            DB::table('digital_catalog')->updateOrInsert(['connection' => $key], ['snapshot' => Store::json($snapshot + ['encryptedSource' => Crypt::encryptString(Store::json($raw))]), 'synced' => time()]);
             // Successful empty lists retire their previous mappings; failures never replace a snapshot.
             foreach (DB::table('digital_offers')->where('connection', $provider)->get() as $row) {
                 $old = json_decode($row->snapshot, true);

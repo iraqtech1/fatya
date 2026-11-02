@@ -21,9 +21,9 @@ class DigitalSales
         return DB::table('digital_offers')->where('product_id', $product)->where('denom_index', $denom)->where('active', true)->first();
     }
 
-    private function currentOffer(?object $catalog, array $offer): bool
+    private function currentOffer(?object $catalog, array $offer, bool $requireFresh = true): bool
     {
-        if (! $catalog || $catalog->synced < time() - 900) {
+        if (! $catalog || ($requireFresh && $catalog->synced < time() - 900)) {
             return false;
         }
         $snapshot = json_decode($catalog->snapshot, true);
@@ -102,6 +102,9 @@ class DigitalSales
 
     public function reserve(array $s, array $customer, array $b, array $p, int $denom, object $mapping): array
     {
+        if (($b['payment'] ?? null) === 'Manual' && (! config('digital.manual_topup_enabled') || ! isset($b['publicationId']) || $mapping->connection !== 'topup')) {
+            throw new ApiError('الدفع اليدوي غير متاح لهذه الخدمة', 409);
+        }
         if (($b['quantity'] ?? null) !== 1) {
             throw new ApiError('الخدمة الرقمية تُطلب لمستفيد واحد في كل طلب', 422);
         }
@@ -109,7 +112,7 @@ class DigitalSales
         $c = $provider->settings($mapping->connection);
         $offer = json_decode($mapping->snapshot, true);
         $catalog = $provider->catalogRecord($mapping->connection, $offer['provinceId'] ?? null);
-        if (! $this->currentOffer($catalog, $offer)) {
+        if (! $this->currentOffer($catalog, $offer, $b['payment'] !== 'Manual')) {
             throw new ApiError('فئات الشركة تحتاج تحديثاً قبل طلب الخدمة', 409);
         }
         if (! $offer['available'] || ! $offer['cost']) {
@@ -120,10 +123,14 @@ class DigitalSales
         $id = 'ORDER-'.Str::uuid();
         $o = ['id' => $id, 'reference' => $b['reference'], 'customerId' => $customer['id'], 'customer' => $customer['name'], 'phone' => $customer['phone'], 'email' => $customer['email'], 'productId' => $p['id'], 'name' => $p['name'], 'unit' => $p['unit'], 'value' => $p['values'][$denom], 'denomIndex' => $denom, 'quantity' => 1, 'price' => (float) $amount, 'createdAt' => now()->toIso8601String(), 'channel' => in_array($b['channel'] ?? null, ['web', 'app'], true) ? $b['channel'] : 'unknown', 'date' => now('Asia/Baghdad')->toDateString(), 'kind' => $customer['kind'], 'status' => 'قيد المراجعة', 'payment' => $b['payment'], 'digitalProvider' => $mapping->connection, 'recipient' => $input['mobile'] ?? ($input['phoneNumber'] ?? '')];
         array_unshift($s['orders'], $o);
+        if (isset($b['publicationId'])) {
+            $s['orders'][0]['publicationId'] = $b['publicationId'];
+        }
         app(Store::class)->save($s);
-        DB::table('order_fulfillments')->insert(['order_id' => $id, 'state' => 'reserved', 'provider' => $b['payment'], 'amount' => $amount, 'currency' => 'IQD', 'quantity' => 1, 'expires' => now()->addMinutes(15)->timestamp]);
+        $expires = $b['payment'] === 'Manual' ? now()->addDay()->timestamp : now()->addMinutes(15)->timestamp;
+        DB::table('order_fulfillments')->insert(['order_id' => $id, 'state' => 'reserved', 'provider' => $b['payment'], 'amount' => $amount, 'currency' => 'IQD', 'quantity' => 1, 'expires' => $expires]);
         DB::table('digital_executions')->insert(['order_id' => $id, 'provider' => $mapping->connection, 'offer_id' => $mapping->id, 'connection_version' => $c['version'], 'state' => 'awaiting_payment', 'encrypted_input' => Crypt::encryptString(Store::json(['input' => $input, 'offer' => $offer, 'retail' => $amount, 'customerId' => $customer['id'], 'customerName' => $customer['name']])), 'request_hash' => hash('sha256', Store::json($input)), 'quoted_cost' => $offer['cost'], 'updated' => time()]);
-        $s['orders'][0] += ['paymentStatus' => 'pending', 'fulfillmentStatus' => 'reserved', 'codesAvailable' => false, 'reservationExpiresAt' => now()->addMinutes(15)->timestamp * 1000];
+        $s['orders'][0] += ['paymentStatus' => 'pending', 'fulfillmentStatus' => 'reserved', 'codesAvailable' => false, 'reservationExpiresAt' => $expires * 1000];
         app(Store::class)->event($s, 'طلب خدمة رقمية بانتظار الدفع');
         app(Store::class)->save($s);
         app(CustomerNotifications::class)->send($customer['id'], 'تم إضافة طلبك', 'طلب الخدمة بانتظار تأكيد الدفع', 'order-'.$id);
@@ -233,7 +240,7 @@ class DigitalSales
 
     public function run(): array
     {
-        if (! config('digital.purchases_enabled')) {
+        if (! config('digital.purchases_enabled') && ! config('digital.manual_topup_enabled')) {
             return ['processed' => 0];
         }
         // Crash recovery never replays a financial POST, even after a worker is restarted.
@@ -251,7 +258,7 @@ class DigitalSales
 
     public function execute(string $id): void
     {
-        if (! config('digital.purchases_enabled')) {
+        if (! config('digital.purchases_enabled') && ! DigitalManualPayments::approved($id)) {
             return;
         }
         $r = DB::transaction(function () use ($id) {
@@ -280,6 +287,7 @@ class DigitalSales
             $catalog = $providers->catalog($r->provider, $offer['provinceId']);
             $fresh = collect($catalog['offers'])->first(fn ($o) => $o['providerId'] === $offer['providerId'] && $o['type'] === $offer['type'] && ($o['provinceId'] ?? null) === ($offer['provinceId'] ?? null));
             $mapping = DB::table('digital_offers')->where('id', $r->offer_id)->first();
+            $mapping ??= DB::table('digital_publications')->where('id', $r->offer_id)->first();
             if (! $fresh || ! $fresh['available'] || $fresh['cost'] !== StockOrders::money((string) $r->quoted_cost) || $fresh['type'] !== $offer['type'] || ! $mapping?->active || StockOrders::money((string) $mapping->retail) !== $saved['retail']) {
                 throw new ApiError('quote_changed', 409);
             }
@@ -289,7 +297,7 @@ class DigitalSales
                     throw new ApiError('eligibility_not_confirmed', 409);
                 }
                 $this->stage($id, 'purchase_started', []);
-                $response = $providers->request('topup', '/api/v1/transactions', $saved['input'] + ['user_id' => $saved['customerId'], 'user_name' => $saved['customerName'], 'agent_name' => 'Fatya'], true);
+                $response = $providers->request('topup', '/api/v1/transactions', $saved['input'] + ['user_id' => $saved['customerId'], 'user_name' => $saved['customerName'], 'agent_name' => 'Fatya'], true, $id);
             } else {
                 if ($offer['type'] === 'premium') {
                     $provinces = $providers->provinces(true);
