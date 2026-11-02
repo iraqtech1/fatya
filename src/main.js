@@ -4,6 +4,8 @@ import MasalMark from './MasalMark.js';
 import {disconnectPush} from './push-notifications.js';
 import {routePath,inRoute} from './routing.js';
 import './viewport.js';
+import {installScrollLock} from './scroll-lock.js';
+import './scroll-lock.css';
 import {api,connected} from './api.js';
 import {copyOrderCodes} from './order-delivery.js';
 import {denominationAvailable,deliveredOrder,cancellableOrder,orderStateLabel,paymentStateLabel,orderTime} from './order-state.js';
@@ -58,6 +60,7 @@ const StoreLayout={inheritAttrs:false,template:'<slot/>'};
 const app=createApp({
 components:{QuickAnswers,TicketHistory,WebStore,AsiacellFlow,StoreCards,StoreBrandMark,PaymentMethods,PaymentPreview,PagedList,StoreHeader,MobileDock,AccountPage,PullToRefresh,SplashIntro,BannerSlider,MarketingSite,Dashboard,PwaControls,AuthGate,NavIcon,CardDeck,Home,Grid2X2,ShoppingBag,Headphones,Phone,Search,ChevronLeft,X,Check,Copy,CreditCard,Gamepad2,Smartphone,Layers,User,Plus,Minus,ShieldCheck,SlidersHorizontal,Ticket,ArrowUpRight,Signal,Wifi},
 setup(){
+let scrollLock;onMounted(()=>{scrollLock=installScrollLock();});onBeforeUnmount(()=>scrollLock?.dispose());
 const admin=ref(inRoute(routePath(),'/admin'));
 const marketing=ref(inRoute(routePath(),'/ar'));
 const webMode=ref(isWebStore()),authVisible=ref(false),authView=ref('login'),pendingCheckout=ref(null),pendingPage=ref('home');

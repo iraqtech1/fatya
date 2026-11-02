@@ -1,0 +1,4 @@
+html{scrollbar-gutter:stable}
+html[data-fatya-scroll-locked]{overflow:hidden;overscroll-behavior:none}
+dialog,.searchable-filter-panel,.searchable-filter-options,.admin-sidebar,.ms-dropdown-panel,.ms-filter-menu{overscroll-behavior:contain}
+.ms-dropdown-panel,.ms-filter-menu{max-block-size:70dvh;overflow-y:auto}

@@ -14,7 +14,7 @@ export default {
     function scrollTop(){return document.querySelector('.app-shell>main')?.scrollTop||window.scrollY;}
     function down(e){
       reset();
-      if(refreshing.value||innerWidth>700||e.touches.length!==1||scrollTop()>1||document.querySelector('dialog[open]'))return;
+      if(document.documentElement.hasAttribute('data-fatya-scroll-locked')||refreshing.value||innerWidth>700||e.touches.length!==1||scrollTop()>1||document.querySelector('dialog[open]'))return;
       const target=e.target;
       if(target.closest('input,textarea,select,[contenteditable="true"],.bottom-nav,.deck-stage'))return;
       for(let el=target;el&&el!==document.body;el=el.parentElement){
@@ -25,7 +25,7 @@ export default {
     }
     function move(e){
       if(!start)return;
-      if(e.touches.length!==1||scrollTop()>1){reset();return;}
+      if(document.documentElement.hasAttribute('data-fatya-scroll-locked')||e.touches.length!==1||scrollTop()>1){reset();return;}
       const dx=e.touches[0].clientX-start.x,dy=e.touches[0].clientY-start.y;
       if(!locked&&Math.max(Math.abs(dx),Math.abs(dy))<10)return;
       if(!locked&&(dy<=0||Math.abs(dx)>=dy)){reset();return;}
@@ -34,7 +34,7 @@ export default {
       distance.value=pullDistance(dx,dy);
     }
     function up(){
-      const shouldRefresh=ready.value;
+      const shouldRefresh=ready.value&&!document.documentElement.hasAttribute('data-fatya-scroll-locked');
       reset();
       if(!shouldRefresh||refreshing.value)return;
       refreshing.value=true;
