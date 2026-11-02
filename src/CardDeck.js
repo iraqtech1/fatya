@@ -45,6 +45,6 @@ export default {
       </button>
     </div>
     <div class="deck-controls"><button @click="move(-1)" :aria-label="t(&quot;الكارت السابق&quot;)"><ChevronUp :size="18"/></button><span>{{(current.translations?current.name:t(current.name))}} <small dir="ltr">{{active+1}} / {{products.length}}</small></span><button @click="move(1)" :aria-label="t(&quot;الكارت التالي&quot;)"><ChevronDown :size="18"/></button></div>
-    <p class="deck-hint">{{t("اسحب للأعلى أو الأسفل · اضغط الكارت للشراء")}}</p>
+
   </section>`
 };

@@ -21,7 +21,7 @@ export default {
         <a :href="routeHref('/')" class="masal-login-brand"><span><MasalMark/></span><b>فاتيا<small>FATYA</small></b></a>
         <div class="masal-login-form-content">
           <span class="masal-login-symbol"><LockKeyhole :size="23"/></span>
-          <h1 id="admin-login-title">تسجيل الدخول</h1><p>ادخل لحسابك في لوحة فاتيا</p>
+          <h1 id="admin-login-title">تسجيل الدخول</h1>
           <form @submit.prevent="submit">
             <label for="admin-username">اسم المستخدم</label>
             <div class="masal-login-field"><User :size="18"/><input id="admin-username" v-model="username" autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" placeholder="اسم المستخدم" required maxlength="80" @input="error=''"/></div>
