@@ -56,6 +56,26 @@ class ProductFieldsTest extends TestCase
         return app(StockOrders::class)->approve(['previewId' => $p['previewId'], 'previewHash' => $p['previewHash'], 'requestId' => $key, 'excludeRejected' => false]);
     }
 
+    public function test_company_and_category_links_are_editable_and_public_company_data_is_minimal(): void
+    {
+        $s = $this->fixture();
+        $s['companies'] = [['id' => 'maker', 'name' => 'الشركة المصنّعة', 'role' => 'manufacturer', 'active' => true, 'privateNote' => 'private-company-data'], ['id' => 'supplier', 'name' => 'مجهّز خاص', 'role' => 'supplier', 'active' => true]];
+        $s['categories'][] = ['id' => 'second', 'name' => 'تصنيف آخر', 'en' => 'Other', 'active' => true, 'icon' => 'Layers'];
+        app(Store::class)->save($s);
+        $this->admin();
+        $product = [...$s['products'][0], 'manufacturerId' => 'maker', 'supplierCompanyId' => 'supplier', 'category' => 'تصنيف آخر'];
+        $this->putJson('/api/admin/products', ['revision' => $s['revision'], 'data' => $product])->assertOk();
+        $saved = app(Store::class)->read()['products'][0];
+        $this->assertSame(1, $saved['id']);
+        $this->assertSame([5000, 10000], $saved['values']);
+        $this->assertSame('maker', $saved['manufacturerId']);
+        $response = $this->getJson('/api/state')->assertOk();
+        $response->assertJsonPath('products.0.manufacturer', ['id' => 'maker', 'name' => 'الشركة المصنّعة']);
+        $response->assertJsonCount(0, 'companies');
+        $this->assertStringNotContainsString('private-company-data', $response->getContent());
+        $this->assertStringNotContainsString('مجهّز خاص', $response->getContent());
+    }
+
     public function test_translations_aliases_and_order_persist_and_private_rules_stay_admin_only(): void
     {
         $s = $this->fixture();

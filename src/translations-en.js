@@ -1,4 +1,5 @@
 export default {
+"التصنيفات":"Categories","الشركات":"Companies","الفئات":"Denominations","الكارتات":"Cards","شحن مباشر":"Direct top-up",
   "ابتداءً من":"From",
   "فاتيا — الرئيسية":"Fatya — Home",
   "الرجوع إلى المتجر":"Back to store",

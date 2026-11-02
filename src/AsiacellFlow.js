@@ -1,4 +1,4 @@
-import {ref,computed,nextTick,onBeforeUnmount} from 'vue/dist/vue.esm-bundler.js';
+import {ref,computed,nextTick,onBeforeUnmount,onMounted} from 'vue/dist/vue.esm-bundler.js';
 import {ArrowRight,ChevronLeft,CreditCard,Smartphone,Wifi,X,Check,Plus,Minus,RotateCcw} from 'lucide-vue-next';
 import {t} from './i18n.js';
 import {limitPhoneInput} from './phone-input.js';
@@ -27,8 +27,9 @@ export default {
     const offerTitle=offer=>offer.label?(offer.customLabel?offer.label:t(offer.label)):number(offer.value)+' '+t(props.product.unit||'د.ع');
     async function focusHeading(){await nextTick();heading.value?.focus();}
     function chooseService(id){service.value=id;index.value=null;quantity.value=1;error.value='';focusHeading();}
-    function back(){if(service.value){service.value='';index.value=null;focusHeading();}else emit('back');}
+    function back(){if(props.initialDraft?.fromCatalog){emit('back');return;}if(service.value){service.value='';index.value=null;focusHeading();}else emit('back');}
     async function chooseOffer(value){index.value=value;quantity.value=1;error.value='';await nextTick();sheet.value?.showModal();}
+    onMounted(()=>{if(index.value!==null)chooseOffer(index.value);});
     function closeSheet(){sheet.value?.close();error.value='';}
     async function reopen(){error.value='';await nextTick();sheet.value?.showModal();}
     function proceed(){try{

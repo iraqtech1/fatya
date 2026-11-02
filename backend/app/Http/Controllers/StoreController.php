@@ -93,6 +93,8 @@ class StoreController extends Controller
         $s['products'] = array_values(array_filter($s['products'], fn ($p) => $p['active'] && collect($s['categories'])->contains('name', $p['category'])));
         foreach ($s['products'] as &$p) {
             unset($p['importFields'], $p['denomImportFields'], $p['denomImportCodes']);
+            $manufacturer = collect($s['companies'])->first(fn ($c) => $c['id'] === ($p['manufacturerId'] ?? ''));
+            $p['manufacturer'] = $manufacturer ? ['id' => $manufacturer['id'], 'name' => $manufacturer['name']] : null;
             $p['availability'] = array_map(fn ($quantity) => $quantity > 0, $p['stock']);
             $p['stock'] = array_fill(0, count($p['stock']), 0);
         } unset($p);

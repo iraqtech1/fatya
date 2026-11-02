@@ -49,5 +49,6 @@ assert.equal(ui.paymentDraft,null,'Out-of-stock denominations cannot start check
 const replacement={...buying,availability:buying.values.map(()=>true)};store.products.splice(store.products.indexOf(buying),1,replacement);
 assert.equal(ui.available(buying,0),true,'An open dialog follows refreshed server availability');
 replacement.availability[0]=false;assert.equal(ui.available(buying,0),false);
+const physicalAsia=ui.products.find(p=>p.en==='asiacell');await ui.openCatalogCard({kind:'stock',product:physicalAsia,index:1});assert.equal(ui.selected.id,physicalAsia.id);assert.equal(ui.denom,1);ui.close();ui.openCatalogCard({kind:'service',product:physicalAsia,service:'direct',index:0});assert.equal(ui.page,'asiacell');assert.equal(ui.asiacellDraft.service,'direct');assert.equal(ui.asiacellDraft.index,0);assert.equal(created,1,'Hierarchy browsing never creates an order');
 app.unmount();
 console.log('Web guest browsing, protected pages, login/register return, cancelled authentication, denomination/quantity retention, telecom checkout and logout passed.');
