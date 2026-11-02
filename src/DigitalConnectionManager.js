@@ -5,7 +5,7 @@ export default {
  emits:['saved'],
  setup(props,{emit}){
   const rows=ref([]),busy=ref(false),error=ref(''),message=ref('');
-  async function load(){const r=await api('/admin/procurement/digital');rows.value=r.connections.map(c=>({...c,credential:'',reason:''}));}
+  async function load(){const r=await api('/admin/procurement/digital');rows.value=r.connections.map(c=>({...c,name:c.id==='topup'?'TOPUP':c.name,credential:'',reason:''}));}
   async function run(task){if(busy.value)return;busy.value=true;error.value='';message.value='';try{await task();}catch(e){error.value=e.message;}finally{busy.value=false;}}
   function save(c){return run(async()=>{await api('/admin/procurement/digital/connections',{provider:c.id,version:c.version,active:c.active,credential:c.credential,reason:c.reason},'PUT');c.credential='';await refreshStore();await load();emit('saved');message.value='حُفظ الربط مشفراً. اجلب الكتالوج للتأكد من صلاحية الاتصال؛ الحفظ وحده لا يثبت نجاحه.';});}
   function sync(){return run(async()=>{let catalog=false,balance=false;try{await api('/admin/procurement/digital/catalog',{provider:'topup'});catalog=true;}catch(e){error.value='الفئات: '+e.message;}try{await api('/admin/procurement/digital/balance');balance=true;}catch(e){error.value+=(error.value?' / ':'')+'الرصيد: '+e.message;}await load();emit('saved');message.value='جلب الفئات: '+(catalog?'نجح':'لم ينجح')+' — جلب الرصيد: '+(balance?'نجح':'لم ينجح');});}

@@ -11,7 +11,7 @@ export default {
     const providers=ref([]),mappings=ref([]),provider=ref('topup'),provinces=ref([]),province=ref(''),premiumProvinces=ref([]),catalog=ref(null),balance=ref(null),busy=ref(false),error=ref(''),message=ref(''),query=ref(''),chosen=ref(null),mobile=ref(''),confirmMobile=ref(''),eligibility=ref(null),productId=ref(''),denom=ref(0),retail=ref(''),active=ref(false);
     const offers=computed(()=>(catalog.value?.offers||[]).filter(o=>(o.title+' '+o.providerId).toLowerCase().includes(query.value.toLowerCase())));
     async function run(fn){if(busy.value)return;busy.value=true;error.value='';message.value='';try{if(!connected)throw Error('ربط الشركات يحتاج اتصالاً بالخادم');await fn();}catch(e){error.value=e.message;}finally{busy.value=false;}}
-    async function load(){const r=await api('/admin/procurement/digital');providers.value=r.connections;mappings.value=r.offers;}
+    async function load(){const r=await api('/admin/procurement/digital');providers.value=r.connections.map(c=>({...c,name:c.id==='topup'?'TOPUP':c.name}));mappings.value=r.offers;}
     function change(){catalog.value=null;chosen.value=null;balance.value=null;provinces.value=[];premiumProvinces.value=[];province.value='';eligibility.value=null;query.value='';}
     function getProvinces(premium=false){return run(async()=>{const r=await api('/admin/procurement/digital/provinces',{premium});if(premium)premiumProvinces.value=r.provinces;else provinces.value=r.provinces;});}
     function sync(){return run(async()=>{catalog.value=await api('/admin/procurement/digital/catalog',{provider:provider.value,provinceId:province.value});chosen.value=null;eligibility.value=null;await load();});}
