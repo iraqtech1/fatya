@@ -398,5 +398,18 @@ export default {
 "مفعّلة":"Enabled",
 "غير مفعّلة":"Disabled",
 "تعذّر تفعيل الإشعارات راجع سماح المتصفح وإعدادات الخدمة":"Could not enable notifications. Check browser permissions and service settings.",
-"بانتظار رد الدعم":"Waiting for support reply"
+"بانتظار رد الدعم":"Waiting for support reply",
+"رقم الهاتف المستفيد":"Recipient phone number",
+"تأكيد رقم الهاتف":"Confirm phone number",
+"الاسم الأول":"First name",
+"اسم العائلة":"Last name",
+"رقم هاتف المشترك":"Subscriber phone number",
+"عنوان المشترك":"Subscriber address",
+"محافظة المشترك":"Subscriber province",
+"اختر المحافظة":"Choose a province",
+"تم تنفيذ الخدمة":"Service completed",
+"الخدمة قيد التنفيذ":"Service in progress",
+"تنفيذ الخدمة يحتاج مراجعة":"Service execution needs review",
+"تم تأكيد الدفع؛ تابع حالة تنفيذ الخدمة من طلباتي":"Payment confirmed. Track service progress in My orders.",
+"النتيجة غير المؤكدة تُراجع مع الشركة؛ لا يُعاد الشراء تلقائياً. الاسترجاع حسب مراجعة الدفع.":"Uncertain results are reviewed with the provider; purchases are not repeated automatically. Refunds require payment review."
 };

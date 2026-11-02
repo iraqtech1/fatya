@@ -1,0 +1,207 @@
+[
+  {
+    "label": "5,000",
+    "codes": [
+      "E5K",
+      "EV5"
+    ],
+    "face": 5000
+  },
+  {
+    "label": "10,000",
+    "codes": [
+      "E10K",
+      "EV10"
+    ],
+    "face": 10000
+  },
+  {
+    "label": "15,000",
+    "codes": [
+      "E15K",
+      "EV15"
+    ],
+    "face": 15000
+  },
+  {
+    "label": "25,000",
+    "codes": [
+      "E25K",
+      "EV25"
+    ],
+    "face": 25000
+  },
+  {
+    "label": "40,000",
+    "codes": [
+      "E40K",
+      "EV40"
+    ],
+    "face": 40000
+  },
+  {
+    "label": "100,000",
+    "codes": [
+      "E100K",
+      "EV1H"
+    ],
+    "face": 100000
+  },
+  {
+    "label": "5 GIGA weekly",
+    "codes": [
+      "EVD1"
+    ],
+    "face": null
+  },
+  {
+    "label": "10 GIGA monthly",
+    "codes": [
+      "EVD2"
+    ],
+    "face": null
+  },
+  {
+    "label": "1,000",
+    "codes": [
+      "EV1"
+    ],
+    "face": 1000
+  },
+  {
+    "label": "3,000",
+    "codes": [
+      "EV3"
+    ],
+    "face": 3000
+  },
+  {
+    "label": "2,000",
+    "codes": [
+      "EV2"
+    ],
+    "face": 2000
+  },
+  {
+    "label": "50,000",
+    "codes": [
+      "EV50"
+    ],
+    "face": 50000
+  },
+  {
+    "label": "500",
+    "codes": [
+      "EV5C"
+    ],
+    "face": 500
+  },
+  {
+    "label": "750",
+    "codes": [
+      "EV7C"
+    ],
+    "face": 750
+  },
+  {
+    "label": "35,000",
+    "codes": [
+      "EV35"
+    ],
+    "face": 35000
+  },
+  {
+    "label": "MAX25",
+    "codes": [
+      "EB25"
+    ],
+    "face": null
+  },
+  {
+    "label": "MAX35",
+    "codes": [
+      "EB35"
+    ],
+    "face": null
+  },
+  {
+    "label": "6,000",
+    "codes": [
+      "EV6"
+    ],
+    "face": 6000
+  },
+  {
+    "label": "18,000",
+    "codes": [
+      "EV18"
+    ],
+    "face": 18000
+  },
+  {
+    "label": "MAX6",
+    "codes": [
+      "EB6"
+    ],
+    "face": null
+  },
+  {
+    "label": "MAX12",
+    "codes": [
+      "EB12"
+    ],
+    "face": null
+  },
+  {
+    "label": "MAX55",
+    "codes": [
+      "EB55"
+    ],
+    "face": null
+  },
+  {
+    "label": "50,000 unlimited",
+    "codes": [
+      "EU50K",
+      "EVU5"
+    ],
+    "face": null
+  },
+  {
+    "label": "30,000",
+    "codes": [
+      "EV30"
+    ],
+    "face": 30000
+  },
+  {
+    "label": "70,000",
+    "codes": [
+      "E70K",
+      "EV70"
+    ],
+    "face": 70000
+  },
+  {
+    "label": "150,000",
+    "codes": [
+      "E150K",
+      "EV150"
+    ],
+    "face": 150000
+  },
+  {
+    "label": "200,000",
+    "codes": [
+      "EV200"
+    ],
+    "face": 200000
+  },
+  {
+    "label": "500,000",
+    "codes": [
+      "EV500"
+    ],
+    "face": 500000
+  }
+]

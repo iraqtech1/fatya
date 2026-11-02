@@ -45,25 +45,31 @@ function expiryCell(value){
   throw Error('اكتب تاريخ الانتهاء YYYY-MM-DD أو يوم/شهر/سنة');
 }
 export async function readStockFile(file){
+  return (await readStockSheets(file))[0].raw;
+}
+export async function readStockSheets(file){
   if(file.size>15000000)throw Error('الحد الأقصى للملف 15 MB');
-  if(/\.(txt|csv|tsv)$/i.test(file.name))return parseStockText((await file.text()).replace(/^\uFEFF/,''));
+  if(/\.(txt|csv|tsv)$/i.test(file.name))return [{name:file.name,raw:parseStockText((await file.text()).replace(/^\uFEFF/,''))}];
   if(!/\.xlsx$/i.test(file.name))throw Error('الصيغ المدعومة TXT وCSV وTSV وXLSX؛ حوّل XLS إلى XLSX');
   const {default:Excel}=await import('exceljs'),book=new Excel.Workbook();await book.xlsx.load(await file.arrayBuffer());
-  const sheet=book.worksheets[0];if(!sheet)throw Error('الملف لا يحتوي ورقة بيانات');if(sheet.rowCount>MAX_STOCK_ROWS+1||sheet.columnCount>50)throw Error('تجاوز الملف حد الصفوف أو الأعمدة');
+  if(!book.worksheets.length)throw Error('الملف لا يحتوي ورقة بيانات');if(book.worksheets.length>200)throw Error('الحد الأقصى 200 ملف أو ورقة');
+  const sheets=[];let total=0;
+  for(const sheet of book.worksheets){if(sheet.rowCount>MAX_STOCK_ROWS+1||sheet.columnCount>50)throw Error('تجاوز الملف حد الصفوف أو الأعمدة');
   const rows=[];sheet.eachRow(row=>{const data=[];for(let i=1;i<=sheet.columnCount;i++){
     const cell=row.getCell(i),v=cell.value;
     if(v instanceof Date)data.push({kind:'date',iso:isoDate(v)});
     else if(typeof v==='number')data.push({kind:'number',value:v,format:cell.numFmt||'General',date1904:!!book.properties.date1904});
     else if(v!==null&&typeof v==='object')throw Error('لا تقبل المعادلات أو الخلايا المركبة؛ استخدم نصوصاً أو تواريخ Excel');
     else data.push(v===null?'':String(v));
-  }if(data.some(v=>stockCellLabel(v).trim()))rows.push(data);});return rows;
+  }if(data.some(v=>stockCellLabel(v).trim()))rows.push(data);});if(rows.length){total+=Math.max(0,rows.length-1);sheets.push({name:file.name+' / '+sheet.name,raw:rows});}}
+  if(total>MAX_STOCK_ROWS)throw Error('الحد الأقصى 50000 بطاقة');if(!sheets.length)throw Error('الملف فارغ');return sheets;
 }
-export function stockRows(raw,{skipHeader=true,pinColumn=0,serialColumn=1,expiryColumn=2}){
+export function stockRows(raw,{skipHeader=true,pinColumn=0,serialColumn=1,expiryColumn=2,tolerantExpiry=false,expiry=''}){
   if(!Number.isInteger(pinColumn)||pinColumn<0||!Number.isInteger(serialColumn)||serialColumn< -1||!Number.isInteger(expiryColumn)||expiryColumn< -1)throw Error('اختر أعمدة صحيحة');
   if(pinColumn===serialColumn||pinColumn===expiryColumn||serialColumn>=0&&serialColumn===expiryColumn)throw Error('اختر عموداً مختلفاً لكل حقل');
   return raw.slice(skipHeader?1:0).map((row,i)=>{
     const sourceRow=i+(skipHeader?2:1);
-    try{return {sourceRow,pin:codeCell(row[pinColumn]),serial:serialColumn<0?'':codeCell(row[serialColumn]),expiry:expiryColumn<0?'':expiryCell(row[expiryColumn])};}
+    try{let date='',warning='';try{const v=row[expiryColumn],m=tolerantExpiry&&typeof v==='string'&&v.match(/^(\d{1,2})\/(\d{1,2})\/\d{4}$/);if(m&&+m[1]>0&&+m[1]<=12&&+m[2]>0&&+m[2]<=12&&+m[1]!==+m[2])throw Error('تاريخ ملتبس بين اليوم والشهر؛ استخدم الانتهاء اليدوي أو YYYY-MM-DD');date=expiryColumn<0?'':expiryCell(v);}catch(e){if(!tolerantExpiry)throw e;warning=e.message;}return {sourceRow,pin:codeCell(row[pinColumn]),serial:serialColumn<0?'':codeCell(row[serialColumn]),expiry:date||expiry,...warning?{expiryWarning:warning}:{}};}
     catch(e){throw Error('صف '+sourceRow+': '+e.message);}
   });
 }

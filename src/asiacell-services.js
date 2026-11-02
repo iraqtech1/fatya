@@ -23,8 +23,8 @@ export function isAsiacell(product){
 }
 
 export function serviceOffers(product,service,preview=false){
-  if(service==='cards')return (product?.values||[]).map((value,index)=>({value,price:product.prices[index],image:product.denomImages?.[index]||'',index}));
-  if(!preview)return [];
+  if(service==='cards')return (product?.values||[]).map((value,index)=>({value,price:product.prices[index],image:product.denomImages?.[index]||'',index})).filter(o=>product?.digitalOffers?.[o.index]?.provider!=='topup');
+  if(!preview)return Object.entries(product?.digitalOffers||{}).filter(([,o])=>o.provider==='topup'&&(service==='direct'?o.type==='topup':service==='bundles'?['bundle','bill'].includes(o.type):false)).map(([index,o])=>({value:product.values[+index],price:product.prices[+index],index:+index,label:o.title,digital:true}));
   const rows=service==='direct'?previewDirect:service==='bundles'?previewBundles:[];
   return rows.map((row,index)=>({...row,index}));
 }
@@ -36,13 +36,13 @@ export function buildAsiacellCheckout(product,{service,index,quantity=1,recipien
   const phone=normalizePhone(recipient);
   if(service!=='cards'&&!/^07\d{9}$/.test(phone))throw Error('اكتب رقم هاتف عراقي صحيح من 11 رقم');
   const serviceLabel=ASIACELL_SERVICES.find(item=>item.id===service)?.label;
-  const sample=service!=='cards';
+  const sample=service!=='cards'&&!offer.digital;
   const checkoutProduct=sample?{
     ...product,name:product.name+' · '+serviceLabel,
     values:[offer.value],prices:[offer.price],stock:[0],denomImages:[],
     unit:service==='bundles'?'باقة':product.unit||'د.ع',
   }:product;
-  return {product:checkoutProduct,denom:sample?0:index,quantity:service==='cards'?quantity:1,
+  return {product:checkoutProduct,denom:sample?0:offer.index,quantity:service==='cards'?quantity:1,
     amount:offer.price*(service==='cards'?quantity:1),method,
     telecom:{service,label:serviceLabel,offerLabel:offer.label||'',recipient:service==='cards'?'':phone},
     demoOnly:sample,

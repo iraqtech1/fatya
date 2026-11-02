@@ -51,10 +51,11 @@ class StockOrders
                 if (! is_array($line)) {
                     throw new ApiError('سطر الفئة غير صحيح', 422);
                 }
+                $line = app(ImportCategories::class)->resolve($line, $s);
                 $p = collect($s['products'])->first(fn ($p) => (string) $p['id'] === (string) ($line['productId'] ?? ''));
                 $di = $line['denom'] ?? null;
                 $rows = $line['rows'] ?? null;
-                if (! $p || ! is_int($di) || ! isset($p['values'][$di]) || ! is_array($rows) || ! array_is_list($rows)) {
+                if (! $p || ! $p['active'] || ! collect($s['categories'])->contains(fn ($c) => $c['active'] && $c['name'] === $p['category']) || ! is_int($di) || ! isset($p['values'][$di]) || ! is_array($rows) || ! array_is_list($rows) || ! $rows) {
                     throw new ApiError('الفئة أو صفوف الملف غير صحيحة', 422);
                 }
                 $count += count($rows);
@@ -63,6 +64,9 @@ class StockOrders
                 }
                 $cost = self::money($line['cost'] ?? null);
                 $price = self::money((string) $p['prices'][$di]);
+                if (! BigDecimal::of($cost)->isGreaterThan(0) || ! BigDecimal::of($price)->isGreaterThan(0)) {
+                    throw new ApiError('التكلفة وسعر البيع يجب أن يكونا أكبر من صفر', 422);
+                }
                 $before = count($accepted);
                 foreach ($rows as $ri => $row) {
                     $sourceRow = is_array($row) && is_int($row['sourceRow'] ?? null) && $row['sourceRow'] > 0 && $row['sourceRow'] <= 100000 ? $row['sourceRow'] : $ri + 1;
@@ -71,6 +75,9 @@ class StockOrders
                         $errors[] = [...$label, 'reason' => 'صف غير صحيح'];
 
                         continue;
+                    }
+                    if (! empty($row['expiryWarning'])) {
+                        $warnings[] = [...$label, 'reason' => 'تاريخ الملف غير مفهوم؛ استُخدم الانتهاء اليدوي أو تُرك فارغاً'];
                     }
                     $pin = $row['pin'] ?? '';
                     $serial = $row['serial'] ?? '';
@@ -110,7 +117,7 @@ class StockOrders
                     }
                     $accepted[] = [...$label, 'product_id' => (string) $p['id'], 'denomination' => $p['values'][$di], 'code_hash' => $hash, 'encrypted_code' => Crypt::encryptString($pin), 'serial' => $serial === '' ? null : $serial, 'unit_cost' => $cost, 'expires_on' => $date];
                 }
-                $summaries[] = ['line' => $li + 1, 'name' => $p['name'], 'value' => $p['values'][$di], 'cost' => $cost, 'retail' => $price, 'candidateCount' => count($accepted) - $before];
+                $summaries[] = ['line' => $li + 1, 'productId' => (string) $p['id'], 'denom' => $di, 'name' => $p['name'], 'value' => $p['values'][$di], 'cost' => $cost, 'retail' => $price, 'candidateCount' => count($accepted) - $before];
             }
             // Bounded lookups avoid loading every encrypted card or exhausting SQL parameter limits.
             $existingHashes = $existingSerials = [];
@@ -136,6 +143,10 @@ class StockOrders
                 $summary['costTotal'] = (string) BigDecimal::of($summary['cost'])->multipliedBy($n);
             }
             unset($summary);
+            $categoryCount = count(array_unique(array_map(fn ($l) => $l['productId'].':'.$l['value'], $summaries)));
+            if (isset($b['categoryCount']) && $b['categoryCount'] !== $categoryCount) {
+                throw new ApiError('عدد الفئات لا يطابق الفئات المختلفة الفعلية', 422);
+            }
             $id = (string) Str::uuid();
             $summary = ['id' => $id, 'supplier' => $supplier, 'source' => $source, 'city' => $city, 'quantity' => count($valid), 'rejected' => count($errors), 'costTotal' => (string) $total, 'nominalTotal' => (string) $nominal, 'currency' => 'IQD', 'lines' => $summaries];
             $draft = Store::json(['cards' => $valid, 'summary' => $summary]);
@@ -147,11 +158,11 @@ class StockOrders
                 DB::table('stock_order_preview_chunks')->insert(['preview_id' => $id, 'part' => $part, 'encrypted_cards' => Crypt::encryptString(Store::json($cards))]);
             }
 
-            return [...$summary, 'previewId' => $id, 'previewHash' => $hash, 'errors' => $errors, 'warnings' => $warnings, 'approvalRequired' => false];
+            return [...$summary, 'categoryCount' => count(array_unique(array_map(fn ($l) => $l['productId'].':'.$l['value'], $summaries))), 'previewId' => $id, 'previewHash' => $hash, 'errors' => $errors, 'warnings' => $warnings, 'approvalRequired' => (bool) DB::table('procurement_settings')->where('id', 1)->value('approval_required')];
         });
     }
 
-    public function approve(array $b): array
+    public function approve(array $b, bool $reviewed = false): array
     {
         $key = $b['requestId'] ?? null;
         if (! is_string($key) || ! preg_match('/^[a-zA-Z0-9_-]{8,100}$/D', $key) || ! is_string($b['previewId'] ?? null) || ! is_string($b['previewHash'] ?? null) || ! is_bool($b['excludeRejected'] ?? null)) {
@@ -159,7 +170,7 @@ class StockOrders
         }
         $requestHash = hash('sha256', Store::json([$b['previewId'], $b['previewHash'], $b['excludeRejected']]));
 
-        return DB::transaction(function () use ($b, $key, $requestHash) {
+        return DB::transaction(function () use ($b, $key, $requestHash, $reviewed) {
             $s = $this->store->read(true);
             $old = DB::table('stock_batches')->where('request_id', $key)->first();
             if ($old) {
@@ -169,12 +180,15 @@ class StockOrders
 
                 return json_decode($old->summary, true);
             }
+            if (! $reviewed && (DB::table('procurement_settings')->where('id', 1)->value('approval_required') || DB::table('procurement_mutations')->where('request_id', $key)->exists())) {
+                return app(StockWorkflow::class)->submit($b);
+            }
             $preview = DB::table('stock_order_previews')->where('id', $b['previewId'])->lockForUpdate()->first();
             if (! $preview || $preview->expires < time() || ! hash_equals($preview->hash, $b['previewHash']) || (int) $preview->revision !== $s['revision']) {
                 throw new ApiError('المعاينة تغيرت أو انتهت؛ اطلب معاينة جديدة', 409);
             }
             $draft = json_decode(Crypt::decryptString($preview->encrypted_draft), true, 512, JSON_THROW_ON_ERROR);
-            if (! $draft['summary']['quantity'] || ($draft['summary']['rejected'] && ! $b['excludeRejected'])) {
+            if (! $draft['summary']['quantity'] || ($draft['summary']['rejected'] && ! $b['excludeRejected']) || collect($draft['summary']['lines'])->contains(fn ($l) => ! $l['accepted'])) {
                 throw new ApiError('أكد استبعاد المرفوض أو صحح الطلبية', 422);
             }
             $today = now('Asia/Baghdad')->toDateString();

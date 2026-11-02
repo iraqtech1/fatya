@@ -9,6 +9,9 @@ export function cancellableOrder(order,now=Date.now()){
   return order?.paymentStatus==='pending'&&order?.fulfillmentStatus==='reserved'&&Number(order.reservationExpiresAt)>now;
 }
 export function orderStateLabel(order,now=Date.now()){
+  if(order?.digitalProvider&&order?.paymentStatus==='confirmed'&&order?.fulfillmentStatus==='delivered')return 'تم تنفيذ الخدمة';
+  if(order?.digitalProvider&&order?.paymentStatus==='confirmed'&&order?.fulfillmentStatus==='processing')return 'الخدمة قيد التنفيذ';
+  if(order?.digitalProvider&&order?.fulfillmentStatus==='review')return 'تنفيذ الخدمة يحتاج مراجعة';
   if(deliveredOrder(order))return 'تم التسليم';
   if(order?.paymentStatus==='review')return 'دفع يحتاج مراجعة';
   if(order?.fulfillmentStatus==='expired'||order?.fulfillmentStatus==='reserved'&&Number(order.reservationExpiresAt)<=now)return 'حجز منتهي';

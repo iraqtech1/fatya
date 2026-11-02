@@ -15,7 +15,7 @@ export default {
     const service=ref(draft?.service||''),index=ref(draft?.index??null),quantity=ref(draft?.quantity||1),recipient=ref(draft?.recipient||''),method=ref(draft?.method||'Qi');
     const sheet=ref(null),heading=ref(null),error=ref('');
     const icons={CreditCard,Smartphone,Wifi};
-    const refundNotice='إذا فشل طلبك نقوم باسترداد المبلغ تلقائياً خلال أقل من 24 ساعة.';
+    const refundNotice=props.preview?'إذا فشل طلبك نقوم باسترداد المبلغ تلقائياً خلال أقل من 24 ساعة.':'النتيجة غير المؤكدة تُراجع مع الشركة؛ لا يُعاد الشراء تلقائياً. الاسترجاع حسب مراجعة الدفع.';
     const current=computed(()=>ASIACELL_SERVICES.find(item=>item.id===service.value));
     const offers=computed(()=>serviceOffers(props.product,service.value,props.preview));
     const selected=computed(()=>offers.value[index.value]);

@@ -6,6 +6,7 @@ use App\Exceptions\ApiError;
 use App\Services\Accounts;
 use App\Services\CatalogEditor;
 use App\Services\CustomerNotifications;
+use App\Services\DigitalSales;
 use App\Services\Inventory;
 use App\Services\OrderFulfillment;
 use App\Services\Otp;
@@ -89,6 +90,7 @@ class StoreController extends Controller
             $p['availability'] = array_map(fn ($quantity) => $quantity > 0, $p['stock']);
             $p['stock'] = array_fill(0, count($p['stock']), 0);
         } unset($p);
+        app(DigitalSales::class)->decorate($s);
         foreach (['orders', 'tickets'] as $key) {
             $s[$key] = $customer ? array_values(array_filter($s[$key], fn ($item) => $item['customerId'] === $customer['id'])) : [];
         }

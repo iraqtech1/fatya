@@ -147,7 +147,7 @@ class ProcurementTest extends TestCase
         config(['digital.topup.enabled' => true, 'digital.topup.key' => 'fixture-key']);
         Http::fake([
             'masal-co.com/api/v1/inventory' => Http::response('100000'),
-            'masal-co.com/api/v1/products' => Http::response('{"products":[{"id":9000000000000000001,"title":"Shown","type":"topup","show2site":1,"price":6000},{"id":2,"title":"Group","type":"bundle","show2site":1,"price":0},{"id":3,"title":"Hidden","type":"bill","show2site":0,"price":1}]}'),
+            'masal-co.com/api/v1/products' => Http::response('{"status":"ok","products":[{"id":9000000000000000001,"title":"Shown","type":"topup","show2site":1,"price":6000},{"id":2,"title":"Group","type":"bundle","show2site":1,"price":0},{"id":3,"title":"Hidden","type":"bill","show2site":0,"price":1}]}'),
             'masal-co.com/api/v1/checkEligibility' => Http::response(['status' => 'true']),
         ]);
         $service = app(DigitalProviders::class);

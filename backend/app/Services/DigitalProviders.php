@@ -4,11 +4,12 @@ namespace App\Services;
 
 use App\Exceptions\ApiError;
 use Brick\Math\BigDecimal;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
-/** Server-side, read-only provider workbench. Financial POSTs are deliberately not exposed. */
+/** Server-only provider transport. Financial calls are made only by the paid-order worker. */
 class DigitalProviders
 {
     public function settings(string $provider): array
@@ -17,6 +18,14 @@ class DigitalProviders
             throw new ApiError('المزود غير موجود', 404);
         }
         $c = config('digital.'.$provider);
+        $connection = DB::table('digital_connections')->where('provider', $provider)->first();
+        if ($connection) {
+            $c['enabled'] = (bool) $connection->active;
+            if ($connection->credential) {
+                $c['key'] = Crypt::decryptString($connection->credential);
+            }
+        }
+        $c['version'] = (int) ($connection?->version ?? 0);
         if (! $c['enabled'] || ! $c['key']) {
             throw new ApiError('الربط غير مفعّل؛ أضف مفتاح الشركة في إعدادات الخادم الخاصة', 409);
         }
@@ -29,13 +38,20 @@ class DigitalProviders
         return $c;
     }
 
-    private function read(string $provider, string $path, array $query = [], bool $eligibility = false): mixed
+    public function request(string $provider, string $path, array $query = [], bool $post = false): mixed
     {
         $c = $this->settings($provider);
         try {
             $http = Http::acceptJson()->withHeaders([$provider === 'topup' ? 'x-api-key' : 'X-API-Key' => $c['key']])->connectTimeout(8)->timeout(25)->withoutRedirecting();
             $url = rtrim($c['base'], '/').$path;
-            $r = $eligibility ? $http->post($url, $query) : $http->get($url, $query);
+            $allowed = ['topup' => ['/api/v1/inventory', '/api/v1/products', '/api/v1/checkEligibility', '/api/v1/transactions'], 'rabiaa' => ['/vendor/provinces', '/vendor/bein/provinces', '/vendor/catalog', '/vendor/hold', '/vendor/purchase', '/vendor/transactions']];
+            if (! in_array($path, $allowed[$provider], true)) {
+                throw new \RuntimeException;
+            }
+            if ($post && $path !== '/api/v1/checkEligibility' && ! config('digital.purchases_enabled')) {
+                throw new ApiError('تنفيذ المشتريات الخارجية غير مفعّل', 409);
+            }
+            $r = $post ? $http->post($url, $query) : $http->get($url, $query);
             if (! $r->successful() || strlen($r->body()) > 4 * 1024 * 1024) {
                 throw new \RuntimeException;
             }
@@ -47,18 +63,26 @@ class DigitalProviders
         }
     }
 
+    private function read(string $provider, string $path, array $query = [], bool $eligibility = false): mixed
+    {
+        return $this->request($provider, $path, $query, $eligibility);
+    }
+
     public function status(): array
     {
         return array_map(function ($p) {
             $c = config('digital.'.$p);
+            $connection = DB::table('digital_connections')->where('provider', $p)->first();
+            $configured = $connection ? (bool) ($connection->active && ($connection->credential || $c['key'])) : (bool) ($c['enabled'] && $c['key']);
             $snapshot = DB::table('digital_catalog')->where('connection', $p)->first();
 
-            return ['id' => $p, 'name' => $p === 'topup' ? 'التوب أب' : 'الرابعة', 'configured' => (bool) ($c['enabled'] && $c['key']), 'lastSync' => $snapshot ? date(DATE_ATOM, $snapshot->synced) : null, 'balanceSupported' => $p === 'topup'];
+            return ['id' => $p, 'name' => $p === 'topup' ? 'التوب أب' : 'الرابعة', 'configured' => $configured, 'active' => $connection ? (bool) $connection->active : (bool) $c['enabled'], 'hasCredential' => (bool) ($connection?->credential || $c['key']), 'version' => (int) ($connection?->version ?? 0), 'balance' => $connection?->balance, 'balanceUpdatedAt' => $connection?->balance_updated ? date(DATE_ATOM, $connection->balance_updated) : null, 'lastSync' => $snapshot ? date(DATE_ATOM, $snapshot->synced) : null, 'balanceSupported' => $p === 'topup'];
         }, ['topup', 'rabiaa']);
     }
 
     public function balance(): array
     {
+        $version = $this->settings('topup')['version'];
         $raw = $this->read('topup', '/api/v1/inventory');
         $value = is_array($raw) ? ($raw['remaining_balance'] ?? $raw['data']['remaining_balance'] ?? null) : $raw;
         try {
@@ -66,6 +90,13 @@ class DigitalProviders
         } catch (ApiError) {
             throw new ApiError('رد رصيد الشركة غير مفهوم', 502);
         }
+
+        DB::transaction(function () use ($version, $amount) {
+            app(Store::class)->read(true);
+            if ($this->settings('topup')['version'] !== $version) {
+                throw new ApiError('مفتاح الربط تغير أثناء جلب الرصيد', 409);
+            }DB::table('digital_connections')->updateOrInsert(['provider' => 'topup'], ['version' => $version, 'active' => true, 'balance' => $amount, 'balance_updated' => time()]);
+        });
 
         return ['balance' => $amount, 'currency' => 'IQD', 'updatedAt' => now()->toIso8601String()];
     }
@@ -82,23 +113,35 @@ class DigitalProviders
 
     public function provinces(bool $premium = false): array
     {
+        $version = $this->settings('rabiaa')['version'];
         $raw = $this->read('rabiaa', $premium ? '/vendor/bein/provinces' : '/vendor/provinces');
         $rows = $raw['data'] ?? null;
         if (! is_array($rows) || ! array_is_list($rows) || count($rows) > 1000) {
             throw new ApiError('رد المحافظات غير مفهوم', 502);
         }
 
-        return array_values(array_map(fn ($r) => ['id' => (string) ($r['id'] ?? ''), 'title' => CatalogEditor::text($r['title'] ?? '', 100)], $rows));
+        $result = array_values(array_map(fn ($r) => ['id' => (string) ($r['id'] ?? ''), 'title' => CatalogEditor::text($r['title'] ?? '', 100)], $rows));
+        if ($premium) {
+            DB::transaction(function () use ($result, $version) {
+                app(Store::class)->read(true);
+                if ($this->settings('rabiaa')['version'] !== $version) {
+                    throw new ApiError('مفتاح الشركة تغير', 409);
+                }DB::table('digital_connections')->updateOrInsert(['provider' => 'rabiaa'], ['version' => $version, 'active' => true, 'premium_provinces' => Store::json($result)]);
+            });
+        }
+
+        return $result;
     }
 
     public function catalog(string $provider, mixed $province = null): array
     {
+        $version = $this->settings($provider)['version'];
         if ($provider === 'rabiaa' && (! is_string($province) || ! preg_match('/^[0-9]{1,10}$/D', $province))) {
             throw new ApiError('اختر المحافظة أولاً', 422);
         }
         $raw = $this->read($provider, $provider === 'topup' ? '/api/v1/products' : '/vendor/catalog', $provider === 'topup' ? [] : ['provinceId' => $province]);
         $rows = $provider === 'topup' ? ($raw['products'] ?? null) : ($raw['data'] ?? null);
-        if (! is_array($rows) || ! array_is_list($rows) || count($rows) > 5000) {
+        if (($provider === 'topup' && ($raw['status'] ?? null) !== 'ok') || ! is_array($rows) || ! array_is_list($rows) || count($rows) > 5000) {
             throw new ApiError('رد كتالوج الشركة غير مفهوم', 502);
         }
         $offers = [];
@@ -124,7 +167,24 @@ class DigitalProviders
         }
         $snapshot = ['provider' => $provider, 'offers' => $offers, 'provinceId' => $province, 'syncedAt' => now()->toIso8601String()];
         $snapshot['hash'] = hash('sha256', Store::json($snapshot));
-        DB::table('digital_catalog')->updateOrInsert(['connection' => $provider], ['snapshot' => Store::json($snapshot), 'synced' => time()]);
+        DB::transaction(function () use ($provider, $snapshot, $version, $province) {
+            app(Store::class)->read(true);
+            if ($this->settings($provider)['version'] !== $version) {
+                throw new ApiError('مفتاح الربط تغير أثناء جلب الكتالوج', 409);
+            }
+            DB::table('digital_catalog')->updateOrInsert(['connection' => $provider], ['snapshot' => Store::json($snapshot), 'synced' => time()]);
+            // Successful empty lists retire their previous mappings; failures never replace a snapshot.
+            foreach (DB::table('digital_offers')->where('connection', $provider)->get() as $row) {
+                $old = json_decode($row->snapshot, true);
+                if ($provider === 'rabiaa' && ($old['provinceId'] ?? null) !== $province) {
+                    continue;
+                }
+                $fresh = collect($snapshot['offers'])->firstWhere('providerId', $row->provider_id);
+                if (! $fresh || ! $fresh['available']) {
+                    DB::table('digital_offers')->where('id', $row->id)->update(['active' => false, 'updated' => time()]);
+                }
+            }
+        });
 
         return $snapshot;
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\DigitalSales;
 use App\Services\OrderFulfillment;
 use App\Services\PushDelivery;
 use App\Services\Store;
@@ -28,3 +29,8 @@ Artisan::command('fatya:push-deliver', function (PushDelivery $delivery) {
     $this->info(json_encode($delivery->run(), JSON_THROW_ON_ERROR));
 })->purpose('Deliver committed customer notifications through Takeed');
 Schedule::command('fatya:push-deliver')->everyMinute()->withoutOverlapping();
+
+Artisan::command('fatya:digital-deliver', function (DigitalSales $sales) {
+    $this->info(json_encode($sales->run(), JSON_THROW_ON_ERROR));
+})->purpose('Execute paid digital orders once; uncertain outcomes require review');
+Schedule::command('fatya:digital-deliver')->everyMinute()->withoutOverlapping();

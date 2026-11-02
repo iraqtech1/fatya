@@ -48,7 +48,7 @@ class OrderFulfillment
         $s['orders'][$i]['paymentStatus'] = $f->payment_status;
         $s['orders'][$i]['fulfillmentStatus'] = $f->state;
         $s['orders'][$i]['reservationExpiresAt'] = $f->expires * 1000;
-        $s['orders'][$i]['codesAvailable'] = $f->state === 'delivered' && $f->payment_status === 'confirmed';
+        $s['orders'][$i]['codesAvailable'] = $f->state === 'delivered' && $f->payment_status === 'confirmed' && ($s['orders'][$i]['digitalProvider'] ?? '') !== 'topup';
         $s['orders'][$i]['paymentReviewReason'] = $f->review_reason;
         $s['orders'][$i]['status'] = match ($f->state) {
             'delivered' => 'مكتمل', 'expired', 'cancelled' => 'ملغي', default => 'قيد المراجعة',
@@ -97,6 +97,7 @@ class OrderFulfillment
         foreach ($expired as $f) {
             $this->release($f->order_id);
             DB::table('order_fulfillments')->where('order_id', $f->order_id)->update(['state' => 'expired']);
+            DB::table('digital_executions')->where('order_id', $f->order_id)->where('state', 'awaiting_payment')->update(['state' => 'expired', 'updated' => time()]);
             $this->updateSummary($s, $f->order_id);
         }
         if ($expired->count()) {
@@ -138,6 +139,8 @@ class OrderFulfillment
                     throw new ApiError('مرجع الطلب مستخدم بتفاصيل مختلفة', 409);
                 }
 
+                app(DigitalSales::class)->sameRequest($old['id'], $b);
+
                 return ['order' => $old, 'created' => false];
             }
             $p = collect($s['products'])->first(fn ($p) => $p['id'] === ($b['productId'] ?? null) && $p['active'] && collect($s['categories'])->contains(fn ($c) => $c['active'] && $c['name'] === $p['category']));
@@ -151,6 +154,10 @@ class OrderFulfillment
             }
             if (DB::table('order_fulfillments')->join('orders', 'orders.id', '=', 'order_fulfillments.order_id')->where('orders.customer_id', $customer['id'])->where('order_fulfillments.state', 'reserved')->count() >= 5) {
                 throw new ApiError('أكمل أو ألغِ طلباتك المحجوزة أولاً', 429);
+            }
+            $digital = app(DigitalSales::class)->mapping((string) $p['id'], $denom);
+            if ($digital) {
+                return app(DigitalSales::class)->reserve($s, $customer, $b, $p, $denom, $digital);
             }
             $cards = DB::table('inventory_cards')->where('product_id', (string) $p['id'])->where('denomination', $p['values'][$denom])->whereNull('reserved_order_id')->whereNull('sold_order_id')->where(fn ($q) => $q->whereNull('expires_on')->orWhere('expires_on', '>=', now('Asia/Baghdad')->toDateString()))->orderBy('id')->limit($quantity)->lockForUpdate()->get();
             if ($cards->count() !== $quantity) {
@@ -206,6 +213,7 @@ class OrderFulfillment
             if ($f && $status === 'ملغي') {
                 $this->release($id);
                 DB::table('order_fulfillments')->where('order_id', $id)->update(['state' => 'cancelled']);
+                DB::table('digital_executions')->where('order_id', $id)->where('state', 'awaiting_payment')->update(['state' => 'cancelled', 'updated' => time()]);
                 $this->updateSummary($s, $id);
                 app(Inventory::class)->refreshStock($s);
             } else {
@@ -260,7 +268,8 @@ class OrderFulfillment
                 default => null,
             };
             $cards = collect();
-            if (! $reason) {
+            $digital = DB::table('digital_executions')->where('order_id', $payment->orderId)->first();
+            if (! $reason && ! $digital) {
                 $cards = DB::table('inventory_cards')->where('reserved_order_id', $payment->orderId)->whereNull('sold_order_id')->orderBy('id')->lockForUpdate()->get();
                 if ($cards->count() !== $f->quantity) {
                     $reason = 'allocation_incomplete';
@@ -279,9 +288,12 @@ class OrderFulfillment
                     }
                 }
             }
-            $outcome = $reason ? 'review' : 'delivered';
+            $outcome = $reason ? 'review' : ($digital ? 'processing' : 'delivered');
             DB::table('payment_receipts')->insert(['id' => (string) Str::uuid(), 'order_id' => $payment->orderId, 'provider' => $payment->provider, 'transaction_id' => $payment->transactionId, 'event_id' => $payment->eventId, 'amount' => $amount, 'currency' => $payment->currency, 'outcome' => $outcome, 'reason' => $reason, 'received_at' => now()->timestamp]);
-            if (! $reason) {
+            if (! $reason && $digital) {
+                DB::table('digital_executions')->where('order_id', $payment->orderId)->where('state', 'awaiting_payment')->update(['state' => 'queued', 'updated' => time()]);
+                DB::table('order_fulfillments')->where('order_id', $payment->orderId)->update(['state' => 'processing', 'payment_status' => 'confirmed', 'review_reason' => null]);
+            } elseif (! $reason) {
                 $knownCost = ! $cards->contains(fn ($card) => $card->unit_cost === null);
                 $cost = BigDecimal::zero()->toScale(3);
                 foreach ($cards as $card) {
@@ -313,7 +325,7 @@ class OrderFulfillment
             app(Inventory::class)->refreshStock($s);
             $this->store->event($s, $reason ? 'دفع يحتاج مراجعة: '.$payment->orderId : 'تأكيد الدفع وتسليم الطلب: '.$payment->orderId);
             $this->store->save($s);
-            $this->notifications->send($customer['id'], 'تحديث حالة الطلب', $reason ? 'وصل تأكيد دفع يحتاج مراجعة الإدارة' : 'تم تأكيد الدفع وأصبحت أكواد طلبك متاحة');
+            $this->notifications->send($customer['id'], 'تحديث حالة الطلب', $reason ? 'وصل تأكيد دفع يحتاج مراجعة الإدارة' : ($digital ? 'تم تأكيد الدفع وطلب الخدمة قيد التنفيذ' : 'تم تأكيد الدفع وأصبحت أكواد طلبك متاحة'));
 
             return ['orderId' => $payment->orderId, 'outcome' => $outcome, 'reason' => $reason, 'duplicate' => false];
         }, 3);
@@ -328,6 +340,9 @@ class OrderFulfillment
         $f = DB::table('order_fulfillments')->where('order_id', $id)->first();
         if (! $f || $f->state !== 'delivered' || $f->payment_status !== 'confirmed') {
             throw new ApiError('أكواد الطلب تتاح بعد تأكيد الدفع والتسليم', 409);
+        }
+        if (DB::table('digital_executions')->where('order_id', $id)->exists()) {
+            return app(DigitalSales::class)->receipt($id);
         }
         $cards = DB::table('delivered_cards')->join('inventory_cards', 'inventory_cards.id', '=', 'delivered_cards.card_id')->where('delivered_cards.order_id', $id)->where('inventory_cards.sold_order_id', $id)->orderBy('inventory_cards.id')->get();
         if ($cards->count() !== $f->quantity) {
