@@ -49,6 +49,7 @@ import './dark-botanical.css';
 import './nav-motion-preview.css';
 import './app-refinements.css';
 import './dashboard-icons.css';
+import './control-spacing.css';
 import './store-catalog.css';
 import WebStore from './WebStore.js';
 import StorePreferences from './StorePreferences.js';

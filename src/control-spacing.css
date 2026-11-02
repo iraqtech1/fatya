@@ -1,0 +1,12 @@
+/* Shared spacing for actions and adjacent counters, in both text directions. */
+:root{--control-inline-gap:12px;--control-row-gap:10px}
+.control-row{display:flex;align-items:center;flex-wrap:wrap;gap:var(--control-row-gap) var(--control-inline-gap);min-inline-size:0}
+.control-row>button{flex-shrink:0;max-inline-size:100%;white-space:normal}
+.control-summary{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;min-inline-size:0;line-height:1.8}
+.control-summary>span{max-inline-size:100%;overflow-wrap:anywhere}
+.control-summary bdi,.stepper>span{font-variant-numeric:tabular-nums;unicode-bidi:isolate}
+.stepper>span{min-inline-size:2ch;text-align:center;flex-shrink:0}
+.admin-toolbar,.procurement .proc-actions,.pagination-buttons,.deck-controls,.telecom-breadcrumb,.web-product-bottom{column-gap:var(--control-inline-gap);row-gap:var(--control-row-gap)}
+.stock-order-actions{margin-block-start:12px;column-gap:16px}
+.stock-order-actions .control-summary{flex:1 1 230px}
+@media(max-width:480px){.stock-order-actions .control-summary{flex-basis:100%}}
