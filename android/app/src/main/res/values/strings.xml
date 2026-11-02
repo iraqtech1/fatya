@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">فاتيا</string>
+    <color name="brand">#034037</color><color name="background">#F6FAF7</color>
+    <string name="asset_statements">[{\"relation\":[\"delegate_permission/common.handle_all_urls\"],\"target\":{\"namespace\":\"web\",\"site\":\"https://fatyh.net\"}}]</string>
+</resources>

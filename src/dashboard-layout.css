@@ -45,3 +45,5 @@ html[data-theme=dark] .admin-image-empty,html[data-theme=dark] .admin-card-cell>
 .admin-shell .admin-customer-actions>.admin-row-action{display:inline-flex;align-items:center;justify-content:center;min-width:88px;min-height:38px;padding:8px 10px;margin:0;line-height:1.4;vertical-align:middle;box-sizing:border-box;background:#d8ede6;color:#1f5f4b}
 .admin-shell .admin-customer-actions>.admin-row-action svg{width:16px;height:16px;flex-shrink:0}
 .admin-shell .admin-ticket .admin-customer-actions{display:flex;flex-wrap:wrap}
+
+.admin-session-state{min-height:100dvh;display:grid;place-items:center;padding:24px;background:#f6faf7;color:#034037;text-align:center}.admin-session-state>div{max-width:420px}.admin-session-state img{max-width:100%;height:auto}.admin-session-state p{margin:24px 0;font-size:16px}

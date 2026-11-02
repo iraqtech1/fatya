@@ -21,3 +21,13 @@ backend/public/*.png
 backend/public/*.svg
 backend/public/*.js
 backend/public/*.webmanifest
+
+# Android build output and private signing materials
+android/.gradle/
+android/**/build/
+android/local.properties
+*.jks
+*.keystore
+*.apk
+*.aab
+backend/public/.well-known/

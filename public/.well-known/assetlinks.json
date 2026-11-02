@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "net.fatyh.app",
+      "sha256_cert_fingerprints": [
+        "BB:70:2E:8B:68:78:7A:62:56:F2:90:7D:F4:E5:00:8B:D5:4E:D7:14:78:E3:D2:51:12:CD:37:CA:4C:F3:CA:05"
+      ]
+    }
+  }
+]
