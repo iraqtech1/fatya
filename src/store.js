@@ -40,7 +40,7 @@ export function upsertCustomer(user){
 }
 export function createOrder(product,denom,quantity,customer,payment='Qi',reference=crypto.randomUUID(),details={}){
   if(connected&&details.demoOnly)throw Error('هذه الخدمة قيد التجهيز');
-  if(connected)return api('/orders',{productId:product.id,denom,quantity,payment,reference,...details.digital?{digital:details.digital}:{}}).then(async order=>{if(!store.orders.some(o=>o.id===order.id))store.orders.unshift(order);await refreshStore().catch(()=>{});return order;});
+  if(connected)return api('/orders',{productId:product.id,denom,quantity,payment,reference,channel:location.pathname.startsWith('/app')||location.hash.startsWith('#/app')?'app':'web',...details.digital?{digital:details.digital}:{}}).then(async order=>{if(!store.orders.some(o=>o.id===order.id))store.orders.unshift(order);await refreshStore().catch(()=>{});return order;});
   const unit=product.prices[denom];
   const order={id:'FATYA-'+crypto.randomUUID().toUpperCase(),productId:product.id,name:product.name,value:product.values[denom],unit:product.unit||'د.ع',price:unit*quantity,quantity,date:isoDate(),customer:customer?.name||'زائر',phone:customer?.phone||'',email:customer?.email||'',...(customer?.previewId?{previewId:customer.previewId}:{}),kind:'فرد',status:'مكتمل',payment:(payment==='ZainCash'?'ZainCash':'Qi')};
   if(details.telecom)Object.assign(order,{service:details.telecom.service,serviceLabel:details.telecom.label,offerLabel:details.telecom.offerLabel,recipient:details.telecom.recipient,demoOnly:!!details.demoOnly});

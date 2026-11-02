@@ -71,7 +71,8 @@ class ProcurementTest extends TestCase
         $rows = [['pin' => '0000123456789012', 'serial' => '000001'], ['pin' => '0000123456789013', 'serial' => '000002']];
         $p = app(StockOrders::class)->preview($this->body($s, $rows));
         $this->assertSame('9000.002', $p['costTotal']);
-        $this->assertSame('10000.500', $p['nominalTotal']);
+        $this->assertSame('10000.000', $p['nominalTotal']);
+        $this->assertSame('10000.500', $p['retailTotal']);
         $this->assertDatabaseCount('inventory_cards', 0);
         $this->assertStringNotContainsString('0000123456789012', json_encode($p));
         $this->assertStringNotContainsString('0000123456789012', DB::table('stock_order_previews')->value('encrypted_draft'));

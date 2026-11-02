@@ -1,3 +1,4 @@
+import {connected,readStockUpload} from './api.js';
 export const MAX_STOCK_ROWS=50000;
 export function parseStockText(text){
   const first=text.split(/\r?\n/,1)[0]||'',delimiter=first.includes('\t')?'\t':first.includes(';')?';':',';
@@ -49,6 +50,7 @@ export async function readStockFile(file){
 }
 export async function readStockSheets(file){
   if(file.size>15000000)throw Error('الحد الأقصى للملف 15 MB');
+  if(connected)return readStockUpload(file);
   if(/\.(txt|csv|tsv)$/i.test(file.name))return [{name:file.name,raw:parseStockText((await file.text()).replace(/^\uFEFF/,''))}];
   if(!/\.xlsx$/i.test(file.name))throw Error('الصيغ المدعومة TXT وCSV وTSV وXLSX؛ حوّل XLS إلى XLSX');
   const {default:Excel}=await import('exceljs'),book=new Excel.Workbook();await book.xlsx.load(await file.arrayBuffer());
@@ -64,12 +66,14 @@ export async function readStockSheets(file){
   }if(data.some(v=>stockCellLabel(v).trim()))rows.push(data);});if(rows.length){total+=Math.max(0,rows.length-1);sheets.push({name:file.name+' / '+sheet.name,raw:rows});}}
   if(total>MAX_STOCK_ROWS)throw Error('الحد الأقصى 50000 بطاقة');if(!sheets.length)throw Error('الملف فارغ');return sheets;
 }
-export function stockRows(raw,{skipHeader=true,pinColumn=0,serialColumn=1,expiryColumn=2,tolerantExpiry=false,expiry=''}){
+export function stockRows(raw,{skipHeader=true,pinColumn=0,serialColumn=1,expiryColumn=2,cvcColumn=-1,referenceColumn=-1,tolerantExpiry=false,expiry='',sourceRows}){
   if(!Number.isInteger(pinColumn)||pinColumn<0||!Number.isInteger(serialColumn)||serialColumn< -1||!Number.isInteger(expiryColumn)||expiryColumn< -1)throw Error('اختر أعمدة صحيحة');
-  if(pinColumn===serialColumn||pinColumn===expiryColumn||serialColumn>=0&&serialColumn===expiryColumn)throw Error('اختر عموداً مختلفاً لكل حقل');
+  const selected=[pinColumn,serialColumn,expiryColumn,cvcColumn,referenceColumn];if(selected.some(i=>!Number.isInteger(i)||i< -1))throw Error('اختر أعمدة صحيحة');if(new Set(selected.filter(i=>i>=0)).size!==selected.filter(i=>i>=0).length)throw Error('اختر عموداً مختلفاً لكل حقل');
   return raw.slice(skipHeader?1:0).map((row,i)=>{
-    const sourceRow=i+(skipHeader?2:1);
-    try{let date='',warning='';try{const v=row[expiryColumn],m=tolerantExpiry&&typeof v==='string'&&v.match(/^(\d{1,2})\/(\d{1,2})\/\d{4}$/);if(m&&+m[1]>0&&+m[1]<=12&&+m[2]>0&&+m[2]<=12&&+m[1]!==+m[2])throw Error('تاريخ ملتبس بين اليوم والشهر؛ استخدم الانتهاء اليدوي أو YYYY-MM-DD');date=expiryColumn<0?'':expiryCell(v);}catch(e){if(!tolerantExpiry)throw e;warning=e.message;}return {sourceRow,pin:codeCell(row[pinColumn]),serial:serialColumn<0?'':codeCell(row[serialColumn]),expiry:date||expiry,...warning?{expiryWarning:warning}:{}};}
+    const sourceRow=sourceRows?.[i+(skipHeader?1:0)]??i+(skipHeader?2:1);
+    try{let date='',warning='';try{const v=row[expiryColumn],m=tolerantExpiry&&typeof v==='string'&&v.match(/^(\d{1,2})\/(\d{1,2})\/\d{4}$/);if(m&&+m[1]>0&&+m[1]<=12&&+m[2]>0&&+m[2]<=12&&+m[1]!==+m[2])throw Error('تاريخ ملتبس بين اليوم والشهر؛ استخدم الانتهاء اليدوي أو YYYY-MM-DD');date=expiryColumn<0?'':expiryCell(v);}catch(e){if(!tolerantExpiry)throw e;warning=e.message;}return {sourceRow,pin:codeCell(row[pinColumn]),serial:serialColumn<0?'':codeCell(row[serialColumn]),expiry:date||expiry,...(cvcColumn>=0?{cvc:codeCell(row[cvcColumn])}:{}),...(referenceColumn>=0?{reference:codeCell(row[referenceColumn])}:{}),...warning?{expiryWarning:warning}:{}};}
     catch(e){throw Error('صف '+sourceRow+': '+e.message);}
   });
 }
+
+export {codeCell as stockCodeCell,expiryCell as stockExpiryCell};

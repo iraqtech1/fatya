@@ -13,12 +13,12 @@ class Inventory
     {
         $today = now('Asia/Baghdad')->toDateString();
 
-        return DB::table('inventory_cards')->selectRaw('product_id, denomination, COUNT(*) AS total, SUM(CASE WHEN sold_order_id IS NOT NULL THEN 1 ELSE 0 END) AS delivered, SUM(CASE WHEN sold_order_id IS NULL AND reserved_order_id IS NOT NULL THEN 1 ELSE 0 END) AS reserved, SUM(CASE WHEN sold_order_id IS NULL AND reserved_order_id IS NULL AND (expires_on IS NULL OR expires_on >= ?) THEN 1 ELSE 0 END) AS available, SUM(CASE WHEN sold_order_id IS NULL AND reserved_order_id IS NULL AND expires_on < ? THEN 1 ELSE 0 END) AS expired', [$today, $today])->groupBy('product_id', 'denomination')->get()->map(fn ($r) => ['productId' => $r->product_id, 'value' => (float) $r->denomination, 'total' => (int) $r->total, 'delivered' => (int) $r->delivered, 'reserved' => (int) $r->reserved, 'available' => (int) $r->available, 'expired' => (int) $r->expired])->all();
+        return DB::table('inventory_cards')->selectRaw('product_id, denomination, COUNT(*) AS total, SUM(CASE WHEN sold_order_id IS NOT NULL THEN 1 ELSE 0 END) AS delivered, SUM(CASE WHEN withdrawal_id IS NULL AND sold_order_id IS NULL AND reserved_order_id IS NOT NULL THEN 1 ELSE 0 END) AS reserved, SUM(CASE WHEN withdrawal_id IS NULL AND sold_order_id IS NULL AND reserved_order_id IS NULL AND (expires_on IS NULL OR expires_on >= ?) THEN 1 ELSE 0 END) AS available, SUM(CASE WHEN withdrawal_id IS NULL AND sold_order_id IS NULL AND reserved_order_id IS NULL AND expires_on < ? THEN 1 ELSE 0 END) AS expired', [$today, $today])->groupBy('product_id', 'denomination')->get()->map(fn ($r) => ['productId' => $r->product_id, 'value' => (float) $r->denomination, 'total' => (int) $r->total, 'delivered' => (int) $r->delivered, 'reserved' => (int) $r->reserved, 'available' => (int) $r->available, 'expired' => (int) $r->expired])->all();
     }
 
     public function refreshStock(array &$s): void
     {
-        $rows = DB::table('inventory_cards')->whereNull('reserved_order_id')->whereNull('sold_order_id')->where(fn ($q) => $q->whereNull('expires_on')->orWhere('expires_on', '>=', now('Asia/Baghdad')->toDateString()))->selectRaw('product_id, denomination, COUNT(*) AS available')->groupBy('product_id', 'denomination')->get();
+        $rows = DB::table('inventory_cards')->whereNull('withdrawal_id')->whereNull('reserved_order_id')->whereNull('sold_order_id')->where(fn ($q) => $q->whereNull('expires_on')->orWhere('expires_on', '>=', now('Asia/Baghdad')->toDateString()))->selectRaw('product_id, denomination, COUNT(*) AS available')->groupBy('product_id', 'denomination')->get();
         foreach ($s['products'] as &$p) {
             $p['stock'] = array_map(fn ($value) => (int) ($rows->first(fn ($r) => $r->product_id === (string) $p['id'] && (float) $r->denomination === (float) $value)->available ?? 0), $p['values']);
         }
@@ -40,11 +40,14 @@ class Inventory
         $orderId = $row->sold_order_id ?? $row->reserved_order_id;
         $fulfillment = $orderId ? DB::table('order_fulfillments')->where('order_id', $orderId)->first() : null;
 
-        return ['productId' => $p['id'], 'name' => $p['name'], 'value' => (float) $row->denomination, 'unit' => $p['unit'], 'serial' => $row->serial ?? $key, 'inventoryStatus' => $row->sold_order_id ? 'delivered' : ($row->reserved_order_id ? 'reserved' : 'available'), 'orderId' => $orderId, 'reservationExpiresAt' => $row->reserved_order_id && $fulfillment ? $fulfillment->expires * 1000 : null];
+        return ['productId' => $p['id'], 'name' => $p['name'], 'value' => (float) $row->denomination, 'unit' => $p['unit'], 'serial' => $row->serial ?? $key, 'inventoryStatus' => InventoryReports::state($row), 'orderId' => $orderId, 'reservationExpiresAt' => $row->reserved_order_id && $fulfillment ? $fulfillment->expires * 1000 : null];
     }
 
     public function import(array &$s, array $b): array
     {
+        if (DB::table('procurement_settings')->where('id', 1)->value('approval_required')) {
+            throw new ApiError('سياسة المخزون تتطلب المراجعة؛ استخدم رفع الطلبيات والمعاينة', 409);
+        }
         $rows = $b['rows'] ?? null;
         if (! is_array($rows) || ! array_is_list($rows) || count($rows) > 5000) {
             throw new ApiError('الحد الأقصى 5000 صف');
@@ -86,6 +89,18 @@ class Inventory
             } elseif ($serial !== '' && isset($serials[$serial])) {
                 $reason = 'سيريل مكرر';
             }
+            $details = [];
+            if (! $reason) {
+                try {
+                    $details = CardFields::extra($s['products'][$pindex], [...$row, 'serial' => $serial], $index);
+                } catch (ApiError $e) {
+                    $reason = $e->getMessage();
+                }
+            }
+            $expiry = $row['expiry'] ?? '';
+            if ($expiry !== '' && (! is_string($expiry) || ! preg_match('/^\d{4}-\d{2}-\d{2}$/D', $expiry) || ! ($date = \DateTimeImmutable::createFromFormat('!Y-m-d', $expiry)) || $date->format('Y-m-d') !== $expiry || $expiry < now('Asia/Baghdad')->toDateString())) {
+                $reason = 'تاريخ انتهاء غير صحيح أو منتهي';
+            }
             if ($reason) {
                 $errors[] = ['row' => $i + 2, 'reason' => $reason];
 
@@ -95,13 +110,15 @@ class Inventory
             if ($serial !== '') {
                 $serials[$serial] = true;
             }
-            $accepted[] = ['product_id' => (string) $s['products'][$pindex]['id'], 'denomination' => $value, 'code_hash' => $hash, 'encrypted_code' => Crypt::encryptString($code), 'serial' => $serial === '' ? null : $serial];
+            $accepted[] = ['product_id' => (string) $s['products'][$pindex]['id'], 'denomination' => $value, 'code_hash' => $hash, 'encrypted_code' => Crypt::encryptString($code), 'encrypted_details' => CardFields::encrypt($s['products'][$pindex], $details, $index), 'source_row' => $i + 2, 'imported_at' => time(), 'expires_on' => $expiry ?: null, 'serial' => $serial === '' ? null : $serial];
             $s['products'][$pindex]['stock'][$index]++;
         }
         foreach (array_chunk($accepted, 100) as $chunk) {
             DB::table('inventory_cards')->insert($chunk);
         }
         array_unshift($s['imports'], ['id' => (string) Str::uuid(), 'name' => $name, 'count' => count($accepted), 'rejected' => count($errors), 'date' => now('Asia/Baghdad')->toDateString()]);
+
+        ProcurementAudit::record('legacy_import', null, ['quantity' => count($accepted), 'rejected' => count($errors), 'name' => $name, 'costKnown' => false]);
 
         return ['accepted' => count($accepted), 'errors' => $errors];
     }

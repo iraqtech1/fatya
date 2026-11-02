@@ -12,6 +12,31 @@ use Illuminate\Support\Str;
 /** Server-only provider transport. Financial calls are made only by the paid-order worker. */
 class DigitalProviders
 {
+    public function catalogRecord(string $provider, ?string $province = null): ?object
+    {
+        $key = $provider === 'rabiaa' && $province !== null ? $provider.':'.$province : $provider;
+        $row = DB::table('digital_catalog')->where('connection', $key)->first();
+        if (! $row && $provider === 'rabiaa') {
+            $old = DB::table('digital_catalog')->where('connection', $provider)->first();
+            $s = $old ? json_decode($old->snapshot, true) : [];
+            if (($s['provinceId'] ?? ($s['offers'][0]['provinceId'] ?? null)) === $province) {
+                $row = $old;
+            }
+        }
+
+        return $row;
+    }
+
+    private function selectOffer(array $offers, array $input): ?array
+    {
+        $matches = array_values(array_filter($offers, fn ($r) => $r['providerId'] === (string) ($input['providerId'] ?? '') && (! isset($input['type']) || $r['type'] === $input['type'])));
+        if (count($matches) > 1) {
+            throw new ApiError('معرّف المزوّد مشترك بين خدمات؛ حدد نوع الخدمة', 422);
+        }
+
+        return $matches[0] ?? null;
+    }
+
     public function settings(string $provider): array
     {
         if (! in_array($provider, ['topup', 'rabiaa'], true)) {
@@ -74,7 +99,7 @@ class DigitalProviders
             $c = config('digital.'.$p);
             $connection = DB::table('digital_connections')->where('provider', $p)->first();
             $configured = $connection ? (bool) ($connection->active && ($connection->credential || $c['key'])) : (bool) ($c['enabled'] && $c['key']);
-            $snapshot = DB::table('digital_catalog')->where('connection', $p)->first();
+            $snapshot = DB::table('digital_catalog')->where(fn ($q) => $q->where('connection', $p)->orWhere('connection', 'like', $p.':%'))->orderByDesc('synced')->first();
 
             return ['id' => $p, 'name' => $p === 'topup' ? 'التوب أب' : 'الرابعة', 'configured' => $configured, 'active' => $connection ? (bool) $connection->active : (bool) $c['enabled'], 'hasCredential' => (bool) ($connection?->credential || $c['key']), 'version' => (int) ($connection?->version ?? 0), 'balance' => $connection?->balance, 'balanceUpdatedAt' => $connection?->balance_updated ? date(DATE_ATOM, $connection->balance_updated) : null, 'lastSync' => $snapshot ? date(DATE_ATOM, $snapshot->synced) : null, 'balanceSupported' => $p === 'topup'];
         }, ['topup', 'rabiaa']);
@@ -145,6 +170,7 @@ class DigitalProviders
             throw new ApiError('رد كتالوج الشركة غير مفهوم', 502);
         }
         $offers = [];
+        $identities = [];
         foreach ($rows as $row) {
             if (! is_array($row)) {
                 continue;
@@ -163,6 +189,11 @@ class DigitalProviders
                 $cost = null;
             }
             $available = $cost !== null && BigDecimal::of($cost)->isGreaterThan(0) && ($provider === 'topup' || ($row['inStock'] ?? null) === true);
+            $identity = (string) $id.':'.strtolower($type);
+            if (isset($identities[$identity])) {
+                throw new ApiError('كتالوج الشركة يتضمن معرّف خدمة مكرراً', 502);
+            }
+            $identities[$identity] = true;
             $offers[] = ['providerId' => (string) $id, 'title' => CatalogEditor::text($row['title'] ?? '', 200), 'type' => strtolower($type), 'parentId' => isset($row['parent_id']) ? (string) $row['parent_id'] : null, 'cost' => $cost, 'costBasis' => 'catalog_snapshot', 'available' => $available, 'provinceId' => $provider === 'rabiaa' ? $province : null];
         }
         $snapshot = ['provider' => $provider, 'offers' => $offers, 'provinceId' => $province, 'syncedAt' => now()->toIso8601String()];
@@ -172,14 +203,15 @@ class DigitalProviders
             if ($this->settings($provider)['version'] !== $version) {
                 throw new ApiError('مفتاح الربط تغير أثناء جلب الكتالوج', 409);
             }
-            DB::table('digital_catalog')->updateOrInsert(['connection' => $provider], ['snapshot' => Store::json($snapshot), 'synced' => time()]);
+            $key = $provider === 'rabiaa' ? $provider.':'.$province : $provider;
+            DB::table('digital_catalog')->updateOrInsert(['connection' => $key], ['snapshot' => Store::json($snapshot), 'synced' => time()]);
             // Successful empty lists retire their previous mappings; failures never replace a snapshot.
             foreach (DB::table('digital_offers')->where('connection', $provider)->get() as $row) {
                 $old = json_decode($row->snapshot, true);
                 if ($provider === 'rabiaa' && ($old['provinceId'] ?? null) !== $province) {
                     continue;
                 }
-                $fresh = collect($snapshot['offers'])->firstWhere('providerId', $row->provider_id);
+                $fresh = collect($snapshot['offers'])->first(fn ($o) => $o['providerId'] === $row->provider_id && $o['type'] === ($old['type'] ?? ''));
                 if (! $fresh || ! $fresh['available']) {
                     DB::table('digital_offers')->where('id', $row->id)->update(['active' => false, 'updated' => time()]);
                 }
@@ -197,7 +229,7 @@ class DigitalProviders
         }
         // Re-read current product price and availability instead of trusting fields from the browser.
         $catalog = $this->catalog('topup');
-        $offer = collect($catalog['offers'])->firstWhere('providerId', (string) ($b['providerId'] ?? ''));
+        $offer = $this->selectOffer($catalog['offers'], $b);
         if (! $offer || ! $offer['available']) {
             throw new ApiError('الخدمة غير متوفرة أو سعرها غير محدد', 409);
         }
@@ -231,12 +263,15 @@ class DigitalProviders
             if (! in_array($provider, ['topup', 'rabiaa'], true)) {
                 throw new ApiError('المزود غير صحيح', 422);
             }
-            $catalog = DB::table('digital_catalog')->where('connection', $provider)->first();
+            $catalog = $this->catalogRecord($provider, isset($b['provinceId']) ? (string) $b['provinceId'] : null);
+            if (! $catalog && $provider === 'rabiaa' && ! isset($b['provinceId'])) {
+                $catalog = DB::table('digital_catalog')->where('connection', 'like', 'rabiaa:%')->get()->first(fn ($r) => (json_decode($r->snapshot, true)['hash'] ?? null) === ($b['catalogHash'] ?? null));
+            }
             $snapshot = $catalog ? json_decode($catalog->snapshot, true) : null;
             if (! $snapshot || ($b['catalogHash'] ?? null) !== $snapshot['hash']) {
                 throw new ApiError('كتالوج الشركة تغير؛ اجلب الفئات من جديد', 409);
             }
-            $offer = collect($snapshot['offers'])->firstWhere('providerId', (string) ($b['providerId'] ?? ''));
+            $offer = $this->selectOffer($snapshot['offers'], $b);
             if (! $offer || ($b['active'] && (! $offer['available'] || $catalog->synced < time() - 900))) {
                 throw new ApiError('حدّث كتالوج الشركة واختر فئة متوفرة', 409);
             }

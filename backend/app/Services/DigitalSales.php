@@ -51,7 +51,7 @@ class DigitalSales
             if (! $offer['available']) {
                 continue;
             }
-            $catalog = DB::table('digital_catalog')->where('connection', $m->connection)->first();
+            $catalog = $providers->catalogRecord($m->connection, $offer['provinceId'] ?? null);
             if (! $this->currentOffer($catalog, $offer)) {
                 continue;
             }
@@ -108,7 +108,7 @@ class DigitalSales
         $provider = app(DigitalProviders::class);
         $c = $provider->settings($mapping->connection);
         $offer = json_decode($mapping->snapshot, true);
-        $catalog = DB::table('digital_catalog')->where('connection', $mapping->connection)->first();
+        $catalog = $provider->catalogRecord($mapping->connection, $offer['provinceId'] ?? null);
         if (! $this->currentOffer($catalog, $offer)) {
             throw new ApiError('فئات الشركة تحتاج تحديثاً قبل طلب الخدمة', 409);
         }
@@ -118,7 +118,7 @@ class DigitalSales
         $input = self::input($b, $offer, $mapping->connection);
         $amount = StockOrders::money((string) $mapping->retail);
         $id = 'ORDER-'.Str::uuid();
-        $o = ['id' => $id, 'reference' => $b['reference'], 'customerId' => $customer['id'], 'customer' => $customer['name'], 'phone' => $customer['phone'], 'email' => $customer['email'], 'productId' => $p['id'], 'name' => $p['name'], 'unit' => $p['unit'], 'value' => $p['values'][$denom], 'denomIndex' => $denom, 'quantity' => 1, 'price' => (float) $amount, 'date' => now('Asia/Baghdad')->toDateString(), 'kind' => $customer['kind'], 'status' => 'قيد المراجعة', 'payment' => $b['payment'], 'digitalProvider' => $mapping->connection, 'recipient' => $input['mobile'] ?? ($input['phoneNumber'] ?? '')];
+        $o = ['id' => $id, 'reference' => $b['reference'], 'customerId' => $customer['id'], 'customer' => $customer['name'], 'phone' => $customer['phone'], 'email' => $customer['email'], 'productId' => $p['id'], 'name' => $p['name'], 'unit' => $p['unit'], 'value' => $p['values'][$denom], 'denomIndex' => $denom, 'quantity' => 1, 'price' => (float) $amount, 'createdAt' => now()->toIso8601String(), 'channel' => in_array($b['channel'] ?? null, ['web', 'app'], true) ? $b['channel'] : 'unknown', 'date' => now('Asia/Baghdad')->toDateString(), 'kind' => $customer['kind'], 'status' => 'قيد المراجعة', 'payment' => $b['payment'], 'digitalProvider' => $mapping->connection, 'recipient' => $input['mobile'] ?? ($input['phoneNumber'] ?? '')];
         array_unshift($s['orders'], $o);
         app(Store::class)->save($s);
         DB::table('order_fulfillments')->insert(['order_id' => $id, 'state' => 'reserved', 'provider' => $b['payment'], 'amount' => $amount, 'currency' => 'IQD', 'quantity' => 1, 'expires' => now()->addMinutes(15)->timestamp]);
@@ -278,7 +278,7 @@ class DigitalSales
             $saved = json_decode(Crypt::decryptString($r->encrypted_input), true);
             $offer = $saved['offer'];
             $catalog = $providers->catalog($r->provider, $offer['provinceId']);
-            $fresh = collect($catalog['offers'])->firstWhere('providerId', $offer['providerId']);
+            $fresh = collect($catalog['offers'])->first(fn ($o) => $o['providerId'] === $offer['providerId'] && $o['type'] === $offer['type'] && ($o['provinceId'] ?? null) === ($offer['provinceId'] ?? null));
             $mapping = DB::table('digital_offers')->where('id', $r->offer_id)->first();
             if (! $fresh || ! $fresh['available'] || $fresh['cost'] !== StockOrders::money((string) $r->quoted_cost) || $fresh['type'] !== $offer['type'] || ! $mapping?->active || StockOrders::money((string) $mapping->retail) !== $saved['retail']) {
                 throw new ApiError('quote_changed', 409);

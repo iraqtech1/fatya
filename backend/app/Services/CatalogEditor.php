@@ -63,6 +63,10 @@ class CatalogEditor
                     }
                 } unset($p);
                 $item = ['id' => $id, 'name' => $name, 'en' => $en, 'icon' => $d['icon'], 'active' => $d['active']];
+                $item['image'] = $d['image'] ?? $old['image'] ?? '';
+                self::image($item['image']);
+                $item['translations'] = ProductFields::translations($item, $d, $old, true);
+                $item['image'] = $item['translations']['ar']['image'];
                 break;
             case 'companies':
                 if (! empty($d['id']) && ! $old) {
@@ -198,6 +202,7 @@ class CatalogEditor
 
                     return $index === false ? 0 : ($old['stock'][$index] ?? 0);
                 }, $values)];
+                ProductFields::product($item, $d, $old, $s);
                 break;
             case 'customers':
                 $p = self::profile($d);

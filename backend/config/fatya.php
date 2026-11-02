@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'code_export_enabled' => env('ADMIN_CODE_EXPORT_ENABLED', true),
     'reservation_minutes' => env('RESERVATION_MINUTES', 15),
     'allow_payment_simulation' => env('ALLOW_PAYMENT_SIMULATION', false),
     'admin_user' => env('ADMIN_USER', 'masal'),

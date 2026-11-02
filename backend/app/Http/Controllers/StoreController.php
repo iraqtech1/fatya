@@ -7,9 +7,11 @@ use App\Services\Accounts;
 use App\Services\CatalogEditor;
 use App\Services\CustomerNotifications;
 use App\Services\DigitalSales;
+use App\Services\ImportCategories;
 use App\Services\Inventory;
 use App\Services\OrderFulfillment;
 use App\Services\Otp;
+use App\Services\ProductFields;
 use App\Services\Store;
 use App\Services\Takeed;
 use Illuminate\Http\Request;
@@ -71,6 +73,7 @@ class StoreController extends Controller
     {
         $this->inventory->refreshStock($s);
         if ($admin) {
+            app(ImportCategories::class)->attach($s);
             $s['inventorySummary'] = $this->inventory->summary();
             $s['paymentReceipts'] = app(OrderFulfillment::class)->receipts();
 
@@ -85,8 +88,10 @@ class StoreController extends Controller
             }
         }
         $s['categories'] = array_values(array_filter($s['categories'], fn ($c) => $c['active']));
+        $s['products'] = ProductFields::sort($s['products']);
         $s['products'] = array_values(array_filter($s['products'], fn ($p) => $p['active'] && collect($s['categories'])->contains('name', $p['category'])));
         foreach ($s['products'] as &$p) {
+            unset($p['importFields'], $p['denomImportFields'], $p['denomImportCodes']);
             $p['availability'] = array_map(fn ($quantity) => $quantity > 0, $p['stock']);
             $p['stock'] = array_fill(0, count($p['stock']), 0);
         } unset($p);
@@ -354,9 +359,18 @@ class StoreController extends Controller
                 return $json(app(OrderFulfillment::class)->adminStatus(CatalogEditor::text($data['id'] ?? null, 100), $data['status'] ?? null));
             }
             $previous = in_array($collection, ['orders', 'tickets']) ? collect($s[$collection])->firstWhere('id', $data['id'] ?? null) : null;
-            $item = $this->editor->update($s, $collection, $data);
-            $this->store->event($s, 'تحديث الإدارة: '.$collection);
-            $this->store->save($s);
+            // A savepoint keeps catalog updates atomic even though the outer handler
+            // intentionally commits rejected OTP attempt counters.
+            $item = DB::transaction(function () use (&$s, $collection, $data) {
+                $item = $this->editor->update($s, $collection, $data);
+                $this->store->event($s, 'تحديث الإدارة: '.$collection);
+                $this->store->save($s);
+                if ($collection === 'products') {
+                    app(ImportCategories::class)->syncProduct($item);
+                }
+
+                return $item;
+            });
             if ($collection === 'orders' && $previous['status'] !== $item['status']) {
                 $notifications->send($item['customerId'], 'تحديث حالة الطلب', $item['name'].' · '.$item['status']);
             }

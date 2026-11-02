@@ -8,6 +8,9 @@ use App\Services\DigitalConnections;
 use App\Services\DigitalProviders;
 use App\Services\DigitalSales;
 use App\Services\ImportCategories;
+use App\Services\ImportFileReader;
+use App\Services\InventoryExports;
+use App\Services\InventoryReports;
 use App\Services\StockOrders;
 use App\Services\StockWorkflow;
 use Illuminate\Http\Request;
@@ -18,6 +21,20 @@ class ProcurementController extends Controller
     public function __invoke(Request $request, string $path)
     {
         app(Accounts::class)->session($request, 'admin');
+        if (in_array($path, ['exports', 'exports/review', 'exports/renew', 'exports/download'], true) && ! $request->isMethod('GET')) {
+            $key = 'private-exports:'.$path.':'.$request->ip();
+            if (RateLimiter::tooManyAttempts($key, 12)) {
+                throw new ApiError('انتظر دقيقة قبل إعادة محاولة تصدير الأكواد', 429);
+            }
+            RateLimiter::hit($key, 60);
+        }
+        if ($path === 'stock-orders/read' && $request->isMethod('POST')) {
+            if (! $request->hasFile('file')) {
+                throw new ApiError('اختر ملفاً صالحاً؛ تحقق من حدود رفع الملفات بالخادم', 422);
+            }
+
+            return response()->json(['sheets' => app(ImportFileReader::class)->read($request->file('file'))])->header('Cache-Control', 'no-store');
+        }
         $b = $request->json()->all();
         $providers = app(DigitalProviders::class);
         $stock = app(StockOrders::class);
@@ -31,7 +48,14 @@ class ProcurementController extends Controller
         }
         $data = match ([$request->method(), $path]) {
             ['GET', 'stock-orders'] => ['batches' => $stock->batches(), 'submissions' => app(StockWorkflow::class)->submissions(), 'policy' => app(StockWorkflow::class)->policy(), ...app(ImportCategories::class)->read()],
+            ['POST', 'reports'] => app(InventoryReports::class)->read($b),
+            ['GET', 'exports'] => app(InventoryExports::class)->listing(),
+            ['POST', 'exports'] => app(InventoryExports::class)->create($b),
+            ['POST', 'exports/review'] => app(InventoryExports::class)->review($b),
+            ['POST', 'exports/download'] => app(InventoryExports::class)->download($b),
+            ['POST', 'exports/renew'] => app(InventoryExports::class)->renew($b),
             ['PUT', 'stock-orders/policy'] => app(StockWorkflow::class)->savePolicy($b),
+            ['PUT', 'stock-orders/code'] => app(ImportCategories::class)->add($b),
             ['PUT', 'stock-orders/codes'] => app(ImportCategories::class)->save($b),
             ['POST', 'stock-orders/submit'] => app(StockWorkflow::class)->submit($b),
             ['POST', 'stock-orders/review'] => app(StockWorkflow::class)->review($b),

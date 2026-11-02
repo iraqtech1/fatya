@@ -43,7 +43,7 @@ class DigitalConnections
             $values = ['active' => $b['active'], 'version' => (int) ($old?->version ?? 0) + 1, 'credential' => $key !== '' ? Crypt::encryptString($key) : ($old?->credential ?? null)];
             if ($changed) {
                 $values += ['balance' => null, 'balance_updated' => null, 'premium_provinces' => null];
-                DB::table('digital_catalog')->where('connection', $provider)->delete();
+                DB::table('digital_catalog')->where(fn ($q) => $q->where('connection', $provider)->orWhere('connection', 'like', $provider.':%'))->delete();
                 DB::table('digital_offers')->where('connection', $provider)->update(['active' => false]);
             }
             DB::table('digital_connections')->updateOrInsert(['provider' => $provider], $values);

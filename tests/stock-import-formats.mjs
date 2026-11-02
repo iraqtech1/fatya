@@ -18,3 +18,9 @@ assert.deepEqual(resolveImportCategory('EVS-E5K',[{code:'E5K',productId:'9',valu
 assert.equal(serviceOffers(products[0],'direct',false).length,1);assert.equal(serviceOffers(products[0],'cards',false).length,0);const checkout=buildAsiacellCheckout(products[0],{service:'direct',index:0,recipient:'07700000000'},false);assert.equal(checkout.demoOnly,false);assert.equal(checkout.denom,0);
 const book=new Excel.Workbook();for(const name of ['First','Second'])book.addWorksheet(name).addRows([['PIN','Serial'],['00001',name]]);const bytes=await book.xlsx.writeBuffer();const sheets=await readStockSheets({name:'multi.xlsx',size:bytes.byteLength,arrayBuffer:async()=>bytes});assert.equal(sheets.length,2);assert.ok(sheets[1].name.endsWith('Second'));assert.equal(sheets[0].raw[1][0],'00001');
 console.log('Supplier headers, category aliases, HRN/SN messages, mixed category rejection, manual expiry fallback, multi-sheet XLSX and live telecom mapping passed.');
+assert.equal(importCode('\u200fEVS-E5K\u200e'),'E5K');
+const scopedProducts=[{id:1,values:[5000],manufacturerId:'a'},{id:2,values:[5000],manufacturerId:'b'}];
+const scopedMaps=[{code:'E5K',scope:'manufacturer:a',productId:'1',value:5000},{code:'E5K',scope:'manufacturer:b',productId:'2',value:5000}];
+assert.throws(()=>resolveImportCategory('E5K',scopedMaps,scopedProducts));
+assert.equal(resolveImportCategory('E5K',scopedMaps,scopedProducts,'b').productId,2);
+assert.equal(stockRows([['PIN'],['0000000000000001']],{pinColumn:0,serialColumn:-1,expiryColumn:-1,sourceRows:[1,7]})[0].sourceRow,7);

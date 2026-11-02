@@ -46,6 +46,7 @@ class StockOrders
             $seen = $serials = $accepted = $errors = $warnings = $summaries = [];
             $total = BigDecimal::zero()->toScale(3);
             $nominal = BigDecimal::zero()->toScale(3);
+            $retailTotal = BigDecimal::zero()->toScale(3);
             $count = 0;
             foreach ($lines as $li => $line) {
                 if (! is_array($line)) {
@@ -54,6 +55,9 @@ class StockOrders
                 $line = app(ImportCategories::class)->resolve($line, $s);
                 $p = collect($s['products'])->first(fn ($p) => (string) $p['id'] === (string) ($line['productId'] ?? ''));
                 $di = $line['denom'] ?? null;
+                if (! empty($line['manufacturerId']) && ($p['manufacturerId'] ?? '') !== $line['manufacturerId']) {
+                    throw new ApiError('البطاقة لا تتبع الشركة المصنّعة المختارة', 422);
+                }
                 $rows = $line['rows'] ?? null;
                 if (! $p || ! $p['active'] || ! collect($s['categories'])->contains(fn ($c) => $c['active'] && $c['name'] === $p['category']) || ! is_int($di) || ! isset($p['values'][$di]) || ! is_array($rows) || ! array_is_list($rows) || ! $rows) {
                     throw new ApiError('الفئة أو صفوف الملف غير صحيحة', 422);
@@ -83,6 +87,12 @@ class StockOrders
                     $serial = $row['serial'] ?? '';
                     $expiry = ($row['expiry'] ?? '') !== '' ? $row['expiry'] : ($line['expiry'] ?? '');
                     $reason = '';
+                    $details = [];
+                    try {
+                        $details = CardFields::extra($p, [...$row, 'serial' => $serial], $di);
+                    } catch (ApiError $e) {
+                        $reason = $e->getMessage();
+                    }
                     if (! is_string($pin) || ! trim($pin) || strlen($pin) > 256) {
                         $reason = 'PIN مطلوب كنص للحفاظ على الأصفار';
                     } elseif (! is_string($serial) || strlen($serial) > 256) {
@@ -115,9 +125,9 @@ class StockOrders
                     if ($serial !== '') {
                         $serials[$serial] = true;
                     }
-                    $accepted[] = [...$label, 'product_id' => (string) $p['id'], 'denomination' => $p['values'][$di], 'code_hash' => $hash, 'encrypted_code' => Crypt::encryptString($pin), 'serial' => $serial === '' ? null : $serial, 'unit_cost' => $cost, 'expires_on' => $date];
+                    $accepted[] = [...$label, 'product_id' => (string) $p['id'], 'denomination' => $p['values'][$di], 'code_hash' => $hash, 'encrypted_code' => Crypt::encryptString($pin), 'encrypted_details' => CardFields::encrypt($p, $details, $di), 'serial' => $serial === '' ? null : $serial, 'unit_cost' => $cost, 'expires_on' => $date];
                 }
-                $summaries[] = ['line' => $li + 1, 'productId' => (string) $p['id'], 'denom' => $di, 'name' => $p['name'], 'value' => $p['values'][$di], 'cost' => $cost, 'retail' => $price, 'candidateCount' => count($accepted) - $before];
+                $summaries[] = ['line' => $li + 1, 'productId' => (string) $p['id'], 'denom' => $di, 'name' => $p['name'], 'value' => $p['values'][$di], 'cost' => $cost, 'retail' => $price, 'importFields' => ProductFields::policy($p, $di), 'candidateCount' => count($accepted) - $before, 'uploaded' => count($rows), 'unit' => $p['unit'], 'fileName' => CatalogEditor::text($line['fileName'] ?? '', 200), 'categoryCode' => CatalogEditor::text($line['categoryCode'] ?? '', 100), 'manufacturerId' => $p['manufacturerId'] ?? null];
             }
             // Bounded lookups avoid loading every encrypted card or exhausting SQL parameter limits.
             $existingHashes = $existingSerials = [];
@@ -134,12 +144,16 @@ class StockOrders
                 } else {
                     $valid[] = $row;
                     $total = $total->plus($row['unit_cost']);
-                    $nominal = $nominal->plus($summaries[$row['line'] - 1]['retail']);
+                    $retailTotal = $retailTotal->plus($summaries[$row['line'] - 1]['retail']);
+                    if ($summaries[$row['line'] - 1]['unit'] === 'IQD') {
+                        $nominal = $nominal->plus((string) $row['denomination']);
+                    }
                 }
             }
             foreach ($summaries as &$summary) {
                 $n = count(array_filter($valid, fn ($r) => $r['line'] === $summary['line']));
                 $summary['accepted'] = $n;
+                $summary['rejected'] = $summary['uploaded'] - $n;
                 $summary['costTotal'] = (string) BigDecimal::of($summary['cost'])->multipliedBy($n);
             }
             unset($summary);
@@ -148,7 +162,7 @@ class StockOrders
                 throw new ApiError('عدد الفئات لا يطابق الفئات المختلفة الفعلية', 422);
             }
             $id = (string) Str::uuid();
-            $summary = ['id' => $id, 'supplier' => $supplier, 'source' => $source, 'city' => $city, 'quantity' => count($valid), 'rejected' => count($errors), 'costTotal' => (string) $total, 'nominalTotal' => (string) $nominal, 'currency' => 'IQD', 'lines' => $summaries];
+            $summary = ['id' => $id, 'supplier' => $supplier, 'source' => $source, 'city' => $city, 'quantity' => count($valid), 'rejected' => count($errors), 'costTotal' => (string) $total, 'nominalTotal' => (string) $nominal, 'retailTotal' => (string) $retailTotal, 'uploaded' => $count, 'fileCount' => count($lines), 'categoryCount' => $categoryCount, 'actor' => ProcurementAudit::actor(), 'currency' => 'IQD', 'lines' => $summaries];
             $draft = Store::json(['cards' => $valid, 'summary' => $summary]);
             $hash = hash_hmac('sha256', $draft, config('app.key'));
             DB::table('stock_order_previews')->where('expires', '<', time())->delete();
@@ -204,6 +218,9 @@ class StockOrders
                 }
                 foreach (array_chunk($cards, 100) as $chunk) {
                     DB::table('inventory_cards')->insert(array_map(function ($r) use ($id) {
+                        $r['source_line'] = $r['line'];
+                        $r['source_row'] = $r['row'];
+                        $r['imported_at'] = time();
                         unset($r['line'], $r['row']);
 
                         return [...$r, 'batch_id' => $id];
@@ -218,6 +235,7 @@ class StockOrders
             DB::table('stock_batches')->insert(['id' => $id, 'request_id' => $key, 'request_hash' => $requestHash, 'summary' => Store::json($result), 'created' => time()]);
             DB::table('stock_order_previews')->where('id', $id)->delete();
             array_unshift($s['imports'], ['id' => $id, 'name' => $result['supplier'].' / '.$result['source'], 'count' => $result['quantity'], 'rejected' => $result['rejected'], 'costTotal' => $result['costTotal'], 'date' => $today]);
+            ProcurementAudit::record('stock_approved', $id, ['quantity' => $result['quantity'], 'costTotal' => $result['costTotal'], 'supplier' => $result['supplier']]);
             $this->inventory->refreshStock($s);
             $this->store->event($s, 'اعتماد طلبية مخزون: '.$result['quantity'].' بطاقة');
             $this->store->save($s);

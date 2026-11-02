@@ -1,3 +1,4 @@
+import {denominationOptions} from './product-metadata.js';
 import {normalizePhone} from './auth-preview.js';
 
 export const ASIACELL_SERVICES=[
@@ -23,8 +24,8 @@ export function isAsiacell(product){
 }
 
 export function serviceOffers(product,service,preview=false){
-  if(service==='cards')return (product?.values||[]).map((value,index)=>({value,price:product.prices[index],image:product.denomImages?.[index]||'',index})).filter(o=>product?.digitalOffers?.[o.index]?.provider!=='topup');
-  if(!preview)return Object.entries(product?.digitalOffers||{}).filter(([,o])=>o.provider==='topup'&&(service==='direct'?o.type==='topup':service==='bundles'?['bundle','bill'].includes(o.type):false)).map(([index,o])=>({value:product.values[+index],price:product.prices[+index],index:+index,label:o.title,digital:true}));
+  if(service==='cards')return denominationOptions(product).map(({value,index,name,description})=>({value,price:product.prices[index],image:product.denomImages?.[index]||'',index,...(name?{label:name,customLabel:true}:{}),...(description?{description,customDescription:true}: {})})).filter(o=>product?.digitalOffers?.[o.index]?.provider!=='topup');
+  if(!preview)return Object.entries(product?.digitalOffers||{}).filter(([,o])=>o.provider==='topup'&&(service==='direct'?o.type==='topup':service==='bundles'?['bundle','bill'].includes(o.type):false)).map(([index,o])=>({value:product.values[+index],price:product.prices[+index],index:+index,label:product.denomNames?.[+index]||o.title,description:product.denomDescriptions?.[+index]||'',customLabel:!!product.denomNames?.[+index],customDescription:!!product.denomDescriptions?.[+index],digital:true}));
   const rows=service==='direct'?previewDirect:service==='bundles'?previewBundles:[];
   return rows.map((row,index)=>({...row,index}));
 }

@@ -1,3 +1,4 @@
+import {presentProduct,presentProducts,presentCategory,denominationOptions} from '../src/product-metadata.js';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
@@ -18,7 +19,7 @@ const setup=source.slice(source.indexOf('setup(){'),source.indexOf('\n},\ntempla
 assert.ok(setup.endsWith('\n}'));
 let created=0;
 const store=Vue.reactive({products:initialProducts.map(p=>({...p,active:true})),categories:[...new Set(initialProducts.map(p=>p.category))].map((name,id)=>({id,name,en:name,active:true})),settings:{supportPhone:''},orders:[],tickets:[]});
-const context={installScrollLock,...Vue,...orderState,console,WebStore:{},StoreLayout:{},isWebStore:()=>true,accountPages:new Set(['account','orders','payment']),inRoute:(p,prefix)=>p===prefix||p.startsWith(prefix+'/'),routePath:()=> '/',window:{addEventListener(){},removeEventListener(){},scrollTo(){}},document:{querySelector:()=>null},innerWidth:1200,connected:false,connection:Vue.reactive({admin:false,ready:false,customer:null}),store,restoreStoreSession:()=>null,saveStoreSession(){},upsertCustomer(){},refreshStore:async()=>{},matchesCustomer:(o,u)=>!!u&&o.customerId===u.id,createOrder:async()=>{created++;return {id:'FIXTURE-'+created};},createTicket:async()=>{},isAsiacell:p=>p.en==='asiacell',auth:{},t:s=>s,language:Vue.ref('ar'),cardCount:n=>String(n),crypto:globalThis.crypto,setTimeout,clearTimeout,setInterval,clearInterval};
+const context={presentProduct,presentProducts,presentCategory,denominationOptions,installScrollLock,...Vue,...orderState,console,WebStore:{},StoreLayout:{},isWebStore:()=>true,accountPages:new Set(['account','orders','payment']),inRoute:(p,prefix)=>p===prefix||p.startsWith(prefix+'/'),routePath:()=> '/',window:{addEventListener(){},removeEventListener(){},scrollTo(){}},document:{querySelector:()=>null},innerWidth:1200,connected:false,connection:Vue.reactive({admin:false,ready:false,customer:null}),store,restoreStoreSession:()=>null,saveStoreSession(){},upsertCustomer(){},refreshStore:async()=>{},matchesCustomer:(o,u)=>!!u&&o.customerId===u.id,createOrder:async()=>{created++;return {id:'FIXTURE-'+created};},createTicket:async()=>{},isAsiacell:p=>p.en==='asiacell',auth:{},t:s=>s,language:Vue.ref('ar'),cardCount:n=>String(n),crypto:globalThis.crypto,setTimeout,clearTimeout,setInterval,clearInterval};
 for(const name of source.match(/import \{([^}]+)\} from 'lucide-vue-next'/)[1].split(','))context[name.trim()]={};
 const component=vm.runInNewContext('({'+setup+'})',context);
 const renderer=Vue.createRenderer({insert(){},remove(){},createElement:()=>({}),createText:()=>({}),createComment:()=>({}),setText(){},setElementText(){},parentNode:()=>null,nextSibling:()=>null,patchProp(){}});

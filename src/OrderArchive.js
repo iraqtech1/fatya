@@ -14,7 +14,7 @@ export default {
     const query=ref('');
     const filtered=computed(()=>{
       const term=query.value.trim().toLocaleLowerCase();
-      return props.orders.filter(o=>[o.name,t(o.name),o.id,o.date,String(o.value),o.offerLabel||'',o.recipient||''].some(value=>String(value).toLocaleLowerCase().includes(term)));
+      return props.orders.filter(o=>[o.name,(o.nameLocalized?o.name:t(o.name)),o.id,o.date,String(o.value),o.offerLabel||'',o.recipient||''].some(value=>String(value).toLocaleLowerCase().includes(term)));
     });
     const unitFor=order=>order.unit||store.products.find(p=>p.id===order.productId)?.unit||'د.ع';
     return {connected,orderStateLabel,paymentStateLabel,orderTime,t,number,query,filtered,unitFor};

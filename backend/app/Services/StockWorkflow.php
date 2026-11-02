@@ -125,14 +125,14 @@ class StockWorkflow
                 $lines = [];
                 foreach (json_decode($r->catalog_evidence, true) as $l) {
                     $p = collect($s['products'])->first(fn ($p) => (string) $p['id'] === $l['productId']);
-                    if (! $p || ! $p['active'] || ($p['values'][$l['denom']] ?? null) != $l['value'] || StockOrders::money((string) ($p['prices'][$l['denom']] ?? '')) !== $l['retail']) {
+                    if (! $p || ! $p['active'] || (isset($l['importFields']) && ProductFields::policy($p, $l['denom']) !== $l['importFields']) || ($p['values'][$l['denom']] ?? null) != $l['value'] || StockOrders::money((string) ($p['prices'][$l['denom']] ?? '')) !== $l['retail']) {
                         throw new ApiError('الفئات أو الأسعار تغيرت؛ أعد الطلبية للتصحيح', 409);
                     }
-                    $lines[] = ['productId' => $l['productId'], 'denom' => $l['denom'], 'cost' => $l['cost'], 'rows' => []];
+                    $lines[] = ['productId' => $l['productId'], 'denom' => $l['denom'], 'cost' => $l['cost'], 'fileName' => $l['fileName'] ?? '', 'rows' => []];
                 }
                 foreach (DB::table('stock_submission_chunks')->where('submission_id', $r->id)->orderBy('part')->get() as $part) {
                     foreach (json_decode(Crypt::decryptString($part->encrypted_cards), true) as $card) {
-                        $lines[$card['line'] - 1]['rows'][] = ['pin' => Crypt::decryptString($card['encrypted_code']), 'serial' => $card['serial'] ?? '', 'expiry' => $card['expires_on'] ?? ''];
+                        $lines[$card['line'] - 1]['rows'][] = [...CardFields::details($card), 'sourceRow' => $card['row'], 'pin' => Crypt::decryptString($card['encrypted_code']), 'serial' => $card['serial'] ?? '', 'expiry' => $card['expires_on'] ?? ''];
                     }
                 }
                 $service = app(StockOrders::class);
@@ -140,8 +140,12 @@ class StockWorkflow
                 if ($preview['rejected'] || $preview['quantity'] !== $summary['quantity']) {
                     throw new ApiError('المخزون أو الصلاحية تغيرت؛ أعد الطلبية للتصحيح', 409);
                 }
-                $summary = $service->approve(['previewId' => $preview['previewId'], 'previewHash' => $preview['previewHash'], 'excludeRejected' => false, 'requestId' => 'review-'.$r->id], true);
+                $approved = $service->approve(['previewId' => $preview['previewId'], 'previewHash' => $preview['previewHash'], 'excludeRejected' => false, 'requestId' => 'review-'.$r->id], true);
             }
+            if (isset($approved)) {
+                $summary = [...$summary, 'batchId' => $approved['id'], 'added' => $approved['quantity']];
+            }
+            ProcurementAudit::record('stock_review', $r->id, ['decision' => $b['decision'], 'reason' => $reason]);
             DB::table('stock_submissions')->where('id', $r->id)->update(['status' => ['approve' => 'approved', 'return' => 'returned', 'reject' => 'rejected'][$b['decision']], 'version' => $r->version + 1, 'reason' => $reason, 'summary' => Store::json($summary), 'updated' => time()]);
             $s = $store->read(true);
             $store->event($s, 'مراجعة طلبية مخزون: '.$b['decision']);

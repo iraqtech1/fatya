@@ -159,14 +159,14 @@ class OrderFulfillment
             if ($digital) {
                 return app(DigitalSales::class)->reserve($s, $customer, $b, $p, $denom, $digital);
             }
-            $cards = DB::table('inventory_cards')->where('product_id', (string) $p['id'])->where('denomination', $p['values'][$denom])->whereNull('reserved_order_id')->whereNull('sold_order_id')->where(fn ($q) => $q->whereNull('expires_on')->orWhere('expires_on', '>=', now('Asia/Baghdad')->toDateString()))->orderBy('id')->limit($quantity)->lockForUpdate()->get();
+            $cards = DB::table('inventory_cards')->where('product_id', (string) $p['id'])->where('denomination', $p['values'][$denom])->whereNull('withdrawal_id')->whereNull('reserved_order_id')->whereNull('sold_order_id')->where(fn ($q) => $q->whereNull('expires_on')->orWhere('expires_on', '>=', now('Asia/Baghdad')->toDateString()))->orderBy('id')->limit($quantity)->lockForUpdate()->get();
             if ($cards->count() !== $quantity) {
                 throw new ApiError('المخزون غير كافٍ لهذه الفئة', 409);
             }
             $amount = self::amount((string) BigDecimal::of(self::amount((string) $p['prices'][$denom]))->multipliedBy($quantity)->toScale(3));
             $id = 'ORDER-'.Str::uuid();
             $minutes = max(1, min(60, (int) config('fatya.reservation_minutes', 15)));
-            $o = ['id' => $id, 'reference' => $reference, 'customerId' => $customer['id'], 'customer' => $customer['name'], 'phone' => $customer['phone'], 'email' => $customer['email'], ...isset($customer['previewId']) ? ['previewId' => $customer['previewId']] : [], 'productId' => $p['id'], 'name' => $p['name'], 'unit' => $p['unit'], 'value' => $p['values'][$denom], 'denomIndex' => $denom, 'quantity' => $quantity, 'price' => (float) $amount, 'date' => now('Asia/Baghdad')->toDateString(), 'kind' => $customer['kind'], 'status' => 'قيد المراجعة', 'payment' => $b['payment']];
+            $o = ['id' => $id, 'reference' => $reference, 'customerId' => $customer['id'], 'customer' => $customer['name'], 'phone' => $customer['phone'], 'email' => $customer['email'], ...isset($customer['previewId']) ? ['previewId' => $customer['previewId']] : [], 'productId' => $p['id'], 'name' => $p['name'], 'unit' => $p['unit'], 'value' => $p['values'][$denom], 'denomIndex' => $denom, 'quantity' => $quantity, 'price' => (float) $amount, 'createdAt' => now()->toIso8601String(), 'channel' => in_array($b['channel'] ?? null, ['web', 'app'], true) ? $b['channel'] : 'unknown', 'date' => now('Asia/Baghdad')->toDateString(), 'kind' => $customer['kind'], 'status' => 'قيد المراجعة', 'payment' => $b['payment']];
             array_unshift($s['orders'], $o);
             // Insert the order before FK-constrained reservations; save again after allocation.
             $this->store->save($s);
@@ -285,6 +285,7 @@ class OrderFulfillment
                 if (! $reason) {
                     foreach ($cards as $card) {
                         Crypt::decryptString($card->encrypted_code);
+                        CardFields::details($card);
                     }
                 }
             }
@@ -349,6 +350,6 @@ class OrderFulfillment
             throw new ApiError('بيانات التسليم تحتاج مراجعة', 409);
         }
 
-        return ['orderId' => $id, 'codes' => $cards->map(fn ($card) => ['serial' => $card->serial, 'value' => (float) $card->denomination, 'code' => Crypt::decryptString($card->encrypted_code)])->all()];
+        return ['orderId' => $id, 'codes' => $cards->map(fn ($card) => ['serial' => $card->serial, 'value' => (float) $card->denomination, 'code' => Crypt::decryptString($card->encrypted_code), ...CardFields::details($card), ...($card->expires_on ? ['expiry' => $card->expires_on] : []), ...($card->encrypted_details ? ['detailed' => true] : [])])->all()];
     }
 }

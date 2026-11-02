@@ -15,11 +15,22 @@ class ApiSecurity
             if ($origin && $origin !== $request->getSchemeAndHttpHost()) {
                 throw new ApiError('طلب غير مسموح', 403);
             }
-            if (! $request->isJson()) {
+            $upload = $request->is('api/admin/procurement/stock-orders/read') && $request->isMethod('POST') && str_starts_with($request->header('Content-Type', ''), 'multipart/form-data;');
+            if (! $request->isJson() && ! $upload) {
                 throw new ApiError('صيغة غير صحيحة', 415);
             }
             if (strlen($request->getContent()) > 30 * 1024 * 1024) {
                 throw new ApiError('حجم البيانات كبير', 413);
+            }
+            if ($upload) {
+                if ((int) $request->server('CONTENT_LENGTH') > 16000000 || $request->header('X-Fatya-Request') !== '1') {
+                    throw new ApiError('حجم الملف أو ترويسة الطلب غير صحيحة', 413);
+                }
+                $response = $next($request);
+                $response->headers->set('Cache-Control', 'no-store');
+                $response->headers->set('X-Content-Type-Options', 'nosniff');
+
+                return $response;
             }
             try {
                 $body = json_decode($request->getContent(), false, 512, JSON_THROW_ON_ERROR);

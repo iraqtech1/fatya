@@ -14,7 +14,7 @@ export function upsertCategory(categories,products,d,makeId=()=>crypto.randomUUI
  const name=typeof d.name==='string'?d.name.trim():'',en=typeof d.en==='string'?d.en.trim():'';
  if(!name||name.length>40||name==='الكل'||!en||en.length>60||!CATEGORY_ICONS.includes(d.icon)||typeof d.active!=='boolean')throw Error('اكتب اسم التصنيف والاسم الإنجليزي واختر أيقونة صحيحة');
  if(categories.some(c=>c.id!==d.id&&c.name===name))throw Error('اسم التصنيف موجود بالفعل');
- const item={id:old?.id||makeId(),name,en,icon:d.icon,active:d.active};
+ const item={id:old?.id||makeId(),name,en,icon:d.icon,active:d.active,...(d.translations?{translations:structuredClone(d.translations),image:d.image||''}:{})};
  if(old){for(const p of products)if(p.category===old.name)p.category=name;Object.assign(old,item);}else categories.push(item);
  return item;
 }
