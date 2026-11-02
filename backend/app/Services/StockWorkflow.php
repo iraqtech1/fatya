@@ -123,7 +123,14 @@ class StockWorkflow
             $summary = json_decode($r->summary, true);
             if ($b['decision'] === 'approve') {
                 $lines = [];
+                $planned = $s;
                 foreach (json_decode($r->catalog_evidence, true) as $l) {
+                    if (isset($l['catalogRequest'])) {
+                        app(StockOrderCatalog::class)->replay($l, $planned);
+                        $lines[] = [...$l['catalogRequest'], 'cost' => $l['cost'], 'fileName' => $l['fileName'] ?? '', 'rows' => []];
+
+                        continue;
+                    }
                     $p = collect($s['products'])->first(fn ($p) => (string) $p['id'] === $l['productId']);
                     if (! $p || ! $p['active'] || (isset($l['importFields']) && ProductFields::policy($p, $l['denom']) !== $l['importFields']) || ($p['values'][$l['denom']] ?? null) != $l['value'] || StockOrders::money((string) ($p['prices'][$l['denom']] ?? '')) !== $l['retail']) {
                         throw new ApiError('الفئات أو الأسعار تغيرت؛ أعد الطلبية للتصحيح', 409);

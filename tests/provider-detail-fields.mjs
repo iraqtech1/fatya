@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {providerDetailColumns,providerDetailEntries,providerFieldLabel,providerFieldValue} from '../src/provider-detail-fields.js';
+const offer={supplierDetails:[{label:'id',value:'50'},{label:'img',value:''},{label:'photo_url',value:''},{label:'price',value:'10000'},{label:'id_show',value:'0'},{label:'show2site',value:false},{label:'cities.0.id',value:'1'},{label:'cities.0.title',value:'بغداد'},{label:'cities.17.title',value:'واسط'},{label:'apiKey',value:'hidden'},{label:'authorization',value:'hidden'},{label:'duration_days',value:'7'},{label:'description',value:'تفاصيل المجهّز'}]};
+const columns=providerDetailColumns([offer]);
+assert.deepEqual(columns.map(c=>c.key),['id_show','show2site','cities','duration_days','description']);
+assert.ok(columns.every(c=>/[\u0600-\u06ff]/.test(c.label)));
+assert.equal(providerDetailEntries(offer,'id_show')[0].value,'0');
+assert.equal(providerDetailEntries(offer,'show2site')[0].value,'لا');
+assert.equal(providerDetailEntries(offer,'cities').length,3);
+assert.equal(providerDetailEntries(offer,'cities').at(-1).value,'واسط');
+assert.equal(providerFieldLabel('cities.17.title'),'المدن / 18 / الاسم');
+assert.equal(providerFieldValue({label:'type',value:'bundle'}),'الباقات');
+assert.equal(providerDetailEntries(offer,'apiKey').length,0);
+assert.equal(providerDetailEntries(offer,'description')[0].value,'تفاصيل المجهّز');
+assert.equal(providerDetailColumns([{supplierDetails:[{label:'newProperty',value:'new detail'}]}]).length,1,'New provider fields appear without changing a fixed schema');
+console.log('Provider table preserves nested details, zero and false, uses Arabic labels, and excludes credentials.');

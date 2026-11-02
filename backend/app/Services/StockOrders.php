@@ -43,7 +43,7 @@ class StockOrders
             if (! $supplier || ! $source) {
                 throw new ApiError('اسم المجهز ومصدر الطلبية مطلوبان', 422);
             }
-            $seen = $serials = $accepted = $errors = $warnings = $summaries = [];
+            $seen = $serials = $accepted = $errors = $warnings = $summaries = $categoryPrices = [];
             $total = BigDecimal::zero()->toScale(3);
             $nominal = BigDecimal::zero()->toScale(3);
             $retailTotal = BigDecimal::zero()->toScale(3);
@@ -53,6 +53,8 @@ class StockOrders
                     throw new ApiError('سطر الفئة غير صحيح', 422);
                 }
                 $line = app(ImportCategories::class)->resolve($line, $s);
+                $catalogPlan = app(StockOrderCatalog::class)->prepare($line, $s);
+                $line = $catalogPlan['line'];
                 $p = collect($s['products'])->first(fn ($p) => (string) $p['id'] === (string) ($line['productId'] ?? ''));
                 $di = $line['denom'] ?? null;
                 if (! empty($line['manufacturerId']) && ($p['manufacturerId'] ?? '') !== $line['manufacturerId']) {
@@ -68,6 +70,11 @@ class StockOrders
                 }
                 $cost = self::money($line['cost'] ?? null);
                 $price = self::money((string) $p['prices'][$di]);
+                $categoryKey = $p['id'].':'.$p['values'][$di];
+                if (isset($categoryPrices[$categoryKey]) && $categoryPrices[$categoryKey] !== $price) {
+                    throw new ApiError('سعر بيع الفئة مكرر بقيم مختلفة داخل الطلبية', 422);
+                }
+                $categoryPrices[$categoryKey] = $price;
                 if (! BigDecimal::of($cost)->isGreaterThan(0) || ! BigDecimal::of($price)->isGreaterThan(0)) {
                     throw new ApiError('التكلفة وسعر البيع يجب أن يكونا أكبر من صفر', 422);
                 }
@@ -127,7 +134,7 @@ class StockOrders
                     }
                     $accepted[] = [...$label, 'product_id' => (string) $p['id'], 'denomination' => $p['values'][$di], 'code_hash' => $hash, 'encrypted_code' => Crypt::encryptString($pin), 'encrypted_details' => CardFields::encrypt($p, $details, $di), 'serial' => $serial === '' ? null : $serial, 'unit_cost' => $cost, 'expires_on' => $date];
                 }
-                $summaries[] = ['line' => $li + 1, 'productId' => (string) $p['id'], 'denom' => $di, 'name' => $p['name'], 'value' => $p['values'][$di], 'cost' => $cost, 'retail' => $price, 'importFields' => ProductFields::policy($p, $di), 'candidateCount' => count($accepted) - $before, 'uploaded' => count($rows), 'unit' => $p['unit'], 'fileName' => CatalogEditor::text($line['fileName'] ?? '', 200), 'categoryCode' => CatalogEditor::text($line['categoryCode'] ?? '', 100), 'manufacturerId' => $p['manufacturerId'] ?? null];
+                $summaries[] = ['catalogRequest' => $catalogPlan['catalogRequest'], 'catalogFingerprint' => $catalogPlan['catalogFingerprint'], 'catalogChanged' => $catalogPlan['catalogChanged'], 'newDenomination' => $catalogPlan['newDenomination'], 'line' => $li + 1, 'productId' => (string) $p['id'], 'denom' => $di, 'name' => $p['name'], 'value' => $p['values'][$di], 'cost' => $cost, 'retail' => $price, 'importFields' => ProductFields::policy($p, $di), 'candidateCount' => count($accepted) - $before, 'uploaded' => count($rows), 'unit' => $p['unit'], 'fileName' => CatalogEditor::text($line['fileName'] ?? '', 200), 'categoryCode' => CatalogEditor::text($line['categoryCode'] ?? '', 100), 'manufacturerId' => $p['manufacturerId'] ?? null];
             }
             // Bounded lookups avoid loading every encrypted card or exhausting SQL parameter limits.
             $existingHashes = $existingSerials = [];
@@ -205,6 +212,15 @@ class StockOrders
             if (! $draft['summary']['quantity'] || ($draft['summary']['rejected'] && ! $b['excludeRejected']) || collect($draft['summary']['lines'])->contains(fn ($l) => ! $l['accepted'])) {
                 throw new ApiError('أكد استبعاد المرفوض أو صحح الطلبية', 422);
             }
+            $changedProducts = [];
+            foreach ($draft['summary']['lines'] as $line) {
+                if (isset($line['catalogRequest'])) {
+                    app(StockOrderCatalog::class)->replay($line, $s);
+                    if ($line['catalogChanged']) {
+                        $changedProducts[$line['productId']] = true;
+                    }
+                }
+            }
             $today = now('Asia/Baghdad')->toDateString();
             $id = $draft['summary']['id'];
             // The unique PIN/serial constraints are the final guard against concurrent legacy imports.
@@ -236,6 +252,11 @@ class StockOrders
             DB::table('stock_order_previews')->where('id', $id)->delete();
             array_unshift($s['imports'], ['id' => $id, 'name' => $result['supplier'].' / '.$result['source'], 'count' => $result['quantity'], 'rejected' => $result['rejected'], 'costTotal' => $result['costTotal'], 'date' => $today]);
             ProcurementAudit::record('stock_approved', $id, ['quantity' => $result['quantity'], 'costTotal' => $result['costTotal'], 'supplier' => $result['supplier']]);
+            foreach ($s['products'] as $product) {
+                if (isset($changedProducts[(string) $product['id']])) {
+                    app(ImportCategories::class)->syncProduct($product);
+                }
+            }
             $this->inventory->refreshStock($s);
             $this->store->event($s, 'اعتماد طلبية مخزون: '.$result['quantity'].' بطاقة');
             $this->store->save($s);
