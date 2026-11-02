@@ -14,7 +14,7 @@ class ProviderCatalogMetadata
 
     public static function image(mixed $value, string $base): ?string
     {
-        if (! is_string($value) || strlen($value) > 2000 || preg_match('/[\x00-\x20\\\\]/', $value)) {
+        if (! is_string($value) || trim($value) === '' || in_array($value, ['/', '#'], true) || strlen($value) > 2000 || preg_match('/[\x00-\x20\\\\]/', $value)) {
             return null;
         }
         if (str_starts_with($value, '//')) {
@@ -61,7 +61,7 @@ class ProviderCatalogMetadata
                 if (self::sensitive($label)) {
                     continue;
                 }
-                $isImage = $imageContext || (bool) preg_match('/image|photo|picture|thumbnail|logo|icon|banner/i', $key);
+                $isImage = $imageContext || (bool) preg_match('/image|photo|picture|thumbnail|logo|icon|banner|^img$/i', $key);
                 if (is_array($value)) {
                     $walk($value, $label, $depth + 1, $isImage);
 
@@ -74,7 +74,7 @@ class ProviderCatalogMetadata
                 if (preg_match('/^Bearer\s/i', $text)) {
                     continue;
                 }
-                if ($isImage && (preg_match('/image|photo|picture|thumbnail|logo|icon|banner/i', $key) || ($imageContext && (ctype_digit($key) || preg_match('/url|src|path|href|^(original|large|small|medium)$/i', $key)))) && count($images) < 6) {
+                if ($isImage && (preg_match('/image|photo|picture|thumbnail|logo|icon|banner|^img$/i', $key) || ($imageContext && (ctype_digit($key) || preg_match('/url|src|path|href|^(original|large|small|medium)$/i', $key)))) && count($images) < 6) {
                     $url = self::image($value, $base);
                     if ($url) {
                         $images[] = $url;
@@ -89,7 +89,7 @@ class ProviderCatalogMetadata
                     }
                 }
                 $text = mb_substr(trim(html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8')), 0, 500);
-                if (count($fields) < 40) {
+                if (count($fields) < 120) {
                     $fields[] = ['label' => mb_substr($label, 0, 160), 'value' => $text];
                 }
                 if (count($public) < 12 && preg_match('/^(duration|duration_days|validity|validity_days|validityDays|data_amount|dataAmount|internet_data|voice_minutes|minutes|sms|quota|currency|operator|network|brand|country|region)$/i', $key)) {
