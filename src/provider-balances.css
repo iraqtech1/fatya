@@ -1,0 +1,7 @@
+.admin-stats.admin-balance-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.admin-provider-balance{min-inline-size:0;overflow-wrap:anywhere}
+.admin-provider-balance strong{display:block;font-size:clamp(24px,2.1vw,32px);margin-block:12px 8px}
+.admin-provider-balance strong small{font-size:12px}
+.admin-provider-balance p{font-size:12px;line-height:1.8;margin:8px 0 0}
+@media(max-width:1100px){.admin-stats.admin-balance-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:800px){.admin-stats.admin-balance-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
