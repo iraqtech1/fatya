@@ -74,7 +74,7 @@ class ProviderCatalogMetadata
                 if (preg_match('/^Bearer\s/i', $text)) {
                     continue;
                 }
-                if ($isImage && count($images) < 6) {
+                if ($isImage && (preg_match('/image|photo|picture|thumbnail|logo|icon|banner/i', $key) || ($imageContext && (ctype_digit($key) || preg_match('/url|src|path|href|^(original|large|small|medium)$/i', $key)))) && count($images) < 6) {
                     $url = self::image($value, $base);
                     if ($url) {
                         $images[] = $url;

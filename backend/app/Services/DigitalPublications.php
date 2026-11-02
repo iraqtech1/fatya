@@ -4,12 +4,109 @@ namespace App\Services;
 
 use App\Exceptions\ApiError;
 use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /** Publication is independent of enabling external financial transactions. */
 class DigitalPublications
 {
+    public function bulk(array $b): array
+    {
+        return DB::transaction(function () use ($b) {
+            $store = app(Store::class);
+            $s = $store->read(true);
+            if (($b['revision'] ?? null) !== $s['revision']) {
+                throw new ApiError('البيانات تغيرت؛ حدّث الفئات قبل تطبيق الإجراء', 409);
+            }
+            $action = $b['action'] ?? null;
+            $items = $b['items'] ?? null;
+            if (! in_array($action, ['publish', 'unpublish', 'price'], true) || ! is_array($items) || ! array_is_list($items) || count($items) < 1 || count($items) > 5000) {
+                throw new ApiError('اختر الإجراء وحدد الفئات المطلوبة', 422);
+            }
+            $record = app(DigitalProviders::class)->catalogRecord('topup');
+            $catalog = $record ? json_decode($record->snapshot, true) : [];
+            if ($action !== 'unpublish' && (! $catalog || ($catalog['hash'] ?? '') !== ($b['catalogHash'] ?? null))) {
+                throw new ApiError('كتالوج المجهّز تغير؛ حدّث الفئات وراجع المعاينة', 409);
+            }
+            $offers = collect($catalog['offers'] ?? [])->keyBy(fn ($o) => $o['type'].':'.$o['providerId']);
+            $existing = DB::table('digital_publications')->where('connection', 'topup')->get()->keyBy('identity');
+            $products = collect($s['products'])->keyBy(fn ($p) => (string) $p['id']);
+            $target = $b['productId'] ?? '';
+            if (! is_string($target)) {
+                throw new ApiError('بطاقة العرض غير صحيحة', 422);
+            }
+            $rows = [];
+            $seen = [];
+            foreach ($items as $item) {
+                if (! is_array($item) || ! is_string($item['providerId'] ?? null) || ! preg_match('/^[0-9]{1,100}$/D', $item['providerId']) || ! in_array($item['type'] ?? null, ['topup', 'bundle', 'bill'], true) || ! is_int($item['version'] ?? null)) {
+                    throw new ApiError('معرّفات التحديد غير صحيحة', 422);
+                }
+                $identity = hash('sha256', Store::json(['topup', $item['type'], $item['providerId']]));
+                if (isset($seen[$identity])) {
+                    throw new ApiError('التحديد يتضمن فئة مكررة', 422);
+                }$seen[$identity] = true;
+                $old = $existing->get($identity);
+                if ($item['version'] !== (int) ($old?->version ?? 0)) {
+                    throw new ApiError('حالة إحدى الفئات المحددة تغيرت؛ لم يطبق أي تغيير', 409);
+                }
+                if ($action === 'unpublish') {
+                    if (! $old || ! $old->active) {
+                        continue;
+                    }
+                    $rows[] = [...(array) $old, 'active' => false, 'version' => (int) $old->version + 1, 'updated' => time()];
+
+                    continue;
+                }
+                $offer = $offers->get($item['type'].':'.$item['providerId']);
+                if (! $offer || ($action === 'publish' && ! $offer['available'])) {
+                    throw new ApiError('إحدى الفئات المحددة غير متاحة للنشر؛ راجع الفلترة', 422);
+                }
+                $productId = $target !== '' ? $target : $old?->product_id;
+                $p = $products->get($productId);
+                if (! $p || ! $p['active']) {
+                    throw new ApiError('حدد بطاقة عرض منشورة للفئات الجديدة', 422);
+                }
+                $mode = $b['priceMode'] ?? 'existing';
+                if ($mode === 'existing') {
+                    $price = $old?->retail;
+                    if ($price === null) {
+                        throw new ApiError('بعض الفئات ليس لها سعر بيع محفوظ؛ اختر طريقة التسعير', 422);
+                    }$price = StockOrders::money((string) $price);
+                } elseif ($mode === 'supplier') {
+                    $price = $offer['cost'];
+                } elseif ($mode === 'fixed') {
+                    $price = StockOrders::money($b['retail'] ?? null);
+                } elseif ($mode === 'markup') {
+                    $percent = StockOrders::money($b['percent'] ?? null);
+                    $flat = StockOrders::money($b['flat'] ?? null);
+                    if (BigDecimal::of($percent)->isGreaterThan(1000) || $offer['cost'] === null) {
+                        throw new ApiError('نسبة الزيادة أو تكلفة المجهّز غير صحيحة', 422);
+                    }
+                    $price = (string) BigDecimal::of($offer['cost'])->multipliedBy(BigDecimal::of(100)->plus($percent))->dividedBy(100, 3, RoundingMode::HalfUp)->plus($flat)->toScale(3);
+                } else {
+                    throw new ApiError('طريقة التسعير غير صحيحة', 422);
+                }
+                if ($price === null || ! BigDecimal::of($price)->isGreaterThan(0)) {
+                    throw new ApiError('سعر البيع لكل فئة يجب أن يكون أكبر من صفر', 422);
+                }
+                $price = StockOrders::money($price);
+                $rows[] = ['id' => $old?->id ?? (string) Str::uuid(), 'identity' => $identity, 'product_id' => (string) $p['id'], 'connection' => 'topup', 'provider_id' => $offer['providerId'], 'snapshot' => Store::json($offer), 'retail' => $price, 'active' => $action === 'publish' ? true : (bool) ($old?->active ?? false), 'version' => (int) ($old?->version ?? 0) + 1, 'updated' => time()];
+            }
+            // Validate every selected row before writing any publication or price.
+            foreach (array_chunk($rows, 100) as $chunk) {
+                DB::table('digital_publications')->upsert($chunk, ['identity'], ['product_id', 'snapshot', 'retail', 'active', 'version', 'updated']);
+            }
+            if ($rows) {
+                ProcurementAudit::record('digital.bulk.'.$action, null, ['count' => count($rows), 'selectionHash' => hash('sha256', Store::json(array_keys($seen))), 'priceMode' => $b['priceMode'] ?? 'existing']);
+                $store->event($s, 'إجراء جماعي على '.count($rows).' فئات TOPUP: '.$action);
+                $store->save($s);
+            }
+
+            return ['publications' => $this->listing(), 'revision' => $s['revision'], 'changed' => count($rows)];
+        }, 3);
+    }
+
     public function listing(): array
     {
         return DB::table('digital_publications')->orderBy('updated')->get()->map(fn ($r) => ['id' => $r->id, 'productId' => $r->product_id, 'provider' => $r->connection, 'providerId' => $r->provider_id, 'snapshot' => json_decode($r->snapshot, true), 'retail' => (string) $r->retail, 'published' => (bool) $r->active, 'version' => (int) $r->version])->all();

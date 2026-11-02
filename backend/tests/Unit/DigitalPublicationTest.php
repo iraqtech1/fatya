@@ -150,6 +150,64 @@ class DigitalPublicationTest extends TestCase
         $this->assertDatabaseCount('digital_executions', 0);
     }
 
+    public function test_bulk_publish_price_and_unpublish_touch_only_the_selected_identities(): void
+    {
+        [$s,$catalog] = $this->fixture();
+        $body = ['revision' => app(Store::class)->read()['revision'], 'catalogHash' => $catalog['hash'], 'action' => 'publish', 'productId' => '1', 'priceMode' => 'markup', 'percent' => '10', 'flat' => '50', 'items' => [['providerId' => '71', 'type' => 'topup', 'version' => 0], ['providerId' => '71', 'type' => 'bundle', 'version' => 0]]];
+        $result = app(DigitalPublications::class)->bulk($body);
+        $this->assertSame(2, $result['changed']);
+        $this->assertDatabaseCount('digital_publications', 2);
+        $this->assertDatabaseCount('orders', 0);
+        $rows = collect($result['publications'])->keyBy(fn ($p) => $p['snapshot']['type']);
+        $this->assertSame('5000.000', StockOrders::money($rows['topup']['retail']));
+        $body['revision'] = $result['revision'];
+        $body['action'] = 'price';
+        $body['priceMode'] = 'fixed';
+        $body['retail'] = '6000';
+        $body['items'] = [['providerId' => '71', 'type' => 'bundle', 'version' => 1]];
+        $result = app(DigitalPublications::class)->bulk($body);
+        $updated = collect($result['publications'])->keyBy(fn ($p) => $p['snapshot']['type']);
+        $this->assertSame($rows['bundle']['id'], $updated['bundle']['id']);
+        $this->assertTrue($updated['bundle']['published']);
+        $this->assertSame('6000.000', StockOrders::money($updated['bundle']['retail']));
+        $this->assertSame($rows['topup'], $updated['topup']);
+        DB::table('digital_catalog')->delete();
+        $body['revision'] = $result['revision'];
+        $body['action'] = 'unpublish';
+        $body['items'][0]['version'] = 2;
+        app(DigitalPublications::class)->bulk($body);
+        $updated = collect(app(DigitalPublications::class)->listing())->keyBy(fn ($p) => $p['snapshot']['type']);
+        $this->assertFalse($updated['bundle']['published']);
+        $this->assertTrue($updated['topup']['published']);
+        $this->assertSame([5250], app(Store::class)->read()['products'][0]['prices']);
+    }
+
+    public function test_bulk_conflict_or_missing_retail_rolls_back_the_entire_selection(): void
+    {
+        [,$catalog] = $this->fixture();
+        $this->publish($catalog);
+        $before = app(DigitalPublications::class)->listing();
+        $revision = app(Store::class)->read()['revision'];
+        $body = ['revision' => $revision, 'catalogHash' => $catalog['hash'], 'action' => 'price', 'productId' => '1', 'priceMode' => 'fixed', 'retail' => '6000', 'items' => [['providerId' => '71', 'type' => 'topup', 'version' => 1], ['providerId' => '71', 'type' => 'bundle', 'version' => 99]]];
+        try {
+            app(DigitalPublications::class)->bulk($body);
+            $this->fail('A later-row conflict must reject all changes');
+        } catch (ApiError) {
+        }
+        $this->assertSame($before, app(DigitalPublications::class)->listing());
+        $this->assertSame($revision, app(Store::class)->read()['revision']);
+        $body['items'][1]['version'] = 0;
+        $body['priceMode'] = 'existing';
+        $body['action'] = 'publish';
+        try {
+            app(DigitalPublications::class)->bulk($body);
+            $this->fail('Missing retail must not publish some of the selection');
+        } catch (ApiError) {
+        }
+        $this->assertSame($before, app(DigitalPublications::class)->listing());
+        $this->assertDatabaseCount('orders', 0);
+    }
+
     public function test_no_password_or_amount_mismatch_can_approve_payment(): void
     {
         [,,,,$o] = $this->order();

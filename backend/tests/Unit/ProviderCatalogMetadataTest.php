@@ -9,7 +9,7 @@ class ProviderCatalogMetadataTest extends TestCase
 {
     public function test_catalog_fields_images_description_and_zero_values_are_preserved_as_data(): void
     {
-        $m = ProviderCatalogMetadata::read(['price' => '01234.500', 'description' => '<p>Weekly &amp; data</p>', 'duration_days' => 7, 'sms' => 0, 'available' => false, 'images' => [['url' => '/media/card.png'], ['url' => 'https://cdn.example.com/card.webp']], 'options' => ['region' => 'Iraq'], 'logo' => 'media/icon.png?apiKey=private-image', 'authToken' => 'private-auth', 'api_key' => 'private-fixture', 'token' => 'private-token', 'nested' => ['password' => 'private-password']], 'https://masal-co.com');
+        $m = ProviderCatalogMetadata::read(['price' => '01234.500', 'description' => '<p>Weekly &amp; data</p>', 'duration_days' => 7, 'sms' => 0, 'available' => false, 'images' => [['alt' => 'Fixture label', 'url' => '/media/card.png'], ['url' => 'https://cdn.example.com/card.webp']], 'options' => ['region' => 'Iraq'], 'logo' => 'media/icon.png?apiKey=private-image', 'authToken' => 'private-auth', 'api_key' => 'private-fixture', 'token' => 'private-token', 'nested' => ['password' => 'private-password']], 'https://masal-co.com');
         $this->assertSame('Weekly & data', $m['description']);
         $this->assertSame(['https://masal-co.com/media/card.png', 'https://cdn.example.com/card.webp'], $m['images']);
         $fields = collect($m['supplierDetails'])->keyBy('label');

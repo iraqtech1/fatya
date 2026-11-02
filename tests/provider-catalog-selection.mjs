@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {catalogRows,filterCatalogRows,selectFiltered,providerOfferKey,previewCatalogPrice} from '../src/provider-catalog-selection.js';
+const offers=Array.from({length:55},(_,i)=>({type:i<30?'topup':'bundle',providerId:String(i),parentId:i<30?'90':'91',title:'Offer '+i,cost:'4500.125',available:true}));
+offers.push({providerId:'90',type:'topup',title:'Parent',cost:'0.000',available:false});
+const pubs=[{id:'pub-1',providerId:'3',snapshot:{type:'topup'},retail:'5250',published:true}];
+const rows=catalogRows(offers,pubs),filtered=filterCatalogRows(rows,{type:'topup',available:'yes',published:'no'}),selection=selectFiltered(filtered);
+assert.equal(filtered.length,29);assert.equal(selection.size,29,'Select all includes matches beyond a20-row page');assert.ok(!selection.has(providerOfferKey(offers[3])));assert.ok(!selection.has(providerOfferKey(offers[35])));
+assert.equal(filterCatalogRows(rows,{query:'Offer 3',type:'bundle'}).length,10);
+assert.equal(filterCatalogRows(rows,{category:'topup:90'}).length,31);
+assert.equal(previewCatalogPrice(rows[0],{priceMode:'markup',percent:'5.555',flat:'0.125'}),'4750.232');
+assert.equal(previewCatalogPrice(rows.find(r=>r.providerId==='3'),{priceMode:'existing'}),'5250.000');
+assert.throws(()=>previewCatalogPrice(rows[0],{priceMode:'existing'}));assert.throws(()=>previewCatalogPrice(rows[0],{priceMode:'markup',percent:'1000.001',flat:'0'}));
+console.log('Unified catalog filters and all-result selection exclude hidden rows, preserve type identities and preview decimal pricing exactly.');

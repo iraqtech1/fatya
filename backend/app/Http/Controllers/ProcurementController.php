@@ -65,6 +65,7 @@ class ProcurementController extends Controller
             ['POST', 'stock-orders/approve'] => $stock->approve($b),
             ['GET', 'digital'] => ['connections' => $providers->status(), 'offers' => $providers->offers(), 'catalogs' => app(DigitalPublications::class)->catalogs(), 'publications' => app(DigitalPublications::class)->listing(), 'executions' => app(DigitalSales::class)->executions(), 'purchaseEnabled' => (bool) config('digital.purchases_enabled')],
             ['PUT', 'digital/publications'] => app(DigitalPublications::class)->save($b),
+            ['PUT', 'digital/publications/bulk'] => app(DigitalPublications::class)->bulk($b),
             ['POST', 'digital/manual-payment'] => app(DigitalManualPayments::class)->confirm($b),
             ['PUT', 'digital/connections'] => app(DigitalConnections::class)->save($b),
             ['POST', 'digital/reconcile'] => app(DigitalSales::class)->reconcile($b),
