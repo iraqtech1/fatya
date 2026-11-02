@@ -84,7 +84,7 @@ export default {
     const contentSection=computed(()=>section.value==='overview'?(selectedStat.value||'overview'):section.value);
     const selectedStatTitle=computed(()=>stats.value.find(s=>s.section===selectedStat.value)?.label||'');
     function selectStat(id){selectedStat.value=selectedStat.value===id?null:id;query.value='';filter.value='الكل';period.value='الكل';preview.value=null;}
-    let noticeTimer,pendingCategoryFilter=null;
+    let noticeTimer,pendingCategoryFilter=null,pendingCompanyCategory=null,pendingCardCompany=null;
     function syncRoute(){companyCategory.value=pendingCompanyCategory||'';cardCompanyFilter.value=pendingCardCompany||'';cardsTab.value=companyCategory.value?'companies':'cards';pendingCompanyCategory=null;pendingCardCompany=null;selectedStat.value=null;const id=routePath().split('/')[2]||'overview';section.value=sections.some(s=>s.id===id)?id:'overview';query.value='';filter.value=pendingCategoryFilter||'الكل';pendingCategoryFilter=null;mobileMenu.value=false;window.scrollTo({top:0,behavior:'instant'});}
     function go(id){selectedStat.value=null;navigateRoute('/admin/'+id);}
     function showCategoryCards(name){pendingCategoryFilter=name;go('cards');}
