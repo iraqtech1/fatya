@@ -109,6 +109,9 @@ class DigitalPublications
         if (! $r || ! config('digital.manual_topup_enabled') || ($b['payment'] ?? null) !== 'Manual' || ($b['denom'] ?? null) !== 0) {
             throw new ApiError('الخدمة غير منشورة أو الدفع اليدوي غير متاح', 409);
         }
+        if ((! is_string($b['quotedAmount'] ?? null) && ! is_int($b['quotedAmount'] ?? null) && ! is_float($b['quotedAmount'] ?? null)) || StockOrders::money((string) $b['quotedAmount']) !== StockOrders::money((string) $r->retail)) {
+            throw new ApiError('سعر البيع تغير؛ حدّث التطبيق وراجع السعر الجديد', 409);
+        }
         $offer = json_decode($r->snapshot, true);
         $p['name'] .= ' · '.$offer['title'];
         $p['unit'] = 'خدمة';

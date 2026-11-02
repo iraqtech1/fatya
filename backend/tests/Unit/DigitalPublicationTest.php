@@ -67,7 +67,7 @@ class DigitalPublicationTest extends TestCase
     {
         [$s,$c] = $this->fixture();
         $pub = $this->publish($c)['publications'][0];
-        $b = ['productId' => 1, 'publicationId' => $pub['id'], 'denom' => 0, 'quantity' => 1, 'payment' => 'Manual', 'reference' => 'manual-request-01', 'digital' => ['mobile' => '07700000000', 'confirmMobile' => '07700000000']];
+        $b = ['productId' => 1, 'publicationId' => $pub['id'], 'denom' => 0, 'quantity' => 1, 'payment' => 'Manual', 'quotedAmount' => '5250', 'reference' => 'manual-request-01', 'digital' => ['mobile' => '07700000000', 'confirmMobile' => '07700000000']];
         $o = app(OrderFulfillment::class)->reserve($s['customers'][0], $b)['order'];
 
         return [$s, $c, $pub, $b, $o];
@@ -129,6 +129,19 @@ class DigitalPublicationTest extends TestCase
         $this->assertSame('Manual', DB::table('payment_receipts')->value('provider'));
         $retry = app(OrderFulfillment::class)->reserve($s['customers'][0], $b);
         $this->assertFalse($retry['created']);
+    }
+
+    public function test_stale_checkout_price_cannot_create_a_differently_priced_order(): void
+    {
+        [$s,$c] = $this->fixture();
+        $pub = $this->publish($c)['publications'][0];
+        try {
+            app(OrderFulfillment::class)->reserve($s['customers'][0], ['productId' => 1, 'publicationId' => $pub['id'], 'denom' => 0, 'quantity' => 1, 'payment' => 'Manual', 'quotedAmount' => '1', 'reference' => 'stale-price-01', 'digital' => ['mobile' => '07700000000', 'confirmMobile' => '07700000000']]);
+            $this->fail('Stale price must not create an order');
+        } catch (ApiError) {
+        }
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('digital_executions', 0);
     }
 
     public function test_no_password_or_amount_mismatch_can_approve_payment(): void
