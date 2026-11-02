@@ -59,7 +59,7 @@ class ProcurementController extends Controller
             ['PUT', 'stock-orders/policy'] => app(StockWorkflow::class)->savePolicy($b),
             ['PUT', 'stock-orders/code'] => app(ImportCategories::class)->add($b),
             ['PUT', 'stock-orders/codes'] => app(ImportCategories::class)->save($b),
-            ['POST', 'stock-orders/submit'] => app(StockWorkflow::class)->submit($b),
+            ['POST', 'stock-orders/submit'] => $stock->approve($b),
             ['POST', 'stock-orders/review'] => app(StockWorkflow::class)->review($b),
             ['POST', 'stock-orders/preview'] => $stock->preview($b),
             ['POST', 'stock-orders/approve'] => $stock->approve($b),

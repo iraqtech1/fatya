@@ -84,10 +84,10 @@ class ProcurementExtensionsTest extends TestCase
         $workflow->savePolicy(['version' => 0, 'required' => true]);
         $p = $this->preview();
         $body = $this->submission($p);
-        $pending = app(StockOrders::class)->approve($body);
+        $pending = $workflow->submit($body);
         $this->assertSame('pending', $pending['status']);
         $this->assertDatabaseCount('inventory_cards', 0);
-        $this->assertSame($pending, app(StockOrders::class)->approve($body));
+        $this->assertSame($pending, $workflow->submit($body));
         $this->assertStringNotContainsString('0000012345', DB::table('stock_submission_chunks')->value('encrypted_cards'));
         $approved = $this->review($pending, 'approve', 'approve-review-01');
         $this->assertSame('approved', $approved['status']);

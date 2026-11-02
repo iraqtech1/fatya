@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Exceptions\ApiError;
+use App\Services\Accounts;
 use App\Services\StockOrders;
 use App\Services\StockWorkflow;
 use App\Services\Store;
@@ -90,7 +91,8 @@ class StockOrderCatalogTest extends TestCase
         $this->fixture();
         $w = app(StockWorkflow::class);
         $w->savePolicy(['version' => 0, 'required' => true]);
-        $pending = $this->approve($this->preview([$this->line()]));
+        $preview = $this->preview([$this->line()]);
+        $pending = $w->submit(['previewId' => $preview['previewId'], 'previewHash' => $preview['previewHash'], 'requestId' => 'historical-submission', 'excludeRejected' => false]);
         $this->assertEquals([5000], app(Store::class)->read()['products'][0]['values']);
         $this->assertDatabaseCount('inventory_cards', 0);
         $approved = $w->review(['id' => $pending['id'], 'version' => $pending['version'], 'decision' => 'approve', 'reason' => '', 'requestId' => 'review-new-category']);
@@ -158,5 +160,32 @@ class StockOrderCatalogTest extends TestCase
         $this->approve($p);
         $this->assertSame('asia', app(Store::class)->read()['products'][0]['manufacturerId']);
         $this->assertDatabaseHas('stock_category_codes', ['scope' => 'manufacturer:asia', 'code' => 'E5K']);
+    }
+
+    public function test_approval_adds_stock_immediately_even_with_an_old_review_policy(): void
+    {
+        $this->fixture();
+        DB::table('procurement_settings')->where('id', 1)->update(['approval_required' => true]);
+        $preview = $this->preview([$this->line()]);
+        $this->assertFalse($preview['approvalRequired']);
+        $result = $this->approve($preview);
+        $this->assertSame('approved', $result['status']);
+        $this->assertSame($result, $this->approve($preview));
+        $this->assertSame([0, 1], app(Store::class)->read()['products'][0]['stock']);
+        $this->assertDatabaseCount('stock_submissions', 0);
+        $this->assertDatabaseCount('inventory_cards', 1);
+    }
+
+    public function test_legacy_submit_endpoint_also_imports_without_a_second_approval(): void
+    {
+        $this->fixture();
+        DB::table('procurement_settings')->where('id', 1)->update(['approval_required' => true]);
+        $preview = $this->preview([$this->line()]);
+        $this->withCredentials()->withUnencryptedCookie('masal_admin', app(Accounts::class)->issue('admin')->getValue())->withHeaders(['X-Fatya-Request' => '1']);
+        $body = ['previewId' => $preview['previewId'], 'previewHash' => $preview['previewHash'], 'requestId' => 'legacy-direct-import', 'excludeRejected' => false];
+        $this->postJson('/api/admin/procurement/stock-orders/submit', $body)->assertOk()->assertJsonPath('status', 'approved');
+        $this->postJson('/api/admin/procurement/stock-orders/submit', $body)->assertOk()->assertJsonPath('status', 'approved');
+        $this->assertDatabaseCount('stock_submissions', 0);
+        $this->assertDatabaseCount('inventory_cards', 1);
     }
 }

@@ -179,7 +179,7 @@ class StockOrders
                 DB::table('stock_order_preview_chunks')->insert(['preview_id' => $id, 'part' => $part, 'encrypted_cards' => Crypt::encryptString(Store::json($cards))]);
             }
 
-            return [...$summary, 'categoryCount' => count(array_unique(array_map(fn ($l) => $l['productId'].':'.$l['value'], $summaries))), 'previewId' => $id, 'previewHash' => $hash, 'errors' => $errors, 'warnings' => $warnings, 'approvalRequired' => (bool) DB::table('procurement_settings')->where('id', 1)->value('approval_required')];
+            return [...$summary, 'categoryCount' => count(array_unique(array_map(fn ($l) => $l['productId'].':'.$l['value'], $summaries))), 'previewId' => $id, 'previewHash' => $hash, 'errors' => $errors, 'warnings' => $warnings, 'approvalRequired' => false];
         });
     }
 
@@ -191,7 +191,7 @@ class StockOrders
         }
         $requestHash = hash('sha256', Store::json([$b['previewId'], $b['previewHash'], $b['excludeRejected']]));
 
-        return DB::transaction(function () use ($b, $key, $requestHash, $reviewed) {
+        return DB::transaction(function () use ($b, $key, $requestHash) {
             $s = $this->store->read(true);
             $old = DB::table('stock_batches')->where('request_id', $key)->first();
             if ($old) {
@@ -200,9 +200,6 @@ class StockOrders
                 }
 
                 return json_decode($old->summary, true);
-            }
-            if (! $reviewed && (DB::table('procurement_settings')->where('id', 1)->value('approval_required') || DB::table('procurement_mutations')->where('request_id', $key)->exists())) {
-                return app(StockWorkflow::class)->submit($b);
             }
             $preview = DB::table('stock_order_previews')->where('id', $b['previewId'])->lockForUpdate()->first();
             if (! $preview || $preview->expires < time() || ! hash_equals($preview->hash, $b['previewHash']) || (int) $preview->revision !== $s['revision']) {

@@ -198,7 +198,7 @@ class ProductFieldsTest extends TestCase
         $workflow->savePolicy(['version' => 0, 'required' => true]);
         $s = app(Store::class)->read();
         $p = app(StockOrders::class)->preview($this->input($s, [['pin' => '00044', 'serial' => 'S44', 'cvc' => '009', 'reference' => 'REF-0044']]));
-        $submission = app(StockOrders::class)->approve(['previewId' => $p['previewId'], 'previewHash' => $p['previewHash'], 'requestId' => 'metadata-review-01', 'excludeRejected' => false]);
+        $submission = $workflow->submit(['previewId' => $p['previewId'], 'previewHash' => $p['previewHash'], 'requestId' => 'metadata-review-01', 'excludeRejected' => false]);
         $workflow->review(['id' => $submission['id'], 'version' => $submission['version'], 'decision' => 'approve', 'reason' => '', 'requestId' => 'metadata-review-confirm']);
         $this->assertSame('009', CardFields::details(DB::table('inventory_cards')->first())['cvc']);
     }
