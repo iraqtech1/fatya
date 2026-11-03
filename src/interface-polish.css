@@ -1,0 +1,294 @@
+/* FATYA shared arrow alignment - 2026-11-03 */
+html:root #app select:not([multiple]):not([size]):not(:where(.account-language-picker select)),
+html:root #app select:not([multiple])[size="1"]:not(:where(.account-language-picker select)) {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  padding-inline-start: 14px !important;
+  padding-inline-end: 42px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23034037' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: left 14px center !important;
+  background-size: 16px 16px !important;
+  text-align: start;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+html:root #app select:dir(ltr):not([multiple]):not([size]),
+html:root #app select:dir(ltr):not([multiple])[size="1"] {
+  background-position: right 14px center !important;
+}
+html:root[data-theme="dark"] #app select:not([multiple]):not([size]):not(:where(.account-language-picker select)),
+html:root[data-theme="dark"] #app select:not([multiple])[size="1"]:not(:where(.account-language-picker select)) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23d4f6eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+}
+html:root #app svg:is([class*="lucide-chevron-"],[class*="lucide-arrow-"]) {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+html:root #app svg[class*="lucide-chevron-"] {
+  width: 16px;
+  height: 16px;
+}
+html:root #app :is(.admin-sidebar,.sidebar) nav button > svg:last-child:not(:first-child) {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-inline-start: auto;
+  margin-inline-end: 0;
+  align-self: center;
+}
+html:root #app :is(.account-chevron,.archive-chevron) {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  align-self: center;
+}
+html:root #app .searchable-filter summary {
+  gap: 12px;
+  padding-inline: 14px;
+}
+html:root #app .searchable-filter summary > svg:last-child {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-inline-start: auto;
+}
+html:root #app .account-language-picker > svg {
+  inset-inline-end: 14px;
+  width: 16px;
+  height: 16px;
+}
+html:root #app .account-language-picker select {
+  padding-inline-start: 12px;
+  padding-inline-end: 40px;
+}
+@media (forced-colors: active) {
+  html:root #app select:not([multiple]):not([size]):not(:where(.account-language-picker select)),
+  html:root #app select:not([multiple])[size="1"]:not(:where(.account-language-picker select)) {
+    appearance: auto !important;
+    background-image: none !important;
+    padding-inline-end: 14px !important;
+  }
+}
+
+
+/* Shared disclosure and navigation layout */
+html:root #app .faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 44px;
+  padding-block: 6px;
+  list-style: none;
+  cursor: pointer;
+  line-height: 1.7;
+}
+html:root #app .faq summary::-webkit-details-marker { display: none; }
+html:root #app .faq summary::marker { content: ""; }
+html:root #app .faq summary::after {
+  content: "";
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  margin-inline-start: auto;
+  margin-inline-end: 4px;
+  margin-block-end: 4px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform .18s ease;
+}
+html:root #app .faq details[open] > summary::after {
+  transform: rotate(225deg);
+  margin-block-end: 0;
+  margin-block-start: 4px;
+}
+html:root #app :is(.account-back,.web-auth-back,.notification-back,.section-title button,.admin-panel-title button) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+html:root #app :is(.section-title,.admin-panel-title) { flex-wrap: wrap; row-gap: 10px; }
+html:root #app :is(.section-title,.admin-panel-title) > h2 { min-width: 0; overflow-wrap: anywhere; }
+html:root #app :is(.section-title,.admin-panel-title) > button { flex-shrink: 0; }
+html:root #app :is(.deck-controls,.banner-controls,.pagination-buttons) > button {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+html:root #app .web-card-deck .deck-controls {
+  position: relative;
+  z-index: 20;
+  margin-block-start: clamp(64px,7vw,96px);
+  min-height: 48px;
+  gap: 16px;
+}
+html:root #app .web-card-deck .deck-controls > span {
+  min-width: 0;
+  max-width: 220px;
+  padding-inline: 4px;
+  overflow-wrap: anywhere;
+}
+html:root #app .app-shell .hero .deck-stage {
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 12px;
+}
+html:root #app .app-shell .hero .deck-controls {
+  position: relative;
+  z-index: 20;
+  margin-block-start: 10px;
+  min-height: 36px;
+  gap: 10px;
+}
+html:root #app .app-shell .hero .deck-controls > span {
+  min-width: 0;
+  flex: 1;
+  padding-inline: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+html:root #app .app-shell .hero .deck-controls > button { width: 32px; height: 32px; }
+html:root #app .company-catalog-path { flex-wrap: wrap; align-items: center; gap: 8px; }
+html:root #app .company-catalog-path > svg { flex: 0 0 16px; }
+html:root #app .web-search > button:dir(ltr) > svg { transform: scaleX(-1); }
+@media (prefers-reduced-motion: reduce) {
+  html:root #app .faq summary::after { transition: none; }
+}
+
+html:root #app .faq summary::after { border-color: currentColor !important; }
+html:root[data-theme="dark"] #app .faq summary::after { border-color: #d4f6eb !important; }
+
+
+/* Catalog artwork and mobile controls */
+html:root #app .company-catalog-grid { align-items: stretch; }
+html:root #app .company-catalog-card {
+  min-width: 0;
+  max-width: 100%;
+  gap: 10px;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+html:root #app .company-catalog-card .company-catalog-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: auto !important;
+  min-height: 0;
+  aspect-ratio: 4 / 3;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 10px;
+}
+html:root #app .company-catalog-card .company-catalog-art > img {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: auto !important;
+  object-fit: contain !important;
+  margin: 0 !important;
+}
+html:root #app .company-catalog-card > strong {
+  position: static !important;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+html:root #app .company-catalog-card > :is(small,bdi) {
+  position: static !important;
+  max-width: 100%;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+html:root #app .company-catalog-card > svg { align-self: center; margin-block-start: 2px; }
+html:root #app .company-catalog-heading { align-items: center; flex-wrap: wrap; gap: 10px; }
+html:root #app .company-catalog-heading h2 { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+html:root #app .company-catalog-heading button { flex-shrink: 0; min-height: 40px; }
+@media (max-width: 600px) {
+  html:root #app .company-catalog-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 10px;
+  }
+  html:root #app .company-catalog-card { padding: 12px; }
+  html:root #app .company-catalog-card > strong { font-size: 13px; }
+  html:root #app .store-filter-tabs {
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 6px;
+    overflow: visible;
+    padding-block: 6px 10px;
+  }
+  html:root #app .store-filter-tabs > button {
+    min-width: 0;
+    width: 100%;
+    min-height: 42px;
+    padding: 7px 6px;
+    justify-content: center;
+    gap: 5px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  html:root #app .company-catalog-path { gap: 4px; line-height: 1.6; }
+  html:root #app .company-catalog-path button { min-height: 36px; }
+  html:root #app .company-catalog-heading h2 { font-size: 16px; line-height: 1.6; }
+}
+
+@media (max-width: 600px) {
+  html:root #app .web-language { min-width: 0; padding-inline: 4px; }
+  html:root #app .web-language select:not([multiple]):not([size]) {
+    width: 90px;
+    min-width: 90px;
+    max-width: none;
+    font-size: 14px !important;
+    padding-inline: 8px 30px !important;
+    background-position: left 8px center !important;
+  }
+  html:root #app .web-language select:dir(ltr):not([multiple]):not([size]) {
+    background-position: right 8px center !important;
+  }
+  html:root #app .web-sort { max-width: 100%; }
+  html:root #app .web-sort select:not([multiple]):not([size]) {
+    width: 190px;
+    max-width: 100%;
+    font-size: 14px !important;
+    padding-inline: 12px 36px !important;
+    background-position: left 12px center !important;
+  }
+  html:root #app .web-sort select:dir(ltr):not([multiple]):not([size]) {
+    background-position: right 12px center !important;
+  }
+}
+@media (max-width: 700px) {
+  html:root #app .app-shell > main {
+    scroll-padding-block-start: 100px;
+    scroll-padding-block-end: 112px;
+  }
+  html:root #app .app-shell .content :is(button,input,select,textarea,summary) {
+    scroll-margin-block: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+html:root #app .web-brand { gap: 6px; }
+html:root #app .web-brand .store-brand-mark { width: 40px !important; height: 40px !important; flex-shrink: 0; }
+html:root #app .web-brand strong { font-size: 18px; line-height: 1.3; white-space: nowrap; }
+html:root #app .web-brand small { display: none; }
+}
+
+@media (max-width: 600px) {
+html:root #app .web-hero-deck { margin-block-start: clamp(64px,20vw,104px); }
+}

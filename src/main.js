@@ -58,6 +58,7 @@ import './store-catalog.css';
 import WebStore from './WebStore.js';
 import StorePreferences from './StorePreferences.js';
 import {isWebStore,accountPages} from './store-surface.js';
+import './interface-polish.css';
 const StoreLayout={inheritAttrs:false,template:'<slot/>'};
 const app=createApp({
 components:{CompanyCatalog,QuickAnswers,TicketHistory,WebStore,AsiacellFlow,StoreCards,StoreBrandMark,PaymentMethods,PaymentPreview,PagedList,StoreHeader,MobileDock,AccountPage,PullToRefresh,SplashIntro,BannerSlider,MarketingSite,Dashboard,PwaControls,AuthGate,NavIcon,CardDeck,Home,Grid2X2,ShoppingBag,Headphones,Phone,Search,ChevronLeft,X,Check,Copy,CreditCard,Gamepad2,Smartphone,Layers,User,Plus,Minus,ShieldCheck,SlidersHorizontal,Ticket,ArrowUpRight,Signal,Wifi},

@@ -249,7 +249,7 @@ export default {
   " ثانية": " seconds",
   "إعادة إرسال الرمز": "Resend code",
   "رمز التحقق": "Verification code",
-  "واتساب غير مربوط بهذه النسخة لم تُرسل رسالة؛ استخدم الرمز التالي:": "WhatsApp is not connected in this version No message was sent; use the following code:",
+  "لم تُرسل رسالة. استخدم رمز التحقق التالي:": "No message was sent. Use this verification code:",
   "ليس لديك حساب؟": "Don't have an account?",
   "لديك حساب؟": "Already have an account?",
   "اكتب اسمك الكامل": "Enter your full name",
