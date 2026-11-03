@@ -55,14 +55,16 @@ export function createTicket(subject,message,customer){
   store.tickets.unshift({id:'TICKET-'+String(store.tickets.length+1).padStart(4,'0'),subject,message,customer:customer?.name||'زائر',phone:customer?.phone||'',email:customer?.email||'',...(customer?.previewId?{previewId:customer.previewId}:{}),date:isoDate(),status:'مفتوحة',reply:''});record('تذكرة دعم جديدة');
 }
 
-export const connection=reactive({admin:false,ready:false,error:'',revision:0,customer:null});
+export const connection=reactive({admin:false,ready:false,error:'',revision:0,customer:null,access:null,adminMetrics:{}});
 export function setStoreRole(admin){
   if(connection.admin===admin)return;
-  connection.admin=admin;connection.ready=false;
+  connection.admin=admin;connection.ready=false;connection.access=null;connection.adminMetrics={};
   for(const key of ['orders','customers','tickets','imports','suppliers','companies','events','notifications','inventorySummary','paymentReceipts'])store[key].splice(0);
 }
 let refreshing=null,refreshRole=false;
 export function applyState(data){
+  if(connection.admin&&data.adminAccess)connection.access=data.adminAccess;
+  if(connection.admin&&data.adminMetrics)connection.adminMetrics=data.adminMetrics;
   if(Number.isInteger(data.revision)&&data.revision<connection.revision)return;
   for(const key of ['categories','companies','products','orders','customers','tickets','imports','suppliers','events','notifications','inventorySummary','paymentReceipts'])if(Array.isArray(data[key]))store[key].splice(0,store[key].length,...data[key]);
   Object.assign(store.settings,normalizeBrandSettings({...data.settings}));

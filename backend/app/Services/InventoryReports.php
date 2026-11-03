@@ -233,7 +233,12 @@ class InventoryReports
                 }$rows[] = ['id' => $r->id, 'kind' => $r->kind, 'status' => $r->status, 'actor' => $r->actor, 'reason' => $r->reason, 'quantity' => (int) $r->quantity, 'date' => CarbonImmutable::createFromTimestamp($r->created)->setTimezone('Asia/Baghdad')->toDateTimeString()];
             }
         } else {
-            foreach (DB::table('procurement_audit')->orderByDesc('created')->get() as $r) {
+            $audit = DB::table('procurement_audit');
+            $actor = request()->attributes->get('adminAccess');
+            if ($actor && ! $actor['owner']) {
+                $audit->where('actor', '!=', (string) config('fatya.admin_user'));
+            }
+            foreach ($audit->orderByDesc('created')->get() as $r) {
                 if (! $this->inPeriod((int) $r->created, $f) || ($f['actor'] && $f['actor'] !== $r->actor)) {
                     continue;
                 }$rows[] = ['id' => $r->id, 'actor' => $r->actor, 'action' => $r->action, 'subject' => $r->subject, 'details' => $r->details, 'date' => CarbonImmutable::createFromTimestamp($r->created)->setTimezone('Asia/Baghdad')->toDateTimeString()];
@@ -297,6 +302,6 @@ class InventoryReports
             throw new ApiError('رقم الصفحة غير صحيح', 422);
         }
 
-        return ['type' => $type, 'filters' => $f, 'timezone' => 'Asia/Baghdad', 'totals' => $totals, 'page' => $page, 'pages' => max(1,(int) ceil(count($rows) / 50)), 'rows' => ($b['all'] ?? false) === true ? $rows : array_slice($rows,($page - 1) * 50,50)];
+        return ['type' => $type, 'filters' => $f, 'timezone' => 'Asia/Baghdad', 'totals' => $totals, 'page' => $page, 'pages' => max(1, (int) ceil(count($rows) / 50)), 'rows' => ($b['all'] ?? false) === true ? $rows : array_slice($rows, ($page - 1) * 50, 50)];
     }
 }

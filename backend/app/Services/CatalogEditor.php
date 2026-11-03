@@ -7,6 +7,8 @@ use Illuminate\Support\Str;
 
 class CatalogEditor
 {
+    public const SOCIAL_FIELDS = ['facebookUrl', 'twitterUrl', 'instagramUrl', 'linkedinUrl', 'youtubeUrl', 'telegramUrl', 'tiktokUrl', 'whatsappUrl'];
+
     public static function text(mixed $v, int $max = 2000): string
     {
         if (! is_string($v) || mb_strlen($v) > $max) {
@@ -88,6 +90,15 @@ class CatalogEditor
                 $item = ['id' => $id, 'name' => $name, 'role' => $role, 'active' => $d['active']];
                 break;
             case 'settings':
+                $socialLinks = [];
+                foreach (self::SOCIAL_FIELDS as $key) {
+                    $value = self::text($d[$key] ?? $s['settings'][$key] ?? '', 2048);
+                    $url = parse_url($value);
+                    if ($value !== '' && (! filter_var($value, FILTER_VALIDATE_URL) || ! in_array(strtolower($url['scheme'] ?? ''), ['https', 'http'], true) || isset($url['user']) || isset($url['pass']))) {
+                        throw new ApiError('رابط وسيلة التواصل غير صحيح؛ استخدم رابط http أو https');
+                    }
+                    $socialLinks[$key] = $value;
+                }
                 $webSlides = $s['settings']['webSlides'] ?? null;
                 $faqs = $s['settings']['faqs'] ?? null;
                 $name = self::text($d['name'] ?? null, 60);
@@ -96,6 +107,7 @@ class CatalogEditor
                     throw new ApiError('إعدادات غير صحيحة');
                 }
                 $s['settings'] = ['name' => $name, 'supportEmail' => $email, 'supportPhone' => self::text($d['supportPhone'] ?? null, 30), 'lowStock' => $d['lowStock'], 'privacyText' => self::text($d['privacyText'] ?? $s['settings']['privacyText'], 10000), 'aboutText' => self::text($d['aboutText'] ?? $s['settings']['aboutText'], 10000)];
+                $s['settings'] = [...$s['settings'], ...$socialLinks];
 
                 if ($webSlides !== null) {
                     $s['settings']['webSlides'] = $webSlides;

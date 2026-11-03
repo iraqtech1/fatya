@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiError;
 use App\Services\Accounts;
+use App\Services\AdminAccess;
+use App\Services\AdminPolicy;
 use App\Services\CatalogEditor;
 use App\Services\CustomerNotifications;
 use App\Services\DigitalPublications;
@@ -142,20 +144,12 @@ class StoreController extends Controller
             return $json($this->publicState($req, $s));
         }
         if ($path === '/api/admin/login' && $req->isMethod('POST')) {
-            $password = config('fatya.admin_password');
-            if (! is_string($password) || strlen($password) < 12) {
-                throw new ApiError('حساب الإدارة غير مهيأ', 503);
-            }
-            if (($b['username'] ?? null) !== config('fatya.admin_user') || ! is_string($b['password'] ?? null) || ! hash_equals(hash('sha256', $password), hash('sha256', $b['password']))) {
-                throw new ApiError('اسم المستخدم أو كلمة المرور غير صحيح', 401);
-            }
-
-            return $json(['ok' => true])->withCookie($this->accounts->issue('admin'));
+            return $json(['ok' => true])->withCookie(app(AdminAccess::class)->login($b));
         }
         if ($path === '/api/admin/session' && $req->isMethod('GET')) {
             $this->accounts->session($req, 'admin');
 
-            return $json(['ok' => true]);
+            return $json(['ok' => true, 'access' => app(AdminAccess::class)->current($req)]);
         }
         if ($path === '/api/admin/state' && $req->isMethod('GET')) {
             $this->accounts->session($req, 'admin');
@@ -360,12 +354,27 @@ class StoreController extends Controller
                 throw new ApiError('بيانات غير صحيحة');
             }
             if ($collection === 'orders') {
+                app(AdminPolicy::class)->collection($collection, $data, $s);
+
                 return $json(app(OrderFulfillment::class)->adminStatus(CatalogEditor::text($data['id'] ?? null, 100), $data['status'] ?? null));
             }
             $previous = in_array($collection, ['orders', 'tickets']) ? collect($s[$collection])->firstWhere('id', $data['id'] ?? null) : null;
+            if ($collection === 'customers' && ! app(AdminAccess::class)->can('customers.contact')) {
+                $existing = collect($s['customers'])->firstWhere('id', $data['id'] ?? null);
+                if ($existing) {
+                    foreach (['phone', 'email'] as $field) {
+                        if (! empty($data[$field]) && $data[$field] !== $existing[$field]) {
+                            throw new ApiError('لا تملك صلاحية تعديل بيانات الاتصال', 403);
+                        }
+                        // A redacted field from a limited editor is not a request to erase it.
+                        $data[$field] = $existing[$field];
+                    }
+                }
+            }
             // A savepoint keeps catalog updates atomic even though the outer handler
             // intentionally commits rejected OTP attempt counters.
             $item = DB::transaction(function () use (&$s, $collection, $data) {
+                app(AdminPolicy::class)->collection($collection, $data, $s);
                 $item = $this->editor->update($s, $collection, $data);
                 $this->store->event($s, 'تحديث الإدارة: '.$collection);
                 $this->store->save($s);

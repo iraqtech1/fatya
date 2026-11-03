@@ -8,7 +8,7 @@ class ProcurementAudit
 {
     public static function actor(): string
     {
-        return (string) config('fatya.admin_user', 'admin');
+        return request()->attributes->get('adminAccess')['username'] ?? (string) config('fatya.admin_user', 'admin');
     }
 
     public static function record(string $action, ?string $subject, array $details): void

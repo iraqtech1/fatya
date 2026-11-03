@@ -1,0 +1,7 @@
+.admin-social-links{border:0;border-top:1px solid var(--admin-border);margin:26px 0 22px;padding:18px 0 0;min-width:0}
+.admin-social-links legend{padding:0 15px;margin-inline:auto;font-size:13px;color:var(--admin-muted)}
+.admin-social-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 22px}
+.admin-settings .admin-social-grid label{min-width:0;margin:0;direction:ltr;text-align:left;display:grid;gap:7px}
+.admin-social-grid input{min-width:0;width:100%;text-align:left}
+@media(max-width:900px){.admin-social-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:540px){.admin-social-grid{grid-template-columns:minmax(0,1fr)}}

@@ -91,6 +91,9 @@ class DigitalPublications
                     throw new ApiError('سعر البيع لكل فئة يجب أن يكون أكبر من صفر', 422);
                 }
                 $price = StockOrders::money($price);
+                if (request()->attributes->has('adminAccess')) {
+                    app(AdminPolicy::class)->digitalOffer($old, ['product_id' => (string) $p['id'], 'provider_id' => $offer['providerId'], 'connection' => 'topup', 'retail' => $price, 'active' => $action === 'publish' ? true : (bool) ($old?->active ?? false)], true);
+                }
                 $rows[] = ['id' => $old?->id ?? (string) Str::uuid(), 'identity' => $identity, 'product_id' => (string) $p['id'], 'connection' => 'topup', 'provider_id' => $offer['providerId'], 'snapshot' => Store::json($offer), 'retail' => $price, 'active' => $action === 'publish' ? true : (bool) ($old?->active ?? false), 'version' => (int) ($old?->version ?? 0) + 1, 'updated' => time()];
             }
             // Validate every selected row before writing any publication or price.
@@ -166,6 +169,9 @@ class DigitalPublications
             $old = DB::table('digital_publications')->where('identity', $identity)->first();
             if (($b['version'] ?? 0) !== (int) ($old?->version ?? 0)) {
                 throw new ApiError('حالة النشر تغيرت؛ حدّث الصفحة', 409);
+            }
+            if (request()->attributes->has('adminAccess')) {
+                app(AdminPolicy::class)->digitalOffer($old, ['product_id' => (string) $product['id'], 'provider_id' => $offer['providerId'], 'connection' => 'topup', 'retail' => $price, 'active' => $b['published']], true);
             }
             $id = $old?->id ?? (string) Str::uuid();
             DB::table('digital_publications')->updateOrInsert(['identity' => $identity], ['id' => $id, 'product_id' => (string) $product['id'], 'connection' => 'topup', 'provider_id' => $offer['providerId'], 'snapshot' => Store::json($offer), 'retail' => $price, 'active' => $b['published'], 'version' => (int) ($old?->version ?? 0) + 1, 'updated' => time()]);

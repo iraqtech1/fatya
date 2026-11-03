@@ -286,6 +286,9 @@ class DigitalProviders
                 throw new ApiError('حدّث كتالوج الشركة واختر فئة متوفرة', 409);
             }
             $old = DB::table('digital_offers')->where('product_id', (string) $p['id'])->where('denom_index', $denom)->first();
+            if (request()->attributes->has('adminAccess')) {
+                app(AdminPolicy::class)->digitalOffer($old, ['product_id' => (string) $p['id'], 'provider_id' => $offer['providerId'], 'connection' => $provider, 'retail' => $retail, 'active' => $b['active']], false);
+            }
             DB::table('digital_offers')->updateOrInsert(['product_id' => (string) $p['id'], 'denom_index' => $denom], ['id' => $old?->id ?? (string) Str::uuid(), 'connection' => $provider, 'provider_id' => $offer['providerId'], 'snapshot' => Store::json($offer), 'retail' => $retail, 'active' => $b['active'], 'updated' => time()]);
             app(Store::class)->event($s, 'حفظ ربط فئة رقمية: '.$p['name']);
             app(Store::class)->save($s);

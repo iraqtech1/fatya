@@ -35,6 +35,7 @@ class DigitalPublicationTest extends TestCase
 
     private function fixture(): array
     {
+        request()->cookies->set('masal_admin', app(Accounts::class)->issue('admin')->getValue());
         config(['digital.purchases_enabled' => false, 'digital.manual_topup_enabled' => true, 'digital.topup.enabled' => true, 'digital.topup.key' => 'fixture-key', 'fatya.admin_password' => 'fixture-only-password-12345']);
         Http::preventStrayRequests();
         Http::fake(['*/products' => fn () => Http::response($this->catalog($this->providerCost)), '*/checkEligibility' => Http::response(['status' => true]), '*/transactions' => function () {

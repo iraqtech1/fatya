@@ -19,6 +19,10 @@ class Accounts
             throw new ApiError('سجّل الدخول أولاً', 401);
         }
 
+        if ($role === 'admin') {
+            $request->attributes->set('adminAccess', app(AdminAccess::class)->resolveSession($row));
+        }
+
         return $row;
     }
 
@@ -33,12 +37,12 @@ class Accounts
         return $customer;
     }
 
-    public function issue(string $role, ?string $customer = null): Cookie
+    public function issue(string $role, ?string $customer = null, ?string $staff = null): Cookie
     {
         $token = bin2hex(random_bytes(48));
         $age = $role === 'admin' ? 28800 : 2592000;
         DB::table('auth_tokens')->where('expires', '<=', time())->delete();
-        DB::table('auth_tokens')->insert(['token' => hash('sha256', $token), 'role' => $role, 'customer_id' => $customer, 'expires' => time() + $age]);
+        DB::table('auth_tokens')->insert(['token' => hash('sha256', $token), 'role' => $role, 'customer_id' => $customer, 'staff_id' => $staff, 'expires' => time() + $age]);
 
         return cookie('masal_'.$role, $token, $age / 60, '/', null, config('fatya.secure_cookies'), true, false, 'strict');
     }

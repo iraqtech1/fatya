@@ -23,8 +23,8 @@ export default {
           <span class="masal-login-symbol"><LockKeyhole :size="23"/></span>
           <h1 id="admin-login-title">تسجيل الدخول</h1>
           <form @submit.prevent="submit">
-            <label for="admin-username">اسم المستخدم</label>
-            <div class="masal-login-field"><User :size="18"/><input id="admin-username" v-model="username" autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" placeholder="اسم المستخدم" required maxlength="80" @input="error=''"/></div>
+            <label for="admin-username">اسم المستخدم أو البريد الإلكتروني</label>
+            <div class="masal-login-field"><User :size="18"/><input id="admin-username" v-model="username" autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" placeholder="اسم المستخدم أو البريد الإلكتروني" required maxlength="254" @input="error=''"/></div>
             <label for="admin-password">كلمة المرور</label>
             <div class="masal-login-field"><LockKeyhole :size="18"/><input id="admin-password" v-model="password" :type="visible?'text':'password'" autocomplete="current-password" dir="ltr" placeholder="كلمة المرور" required maxlength="128" @input="error=''"/><button type="button" @click="visible=!visible" :aria-label="visible?'إخفاء كلمة المرور':'إظهار كلمة المرور'" :aria-pressed="visible"><EyeOff v-if="visible" :size="18"/><Eye v-else :size="18"/></button></div>
             <p v-if="error" class="masal-login-error" role="alert">{{error}}</p>

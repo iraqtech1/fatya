@@ -36,6 +36,7 @@ class InventoryControlsTest extends TestCase
 
     private function stock(int $count = 3): array
     {
+        request()->cookies->set('masal_admin', app(Accounts::class)->issue('admin')->getValue());
         Http::preventStrayRequests();
         config(['fatya.admin_password' => self::PASSWORD]);
         $s = app(Store::class)->read();

@@ -15,6 +15,7 @@ class Store
         $query = DB::table('store_meta')->where('id', 1);
         $meta = ($lock ? $query->lockForUpdate() : $query)->first();
         $s = ['revision' => (int) $meta->revision, 'settings' => json_decode($meta->settings, true, 512, JSON_THROW_ON_ERROR)];
+        $s['settings'] = [...array_fill_keys(CatalogEditor::SOCIAL_FIELDS, ''), ...$s['settings']];
         foreach (self::TABLES as $key => $table) {
             $s[$key] = DB::table($table)->orderBy('position')->get(['payload'])->map(fn ($r) => json_decode($r->payload, true, 512, JSON_THROW_ON_ERROR))->all();
         }

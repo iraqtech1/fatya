@@ -21,8 +21,7 @@ class DigitalManualPayments
 
     public function confirm(array $b): array
     {
-        $password = config('fatya.admin_password');
-        if (! config('digital.manual_topup_enabled') || ! is_string($password) || strlen($password) < 12 || ! is_string($b['password'] ?? null) || ! hash_equals($password, $b['password'])) {
+        if (! config('digital.manual_topup_enabled') || ! app(AdminAccess::class)->confirmPassword($b['password'] ?? null)) {
             throw new ApiError('تأكيد الاستلام يحتاج كلمة مرور الإدارة', 403);
         }
         $id = CatalogEditor::text($b['orderId'] ?? '', 100);

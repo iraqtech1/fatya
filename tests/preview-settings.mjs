@@ -45,3 +45,10 @@ for(const [view,key]of [['privacy','privacyText'],['about','aboutText']]){
  const fallback=await render(defaultSettings);assert.ok(!fallback.includes('account-custom-text'),'Empty text preserves existing fallback content');assert.ok(fallback.includes('translated:'));
 }
 console.log('Custom privacy and about text persists, syncs and renders as escaped text with default fallback.');
+
+const social={...defaultSettings,facebookUrl:'https://facebook.com/store',whatsappUrl:'https://wa.me/+9647712345678'};
+savePreviewSettings(social,storage);assert.equal(readPreviewSettings(storage).facebookUrl,social.facebookUrl);
+assert.throws(()=>savePreviewSettings({...social,facebookUrl:'javascript:alert(1)'},storage));
+assert.equal(readPreviewSettings(storage).facebookUrl,social.facebookUrl,'Invalid URL cannot replace saved settings');
+savePreviewSettings({...social,facebookUrl:''},storage);assert.equal(readPreviewSettings(storage).facebookUrl,'');
+console.log('Social contact links persist, clear, and reject unsafe URLs.');

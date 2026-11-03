@@ -11,8 +11,7 @@ class InventoryExports
 {
     public function authorize(array $b): void
     {
-        $expected = config('fatya.admin_password');
-        if (! config('fatya.code_export_enabled') || ! is_string($expected) || strlen($expected) < 12 || ! is_string($b['password'] ?? null) || ! hash_equals($expected, $b['password'])) {
+        if (! config('fatya.code_export_enabled') || ! app(AdminAccess::class)->confirmPassword($b['password'] ?? null)) {
             throw new ApiError('تصدير الأسرار يحتاج صلاحية الإدارة وتأكيد كلمة المرور', 403);
         }
     }
@@ -51,7 +50,7 @@ class InventoryExports
                     throw new ApiError('مفتاح التصدير مستخدم ببيانات أخرى', 409);
                 }
 
-return $this->present($old);
+                return $this->present($old);
             }
             $q = app(InventoryReports::class)->inventoryQuery($f);
             if ($kind === 'withdrawal') {
@@ -136,7 +135,7 @@ return $this->present($old);
             DB::table('inventory_exports')->where('id', $r->id)->update(['expires' => time() + 900, 'version' => $r->version + 1]);
             ProcurementAudit::record('export_renewed', $r->id, ['kind' => $r->kind, 'quantity' => $r->quantity]);
 
-            return $this->present(DB::table('inventory_exports')->where('id',$r->id)->first());
+            return $this->present(DB::table('inventory_exports')->where('id', $r->id)->first());
         });
     }
 }

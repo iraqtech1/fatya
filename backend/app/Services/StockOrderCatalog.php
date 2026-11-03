@@ -95,6 +95,9 @@ class StockOrderCatalog
                 ProductFields::codes($product['denomImportCodes'][$di]);
             }
         }
+        if (request()->attributes->has('adminAccess') && $product !== $before) {
+            app(AdminPolicy::class)->collection('products', $product, $state);
+        }
         $state['products'][$index] = $product;
 
         return ['line' => [...$line, 'denom' => $di, 'manufacturerId' => $manufacturer], 'catalogRequest' => $request, 'catalogFingerprint' => $fingerprint, 'catalogChanged' => $product !== $before, 'newDenomination' => ! in_array($product['values'][$di], $before['values'])];
