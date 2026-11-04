@@ -168,7 +168,7 @@ class AdminAccessTest extends TestCase
         $this->owner();
         $body = ['name' => 'مدير الدعم', 'username' => 'support.admin', 'email' => 'support@example.test', 'password' => 'fixture-password-123', 'roleId' => $this->role(['support.view']), 'active' => true];
         $cases = [
-            ['username', 'support@example.test', 'اسم المستخدم ليس بريداً إلكترونياً'],
+            ['username', 'support@@example.test', 'اسم المستخدم من 3 إلى 64 خانة'],
             ['username', 'OWNER', 'اسم المستخدم محجوز'],
             ['username', 'support user', 'اسم المستخدم من 3 إلى 64 خانة'],
             ['name', '', 'اكتب اسم المدير'],
@@ -180,6 +180,27 @@ class AdminAccessTest extends TestCase
             $this->assertDatabaseCount('admin_staff', 0);
         }
         $this->postJson('/api/admin/access/staff/save', $body)->assertOk()->assertJsonPath('staff.name', 'مدير الدعم')->assertJsonPath('staff.username', 'support.admin');
+    }
+
+    public function test_email_username_and_contact_email_both_log_in_to_the_same_staff_account(): void
+    {
+        $this->owner();
+        $body = ['name' => 'مدير', 'username' => ' Login+Staff@Example.test ', 'email' => 'contact@example.test', 'password' => 'email-username-fixture-123', 'roleId' => $this->role(['support.view']), 'active' => true];
+        $staff = $this->postJson('/api/admin/access/staff/save', $body)->assertOk()->assertJsonPath('staff.username', 'login+staff@example.test')->json('staff');
+        foreach ([' LOGIN+STAFF@EXAMPLE.TEST ', 'CONTACT@EXAMPLE.TEST'] as $identifier) {
+            $login = $this->postJson('/api/admin/login', ['username' => $identifier, 'password' => $body['password']])->assertOk();
+            $this->withUnencryptedCookie('masal_admin', $login->getCookie('masal_admin', false)->getValue())->getJson('/api/admin/session')->assertJsonPath('access.id', $staff['id']);
+        }
+        $this->postJson('/api/admin/login', ['username' => 'login+staff@example.test', 'password' => 'wrong-password'])->assertUnauthorized();
+        $this->owner();
+        $this->postJson('/api/admin/access/staff/save', [...$body, 'username' => 'another.user', 'email' => 'LOGIN+STAFF@EXAMPLE.TEST'])->assertConflict();
+        $this->postJson('/api/admin/access/staff/save', [...$body, 'username' => 'CONTACT@EXAMPLE.TEST', 'email' => 'other@example.test'])->assertConflict();
+        $saved = $this->postJson('/api/admin/access/staff/save', [...$staff, 'email' => $staff['username'], 'password' => ''])->assertOk()->json('staff');
+        $this->assertSame($saved['username'], $saved['email']);
+        $profile = $this->getJson('/api/admin/access/account')->assertOk()->json('account');
+        $this->postJson('/api/admin/access/account/save', [...$profile, 'email' => $staff['username'], 'currentPassword' => 'owner-fixture-password-123'])->assertConflict();
+        DB::table('admin_owner_profile')->where('id', 1)->update(['email' => 'owner@example.test']);
+        $this->postJson('/api/admin/access/staff/save', [...$body, 'username' => 'OWNER@EXAMPLE.TEST', 'email' => 'new@example.test'])->assertUnprocessable();
     }
 
     public function test_sensitive_confirmation_uses_employee_password_not_owner_password(): void

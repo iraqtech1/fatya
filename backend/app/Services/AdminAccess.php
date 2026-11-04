@@ -268,27 +268,24 @@ class AdminAccess
             if ($email !== '' && (! filter_var($email, FILTER_VALIDATE_EMAIL) || $email === strtolower((string) config('fatya.admin_user')) || $email === $ownerProfile->email)) {
                 throw new ApiError('البريد الإلكتروني غير صحيح أو محجوز', 422);
             }
-            if ($email !== '' && DB::table('admin_staff')->where('email', $email)->when($old, fn ($q) => $q->where('id', '!=', $old->id))->exists()) {
+            if ($email !== '' && $this->staffLoginExists($email, $old?->id)) {
                 throw new ApiError('البريد الإلكتروني مستخدم', 409);
             }
             $this->profileImage($image);
             if (! $name) {
                 throw new ApiError('اكتب اسم المدير؛ يمكن كتابته بالعربية أو الإنكليزية', 422);
             }
-            if (str_contains($username, '@')) {
-                throw new ApiError('اسم المستخدم ليس بريداً إلكترونياً؛ اكتب يوزراً مثل fatya.admin وضع البريد في خانة البريد الإلكتروني', 422);
+            if (! preg_match('/^[a-z0-9][a-z0-9_.-]{2,63}$/D', $username) && ! filter_var($username, FILTER_VALIDATE_EMAIL)) {
+                throw new ApiError('اسم المستخدم من 3 إلى 64 خانة؛ اكتب يوزراً إنكليزياً مثل fatya.admin أو بريداً إلكترونياً صحيحاً', 422);
             }
-            if (! preg_match('/^[a-z0-9][a-z0-9_.-]{2,63}$/D', $username)) {
-                throw new ApiError('اسم المستخدم من 3 إلى 64 خانة، يبدأ بحرف إنكليزي أو رقم ويحتوي حروفاً إنكليزية وأرقاماً ونقطة أو شرطة فقط، دون مسافات', 422);
-            }
-            if ($username === strtolower((string) config('fatya.admin_user'))) {
+            if ($username === strtolower((string) config('fatya.admin_user')) || $username === strtolower((string) $ownerProfile->email)) {
                 throw new ApiError('اسم المستخدم محجوز لحساب مالك النظام؛ اختر يوزراً آخر', 422);
             }
             if (! is_bool($body['active'] ?? null)) {
                 throw new ApiError('اختر حالة الحساب: مفعّل أو موقوف', 422);
             }
-            if (DB::table('admin_staff')->where('username', $username)->when($old, fn ($q) => $q->where('id', '!=', $old->id))->exists()) {
-                throw new ApiError('اسم المستخدم مستخدم', 409);
+            if ($this->staffLoginExists($username, $old?->id)) {
+                throw new ApiError('اسم المستخدم أو البريد الإلكتروني مستخدم لحساب آخر', 409);
             }
             if ($old) {
                 if ($old->name !== $name || $old->username !== $username || ($old->about ?? '') !== $about || ($old->image ?? '') !== $image) {
@@ -322,6 +319,11 @@ class AdminAccess
 
             return $this->staff(DB::table('admin_staff')->where('id', $id)->first());
         });
+    }
+
+    private function staffLoginExists(string $value, ?string $exceptId = null): bool
+    {
+        return DB::table('admin_staff')->where(fn ($q) => $q->where('username', $value)->orWhere('email', $value))->when($exceptId !== null, fn ($q) => $q->where('id', '!=', $exceptId))->exists();
     }
 
     private function profileImage(mixed $image): void
@@ -379,7 +381,7 @@ class AdminAccess
                     throw new ApiError('أدخل كلمة مرورك الحالية لتغيير البريد أو كلمة المرور', 403);
                 }
             }
-            if ($email !== '' && (DB::table('admin_staff')->where('email', $email)->when(! $actor['owner'], fn ($q) => $q->where('id', '!=', $old->id))->exists() || (! $actor['owner'] && ($email === $owner->email || $email === strtolower((string) config('fatya.admin_user')))))) {
+            if ($email !== '' && ($this->staffLoginExists($email, $actor['owner'] ? null : $old->id) || (! $actor['owner'] && ($email === $owner->email || $email === strtolower((string) config('fatya.admin_user')))))) {
                 throw new ApiError('البريد الإلكتروني مستخدم أو محجوز', 409);
             }
             $data = ['name' => $name, 'email' => $email ?: null, 'about' => $about, 'image' => $image ?: null, 'version' => $old->version + 1, 'updated_at' => now()];

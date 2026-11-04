@@ -29,8 +29,8 @@ assert.equal((await render(limited,'roles',limitedContext)).includes('صلاحي
 const newContext=c.setup({mode:'staff-new'});newContext.roleOptions.value=staffContext.roleOptions.value;newContext.editStaff();const newHtml=await render(c,'staff-new',newContext);for(const label of ['البريد الإلكتروني','معلومات عن المدير','صورة المدير','اسم مجموعة الصلاحية'])assert.ok(newHtml.includes(label),label);
 const usernamePattern=newHtml.match(/pattern="([^"]+)"/)[1];
 const usernameRule=new RegExp('^(?:'+usernamePattern+')$','v');
-for(const value of ['fatya','Fatya.Admin','staff_1','staff-1'])assert.ok(usernameRule.test(value),value);
-for(const value of ['fatya@example.test','مدير','ab','staff user'])assert.ok(!usernameRule.test(value),value);
+for(const value of ['fatya','Fatya.Admin','staff_1','staff-1','fatya@example.test','Staff+Support@Example.test'])assert.ok(usernameRule.test(value),value);
+for(const value of ['fatya@@example.test','fatya@','مدير','ab','staff user'])assert.ok(!usernameRule.test(value),value);
 assert.ok(newHtml.includes('id="staff-username-help"')&&newHtml.includes('aria-describedby="staff-username-help"'),'Username rules must be explained next to the field');
 assert.ok(roleHtml.includes('role="dialog"')&&roleHtml.includes('تفاصيل صلاحيات'));
 roleContext.roles.value[0].staffCount=3;assert.ok((await render(c,'roles',roleContext)).includes('إجمالي 3 مستخدمين'));
