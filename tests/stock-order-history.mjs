@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {stockOrderDate,filterStockOrders,stockOrderHeaders,stockOrderExportRows} from '../src/stock-order-history.js';
+import {stockOrderTotals,stockOrderDate,filterStockOrders,stockOrderHeaders,stockOrderExportRows} from '../src/stock-order-history.js';
 const rows=[{id:'a',status:'approved',supplier:'Alpha',createdAt:'2026-11-03T21:00:00Z',quantity:10,costTotal:'90.125',retailTotal:'100.000'},{id:'b',status:'approved',supplier:'Beta',createdAt:'2026-11-04T20:59:59Z'},{id:'c',status:'approved',supplier:'Alpha',createdAt:'2026-11-04T21:00:00Z'},{id:'p',status:'pending',supplier:'Alpha',createdAt:'2026-11-04T10:00:00Z'}];
 assert.equal(stockOrderDate(rows[0].createdAt),'2026-11-04');
 assert.deepEqual(filterStockOrders(rows,{from:'2026-11-04',to:'2026-11-04'}).map(r=>r.id),['a','b']);
@@ -13,3 +13,10 @@ assert.equal(stockOrderDate('invalid'),'');
 const data=stockOrderExportRows(filterStockOrders(rows));assert.equal(data.length,3);assert.equal(data[0].length,stockOrderHeaders.length);assert.equal(data[0][9],'90.125');assert.equal(data[0][10],'100.000');
 assert.equal(filterStockOrders(Array.from({length:125},(_,i)=>({...rows[0],id:String(i)}))).length,125);
 console.log('Stock history: Baghdad date boundaries, supplier/date intersection, empty and invalid ranges, complete export rows verified.');
+
+assert.deepEqual(stockOrderTotals([]),{orders:0,quantity:0,cost:'0',retail:'0'});
+const totalsRows=[{quantity:2,costTotal:'0.100',retailTotal:'0.200'},{quantity:3,costTotal:'0.200',retailTotal:'0.100'},{quantity:4,costTotal:'1000.001',nominalTotal:'2000.005'}];
+assert.deepEqual(stockOrderTotals(totalsRows),{orders:3,quantity:9,cost:'1,000.301',retail:'2,000.305'});
+assert.equal(stockOrderTotals([{costTotal:'9999999999999999.999'},{costTotal:'0.001'}]).cost,'10,000,000,000,000,000');
+assert.equal(stockOrderTotals(filterStockOrders(rows,{supplier:'missing'})).orders,0);
+assert.equal(stockOrderTotals(filterStockOrders(rows,{supplier:'Alpha',to:'2026-11-04'})).cost,'90.125');

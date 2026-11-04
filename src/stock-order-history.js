@@ -9,3 +9,12 @@ export function filterStockOrders(rows,{from='',to='',supplier=''}={}){
 }
 export const stockOrderHeaders=['رقم الطلبية','تاريخ الاعتماد (بغداد)','المجهّز','المصدر','المحافظة','عدد البطاقات','عدد الفئات','عدد الملفات','البطاقات المستبعدة','إجمالي التكلفة IQD','قيمة البيع عند المعاينة IQD','رُفعت بواسطة','الحالة'];
 export function stockOrderExportRows(rows){return rows.map(b=>[b.id,stockOrderDate(b.createdAt),b.supplier,b.source,b.city||'',b.quantity,b.categoryCount??b.lines?.length??0,b.fileCount??0,b.rejected??0,b.costTotal,b.retailTotal??b.nominalTotal,b.actor||'','معتمدة']);}
+
+function milliAmount(value){
+  const match=String(value??'0').match(/^(\d+)(?:\.(\d{1,3}))?$/);return match?BigInt(match[1])*1000n+BigInt((match[2]||'').padEnd(3,'0')):0n;
+}
+function displayAmount(value){const whole=(value/1000n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,','),fraction=(value%1000n).toString().padStart(3,'0').replace(/0+$/,'');return whole+(fraction?'.'+fraction:'');}
+export function stockOrderTotals(rows){
+  let quantity=0,cost=0n,retail=0n;for(const b of rows){quantity+=Number(b.quantity)||0;cost+=milliAmount(b.costTotal);retail+=milliAmount(b.retailTotal??b.nominalTotal);}
+  return {orders:rows.length,quantity,cost:displayAmount(cost),retail:displayAmount(retail)};
+}
