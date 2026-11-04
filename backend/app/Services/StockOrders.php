@@ -23,7 +23,7 @@ class StockOrders
 
     public function batches(): array
     {
-        return DB::table('stock_batches')->orderByDesc('created')->limit(100)->get()->map(fn ($r) => json_decode($r->summary, true))->all();
+        return DB::table('stock_batches')->orderByDesc('created')->get()->map(fn ($r) => json_decode($r->summary, true))->all();
     }
 
     public function preview(array $b): array

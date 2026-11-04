@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {stockOrderDate,filterStockOrders,stockOrderHeaders,stockOrderExportRows} from '../src/stock-order-history.js';
+const rows=[{id:'a',status:'approved',supplier:'Alpha',createdAt:'2026-11-03T21:00:00Z',quantity:10,costTotal:'90.125',retailTotal:'100.000'},{id:'b',status:'approved',supplier:'Beta',createdAt:'2026-11-04T20:59:59Z'},{id:'c',status:'approved',supplier:'Alpha',createdAt:'2026-11-04T21:00:00Z'},{id:'p',status:'pending',supplier:'Alpha',createdAt:'2026-11-04T10:00:00Z'}];
+assert.equal(stockOrderDate(rows[0].createdAt),'2026-11-04');
+assert.deepEqual(filterStockOrders(rows,{from:'2026-11-04',to:'2026-11-04'}).map(r=>r.id),['a','b']);
+assert.deepEqual(filterStockOrders(rows,{from:'2026-11-04',to:'2026-11-04',supplier:'Alpha'}).map(r=>r.id),['a']);
+assert.deepEqual(filterStockOrders(rows,{to:'2026-11-04'}).map(r=>r.id),['a','b']);
+assert.deepEqual(filterStockOrders(rows,{from:'2026-11-05'}).map(r=>r.id),['c']);
+assert.equal(filterStockOrders(rows,{from:'2026-11-05',to:'2026-11-04'}).length,0);
+assert.equal(filterStockOrders(rows,{supplier:'missing'}).length,0);
+assert.equal(filterStockOrders(rows).length,3);
+assert.equal(stockOrderDate('invalid'),'');
+const data=stockOrderExportRows(filterStockOrders(rows));assert.equal(data.length,3);assert.equal(data[0].length,stockOrderHeaders.length);assert.equal(data[0][9],'90.125');assert.equal(data[0][10],'100.000');
+assert.equal(filterStockOrders(Array.from({length:125},(_,i)=>({...rows[0],id:String(i)}))).length,125);
+console.log('Stock history: Baghdad date boundaries, supplier/date intersection, empty and invalid ranges, complete export rows verified.');

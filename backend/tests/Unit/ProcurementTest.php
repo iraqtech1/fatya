@@ -26,6 +26,17 @@ class ProcurementTest extends TestCase
         }
     }
 
+    public function test_stock_history_includes_orders_beyond_the_first_hundred(): void
+    {
+        for ($i = 0; $i < 105; $i++) {
+            DB::table('stock_batches')->insert(['id' => 'batch-'.$i, 'request_id' => 'request-'.$i, 'request_hash' => str_repeat('a', 64), 'summary' => json_encode(['id' => 'batch-'.$i, 'status' => 'approved']), 'created' => $i]);
+        }
+        $rows = app(StockOrders::class)->batches();
+        $this->assertCount(105, $rows);
+        $this->assertSame('batch-104', $rows[0]['id']);
+        $this->assertSame('batch-0', $rows[104]['id']);
+    }
+
     private function fixture(): array
     {
         Http::preventStrayRequests();
