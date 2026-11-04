@@ -14,6 +14,7 @@ const tree=[
  {id:'audit',name:'سجل التدقيق',description:'إجراءات المستخدمين ومراجع العمليات'}
 ];
 export function useReportFlow({can,request,download}){
+ let generation=0;
  const path=ref([]),filters=ref(emptyReportFilters()),appliedFilters=ref(emptyReportFilters()),result=ref(null),busy=ref(false),error=ref(''),message=ref(''),tablesOpen=ref(false);
  const cards=computed(()=>tree.flatMap(node=>{
   if(!node.children)return can('reports_'+node.id+'.view')?[node]:[];
@@ -23,30 +24,37 @@ export function useReportFlow({can,request,download}){
  const current=computed(()=>path.value.at(-1)||null),type=computed(()=>current.value&&!current.value.children?current.value.id:''),visibleCards=computed(()=>current.value?.children||cards.value);
  const customized=computed(()=>Object.values(appliedFilters.value).some(v=>v!==''));
  const dirty=computed(()=>JSON.stringify(filters.value)!==JSON.stringify(appliedFilters.value));
- function reset(){filters.value=emptyReportFilters();appliedFilters.value=emptyReportFilters();result.value=null;error.value='';message.value='';tablesOpen.value=false;}
+ function reset(){generation++;busy.value=false;filters.value=emptyReportFilters();appliedFilters.value=emptyReportFilters();result.value=null;error.value='';message.value='';tablesOpen.value=false;}
  async function open(card){
   if(busy.value||!visibleCards.value.some(c=>c.id===card.id))return;
   path.value=[...path.value,card];reset();
   if(type.value)await load();
  }
- function back(depth=0){if(busy.value)return;path.value=path.value.slice(0,depth);reset();}
+ function back(depth=Math.max(0,path.value.length-1)){if(busy.value)return;path.value=path.value.slice(0,depth);reset();}
+ async function restorePath(ids){
+  const resolved=[];let available=cards.value;
+  for(const id of ids.slice(0,4)){const node=available.find(n=>n.id===id);if(!node)break;resolved.push(node);available=node.children||[];}
+  if(JSON.stringify(resolved.map(n=>n.id))===JSON.stringify(path.value.map(n=>n.id)))return;
+  path.value=resolved;reset();if(type.value)await load();
+ }
  async function load(page=1,scope=appliedFilters.value){
   if(busy.value||!type.value)return false;
   busy.value=true;error.value='';message.value='';
-  const snapshot={...scope};
-  try{const data=await request({type:type.value,filters:snapshot,page,all:false});result.value=data;appliedFilters.value=snapshot;return true;}
-  catch(e){error.value=e.message;return false;}finally{busy.value=false;}
+  const snapshot={...scope},token=++generation;
+  try{const data=await request({type:type.value,filters:snapshot,page,all:false});if(token!==generation)return false;result.value=data;appliedFilters.value=snapshot;return true;}
+  catch(e){if(token===generation)error.value=e.message;return false;}finally{if(token===generation)busy.value=false;}
  }
  async function apply(){if(await load(1,filters.value))tablesOpen.value=true;}
  async function clear(){if(busy.value)return;filters.value=emptyReportFilters();await apply();}
  async function exportReport(scope='filtered'){
   if(busy.value||!type.value||!can('reports_'+type.value+'.export'))return;
-  busy.value=true;error.value='';message.value='';
+  busy.value=true;error.value='';message.value='';const token=++generation;
   try{
    const data=await request({type:type.value,filters:scope==='all'?emptyReportFilters():{...appliedFilters.value},page:1,all:true});
+   if(token!==generation)return;
    if(!data.rows.length){message.value='لا توجد نتائج للتصدير.';return;}
    await download(type.value,data,scope);message.value='تم تجهيز ملف Excel';
-  }catch(e){error.value=e.message;}finally{busy.value=false;}
+  }catch(e){if(token===generation)error.value=e.message;}finally{if(token===generation)busy.value=false;}
  }
- return {path,filters,appliedFilters,result,busy,error,message,tablesOpen,cards,current,type,visibleCards,customized,dirty,open,back,load,apply,clear,exportReport};
+ return {path,filters,appliedFilters,result,busy,error,message,tablesOpen,cards,current,type,visibleCards,customized,dirty,open,back,restorePath,load,apply,clear,exportReport};
 }

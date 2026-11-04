@@ -1,3 +1,4 @@
+import {useViewHistory} from '../src/view-history.js';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
@@ -9,7 +10,7 @@ import {withBuiltInImportMappings,resolveImportDraft} from '../src/asiacell-impo
 import {stockRows,stockCellLabel,parseStockText} from '../src/stock-order-files.js';
 import {detectStockFormat} from '../src/stock-import-formats.js';
 const require=createRequire(import.meta.url),{renderToString}=require('@vue/server-renderer'),icons=require('lucide-vue-next');
-function component(file,dependencies){const src=readFileSync(new URL('../src/'+file,import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export default','return');const entries=Object.entries(dependencies).filter(([key])=>/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key));return Function(...entries.map(([k])=>k),src)(...entries.map(([,v])=>v));}
+function component(file,dependencies){const src=readFileSync(new URL('../src/'+file,import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export default','return');dependencies={useViewHistory,...dependencies};const entries=Object.entries(dependencies).filter(([key])=>/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key));return Function(...entries.map(([k])=>k),src)(...entries.map(([,v])=>v));}
 async function render(c,context){const warnings=[],app=Vue.createSSRApp({...c,setup:()=>context});app.directive('permit',{getSSRProps:()=>({})});app.config.warnHandler=m=>warnings.push(m);const html=await renderToString(app);assert.deepEqual(warnings,[]);return html;}
 const report=component('ReportsCenter.js',{...Vue,...icons,useReportFlow,can:()=>true,connected:true,api:async()=>({rows:[{id:'0001',status:'available'}],totals:{rows:1},page:1,pages:1}),store:{products:[],companies:[]},exportWorkbook:async()=>{}});
 let r=report.setup();assert.ok((await render(report,r)).includes('report-card'));

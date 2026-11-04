@@ -1,3 +1,4 @@
+import {useViewHistory} from './view-history.js';
 import {store} from './store.js';
 import ThemeScene from './ThemeScene.js';
 import {t,language} from './i18n.js';
@@ -13,6 +14,7 @@ export default {
   props:{user:Object,error:String,orders:{type:Array,default:()=>[]}},emits:['save','logout','browse'],
   setup(props,{emit}){
     const view=ref('menu'),name=ref(''),email=ref('');
+    useViewHistory('account',()=>({view:view.value}),state=>{if(state.view==='edit'&&view.value!=='edit'){edit();return;}view.value=['menu','edit','archive','privacy','about'].includes(state.view)?state.view:'menu';});
     function edit(){name.value=props.user.previewId&&props.user.name==='حساب تجريبي'?'':props.user.name;email.value=props.user.email;view.value='edit';}
     function save(){emit('save',{name:name.value,email:email.value,done:()=>{view.value='menu';}});}
     return {store,t,language,dark,view,name,email,edit,save};

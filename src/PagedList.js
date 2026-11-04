@@ -1,17 +1,19 @@
+import {useViewHistory} from './view-history.js';
 import {ref,computed,watch,nextTick} from 'vue/dist/vue.esm-bundler.js';
 import {t} from './i18n.js';
 import {pageCount,clampPage,pageItems,pageNumbers} from './pagination.js';
 import './pagination.css';
 export default {
-  props:{items:{type:Array,required:true},size:{type:Number,default:8},resetKey:{default:''},admin:{type:Boolean,default:false},scroll:{type:Boolean,default:true}},
+  props:{historyKey:{type:String,default:''},items:{type:Array,required:true},size:{type:Number,default:8},resetKey:{default:''},admin:{type:Boolean,default:false},scroll:{type:Boolean,default:true}},
   setup(props){
-    const page=ref(1),root=ref(null);
+    const page=ref(1),root=ref(null),pendingPage=ref(null);
     const total=computed(()=>pageCount(props.items.length,props.size));
     const current=computed(()=>clampPage(page.value,props.items.length,props.size));
     const visible=computed(()=>pageItems(props.items,current.value,props.size));
     const numbers=computed(()=>pageNumbers(current.value,total.value));
-    watch(()=>props.resetKey,()=>{page.value=1;});
-    watch(total,()=>{page.value=current.value;});
+    watch(()=>props.resetKey,()=>{pendingPage.value=null;page.value=1;});
+    watch(total,()=>{if(pendingPage.value&&props.items.length){page.value=clampPage(pendingPage.value,props.items.length,props.size);pendingPage.value=null;}else page.value=current.value;});
+    useViewHistory('pagination:'+props.historyKey,()=>({page:pendingPage.value||current.value}),state=>{const wanted=Number.isInteger(state.page)&&state.page>0?state.page:1;if(!props.items.length){pendingPage.value=wanted;return;}pendingPage.value=null;page.value=clampPage(wanted,props.items.length,props.size);},{enabled:()=>!!props.historyKey});
     const label=text=>props.admin?text:t(text);
     async function change(value){page.value=clampPage(value,props.items.length,props.size);await nextTick();if(props.scroll)root.value?.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
     return {page,root,total,current,visible,numbers,label,change};

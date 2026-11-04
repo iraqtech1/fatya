@@ -1,3 +1,4 @@
+import {useViewHistory} from './view-history.js';
 import {ref,computed,nextTick,onBeforeUnmount,onMounted} from 'vue/dist/vue.esm-bundler.js';
 import {ArrowRight,ChevronLeft,CreditCard,Smartphone,Wifi,X,Check,Plus,Minus,RotateCcw} from 'lucide-vue-next';
 import {t} from './i18n.js';
@@ -27,6 +28,9 @@ export default {
     const offerTitle=offer=>offer.label?(offer.customLabel?offer.label:t(offer.label)):number(offer.value)+' '+t(props.product.unit||'د.ع');
     async function focusHeading(){await nextTick();heading.value?.focus();}
     function chooseService(id){service.value=id;index.value=null;quantity.value=1;error.value='';focusHeading();}
+    useViewHistory('asiacell',()=>({service:service.value,index:index.value}),state=>{
+      service.value=services.value.some(s=>s.id===state.service)?state.service:'';index.value=Number.isInteger(state.index)?state.index:null;
+    });
     function back(){if(props.initialDraft?.fromCatalog){emit('back');return;}if(service.value){service.value='';index.value=null;focusHeading();}else emit('back');}
     async function chooseOffer(value){index.value=value;quantity.value=1;error.value='';await nextTick();sheet.value?.showModal();}
     onMounted(()=>{if(index.value!==null)chooseOffer(index.value);});

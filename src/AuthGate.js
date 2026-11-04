@@ -1,3 +1,4 @@
+import {useViewHistory} from './view-history.js';
 import {api,connected} from './api.js';
 import {createRemoteAuth} from './remote-auth.js';
 import {t,language} from './i18n.js';
@@ -12,10 +13,14 @@ import {withPreviewAccount} from './preview-account.js';
 export const auth=connected?createRemoteAuth():withPreviewAccount(createPreviewAuth());
 export default {
   components:{ChevronRight,User,Smartphone,Mail,ShieldCheck,ArrowLeft,LockKeyhole,Eye,EyeOff,StoreBrandMark},
-  props:{request:Number,initialView:{type:String,default:'login'}},
+  props:{active:{type:Boolean,default:true},request:Number,initialView:{type:String,default:'login'}},
   emits:['enter'],
   setup(props,{emit}){
     const view=ref(props.initialView==='register'?'register':'login'),name=ref(''),phone=ref(''),password=ref(''),visible=ref(false),email=ref(''),code=ref(''),notice=ref(''),error=ref(''),busy=ref(false),heading=ref(null),otpInput=ref(null),challenge=ref(null),now=ref(Date.now());
+    useViewHistory('auth',()=>({view:view.value}),state=>{
+      const next=['login','register','reset','otp'].includes(state.view)?state.view:'login';
+      if(next==='otp'&&challenge.value)view.value=next;else if(next!=='otp'&&view.value!==next)return change(next);
+    },{enabled:()=>props.active});
     let timer;
     const remaining=computed(()=>Math.max(0,Math.ceil(((challenge.value?.resendAt||0)-now.value)/1000)));
     const expired=computed(()=>!!challenge.value&&now.value>=challenge.value.expiresAt);

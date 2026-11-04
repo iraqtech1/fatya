@@ -1,3 +1,4 @@
+import {useViewHistory} from '../src/view-history.js';
 import {matrixRows,matrixColumns,matrixSelection} from '../src/permission-matrix.js';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -8,7 +9,7 @@ const icons=require('lucide-vue-next');
 const keys=groups.flatMap(g=>Object.keys(g.actions).map(a=>g.id+'.'+a));
 assert.equal(new Set(keys).size,keys.length);
 const source=readFileSync(new URL('../src/AdminAccessManager.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export default','return');
-function component(owner=true,permissions=keys){return Function('matrixRows','matrixColumns','matrixSelection','onBeforeUnmount','nextTick','ShieldCheck','Plus','Users','Pencil','Trash2','X','Eye','EyeOff','computed','onMounted','ref','watch','api','connected','connection','can','permissionGroups','permissionKeys',source)(matrixRows,matrixColumns,matrixSelection,()=>{},Vue.nextTick,icons.ShieldCheck,icons.Plus,icons.Users,icons.Pencil,icons.Trash2,icons.X,icons.Eye,icons.EyeOff,Vue.computed,()=>{},Vue.ref,()=>{},()=>{throw Error('Rendering must not send requests');},false,{access:{owner,id:owner?'owner':'employee'}},p=>permissions.includes(p),groups,keys);}
+function component(owner=true,permissions=keys){return Function('useViewHistory','matrixRows','matrixColumns','matrixSelection','onBeforeUnmount','nextTick','ShieldCheck','Plus','Users','Pencil','Trash2','X','Eye','EyeOff','computed','onMounted','ref','watch','api','connected','connection','can','permissionGroups','permissionKeys',source)(useViewHistory,matrixRows,matrixColumns,matrixSelection,()=>{},Vue.nextTick,icons.ShieldCheck,icons.Plus,icons.Users,icons.Pencil,icons.Trash2,icons.X,icons.Eye,icons.EyeOff,Vue.computed,()=>{},Vue.ref,()=>{},()=>{throw Error('Rendering must not send requests');},false,{access:{owner,id:owner?'owner':'employee'}},p=>permissions.includes(p),groups,keys);}
 async function render(c,mode,context){const warnings=[],app=Vue.createSSRApp(context?{...c,setup:()=>context}:c,{mode});app.config.warnHandler=m=>warnings.push(m);const html=await renderToString(app);assert.deepEqual(warnings,[],mode+' must render without undefined template bindings');return html;}
 for(const mode of ['roles','staff','staff-new','access-audit'])await render(component(),mode);
 const c=component(),roleContext=c.setup({mode:'roles'});

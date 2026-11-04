@@ -1,3 +1,4 @@
+import {useViewHistory} from './view-history.js';
 import {ChevronLeft,ArrowRight,SlidersHorizontal,Download,FileBarChart} from 'lucide-vue-next';
 import {useReportFlow} from './report-flow.js';
 import {can} from './admin-access.js';
@@ -15,14 +16,18 @@ export default{
    const cols=Object.keys(data.rows[0]);
    await exportWorkbook('fatya-'+type+'-'+scope+'-'+new Date().toISOString().slice(0,10)+'.xlsx',cols.map(k=>labels[k]||k),data.rows.map(r=>cols.map(k=>typeof r[k]==='number'?r[k]:show(r[k]))));
   }});
+  const history=useViewHistory('reports',()=>({path:flow.path.value.map(n=>n.id),tables:flow.tablesOpen.value,page:flow.result.value?.page||1}),async state=>{
+   await flow.restorePath(Array.isArray(state.path)?state.path:[]);flow.tablesOpen.value=!!state.tables;if(flow.result.value&&Number.isInteger(state.page)&&state.page>0&&state.page<=flow.result.value.pages&&state.page!==flow.result.value.page)await flow.load(state.page);
+  });
+  function back(depth=Math.max(0,flow.path.value.length-1)){history.back({path:flow.path.value.slice(0,depth).map(n=>n.id),tables:false,page:1});}
   const columns=computed(()=>Object.keys(flow.result.value?.rows[0]||{}));
   function show(v){return v===null||v===undefined?'غير معروف':values[v]||String(v);}
-  return {...flow,store,columns,labels,show};
+  return {...flow,back,store,columns,labels,show};
  },
  template:`<section class="procurement report-center">
   <nav class="report-breadcrumbs" aria-label="مسار التقرير"><button @click="back(0)" :disabled="busy||!path.length">مركز التقارير</button><template v-for="(node,i) in path" :key="node.id"><ChevronLeft :size="16" aria-hidden="true"/><button v-if="i<path.length-1" @click="back(i+1)" :disabled="busy">{{node.name}}</button><span v-else aria-current="page">{{node.name}}</span></template></nav>
   <template v-if="!type"><div class="report-heading"><h2>{{current?.name||'التقارير'}}</h2><button v-if="path.length" class="admin-secondary" @click="back(path.length-1)"><ArrowRight :size="16"/>رجوع</button></div><div class="report-cards"><button v-for="card in visibleCards" :key="card.id" class="report-card" @click="open(card)" :disabled="busy"><FileBarChart :size="26" aria-hidden="true"/><strong>{{card.name}}</strong><span>{{card.description}}</span><small>{{card.children?card.children.length+' تقارير':'عرض التفاصيل'}}<ChevronLeft :size="18" aria-hidden="true"/></small></button></div><p v-if="!visibleCards.length">لا توجد تقارير متاحة لحسابك.</p></template>
-  <template v-else><section class="admin-panel"><div class="report-heading"><div><h2>{{current.name}}</h2><p>{{current.description}}</p></div><button class="admin-secondary" @click="tablesOpen=!tablesOpen" :aria-expanded="tablesOpen" aria-controls="report-filter-panel"><SlidersHorizontal :size="17"/>الفلترة والجداول</button></div>
+  <template v-else><section class="admin-panel"><div class="report-heading"><div><button class="admin-secondary" @click="back()"><ArrowRight :size="16"/>رجوع</button><h2>{{current.name}}</h2><p>{{current.description}}</p></div><button class="admin-secondary" @click="tablesOpen=!tablesOpen" :aria-expanded="tablesOpen" aria-controls="report-filter-panel"><SlidersHorizontal :size="17"/>الفلترة والجداول</button></div>
   <div class="proc-actions report-export-actions"><button class="admin-secondary" v-permit="'reports_'+type+'.export'" @click="exportReport('all')" :disabled="busy"><Download :size="16"/>تصدير التقرير العام Excel</button><button v-if="customized" class="admin-secondary" v-permit="'reports_'+type+'.export'" @click="exportReport('filtered')" :disabled="busy"><Download :size="16"/>تصدير النتائج المفلترة Excel</button><button class="admin-secondary" @click="load(1)" :disabled="busy">تحديث التقرير</button></div>
   <p v-if="busy" role="status">جاري تجهيز التقرير…</p><p v-if="error" class="admin-form-error" role="alert">{{error}}</p><p v-if="message" role="status">{{message}}</p>
   <dl v-if="result" class="proc-summary"><div v-for="(v,k) in result.totals" :key="k"><dt>{{labels[k]||k}}</dt><dd>{{show(v)}}</dd></div></dl></section>

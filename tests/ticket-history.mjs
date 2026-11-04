@@ -6,7 +6,7 @@ import * as Vue from 'vue';
 import {renderToString} from 'vue/server-renderer';
 const require=createRequire(import.meta.url),vueRequire=createRequire(require.resolve('vue/package.json'));
 const {compile}=vueRequire('@vue/compiler-dom');
-const PagedList={props:['items','size'],setup:(props,{slots})=>()=>slots.default({items:props.items})};
+const PagedList={props:['items','size','historyKey'],setup:(props,{slots})=>()=>slots.default({items:props.items})};
 const source=readFileSync('src/TicketHistory.js','utf8').replace(/^import .*;\r?\n/gm,'').replace('export function','function').replace('export default','const component=');
 const {component,ticketCode}=vm.runInNewContext(source+';({component,ticketCode})',{t:s=>s,PagedList,Ticket:{render:()=>null}});
 component.render=Function('Vue',compile(component.template,{mode:'function',prefixIdentifiers:true}).code)(Vue);delete component.template;

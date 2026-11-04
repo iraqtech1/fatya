@@ -1,3 +1,4 @@
+import {configureViewHistory} from '../view-history.js';
 import {createRouter,createWebHashHistory,createWebHistory} from 'vue-router';
 import {hashRouting,legacyDestination,setRouteNavigator} from '../routing.js';
 if(!hashRouting){const destination=legacyDestination(location);if(destination)history.replaceState(history.state,'',destination);}
@@ -20,3 +21,5 @@ export const router=createRouter({history:hashRouting?createWebHashHistory(impor
 setRouteNavigator(path=>router.push(path));
 if(!hashRouting)window.addEventListener('hashchange',()=>{const destination=legacyDestination(location);if(destination)router.replace(destination);});
 router.afterEach(to=>{updateMeta(to.path);window.dispatchEvent(new Event('fatya:routechange'));});
+
+configureViewHistory(router);

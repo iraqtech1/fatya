@@ -1,3 +1,4 @@
+import {useViewHistory} from '../src/view-history.js';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {ref,computed,watch,nextTick,reactive,effectScope} from 'vue';
@@ -17,7 +18,7 @@ assert.deepEqual(pageNumbers(1,2),[1,2]);
 console.log('Pagination boundaries, complete item coverage, shrinking lists and bounded page controls passed.');
 
 const source=readFileSync(new URL('../src/PagedList.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'').replace('export default','return');
-const component=Function('ref','computed','watch','nextTick','t','pageCount','clampPage','pageItems','pageNumbers',source)(ref,computed,watch,nextTick,text=>text,pageCount,clampPage,pageItems,pageNumbers);
+const component=Function('useViewHistory','ref','computed','watch','nextTick','t','pageCount','clampPage','pageItems','pageNumbers',source)(useViewHistory,ref,computed,watch,nextTick,text=>text,pageCount,clampPage,pageItems,pageNumbers);
 const props=reactive({items,size:8,resetKey:'all',admin:false,scroll:false});
 const scope=effectScope();
 const pager=scope.run(()=>component.setup(props));

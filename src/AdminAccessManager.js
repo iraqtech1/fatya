@@ -1,3 +1,4 @@
+import {useViewHistory} from './view-history.js';
 import {matrixRows,matrixColumns,matrixSelection} from './permission-matrix.js';
 import './permission-matrix.css';
 import {readStaffImage} from './staff-image.js';
@@ -19,6 +20,15 @@ export default {
     const roles=ref([]),roleOptions=ref([]),employees=ref([]),events=ref([]),busy=ref(false),error=ref(''),message=ref(''),query=ref(''),permissionQuery=ref(''),draft=ref(null),confirmation=ref(null),page=ref(1);
     const staffMode=computed(()=>props.mode==='staff'||props.mode==='staff-new');
     const expandedRows=ref([]),roleDialog=ref(null),passwordVisible=ref(false),uploading=ref(false),staffPage=ref(1),pageSize=ref(10),columnFilters=ref({name:'',username:'',email:'',role:'',created:''});
+    useViewHistory('access',()=>({mode:props.mode,editor:draft.value?(draft.value.id||'new'):'',details:expandedRows.value}),state=>{
+      if(state.mode!==props.mode)return;
+      expandedRows.value=Array.isArray(state.details)?state.details.filter(id=>permissionGroups.some(g=>g.id===id)):[];
+      if(!state.editor){draft.value=null;confirmation.value=null;return;}
+      if((draft.value?.id||'new')===state.editor&&draft.value)return;
+      const row=(props.mode==='roles'?roles.value:employees.value).find(r=>String(r.id)===String(state.editor));
+      if(state.editor!=='new'&&!row)return;
+      if(props.mode==='roles')editRole(row);else editStaff(row);
+    });
     let previousFocus=null,previousOverflow='';
     const owner=computed(()=>connection.access?.owner===true);
     const visibleGroups=computed(()=>permissionGroups.map(g=>({...g,entries:Object.entries(g.actions).filter(([key,label])=>(g.name+' '+label+' '+g.id+'.'+key).toLowerCase().includes(permissionQuery.value.toLowerCase()))})).filter(g=>g.entries.length));

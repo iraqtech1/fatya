@@ -1,3 +1,4 @@
+import {useViewHistory} from './view-history.js';
 import PagedList from './PagedList.js';
 import {t,language} from './i18n.js';
 import {connected} from './api.js';
@@ -18,6 +19,9 @@ export default {
    {id:3,title:'الدعم موجود لمساعدتك',body:"يمكنك إرسال استفسارك ومتابعة التذكرة من صفحة الدعم",time:'قبل دقيقتين',unread:true}
   ]);
   const messages=computed(()=>connected?store.notifications:previewMessages.value);
+  useViewHistory('notifications',()=>({open:opened.value,message:selectedMessage.value?.id||''}),async state=>{
+    opened.value=!!state.open;await nextTick();selectedMessage.value=opened.value?messages.value.find(m=>String(m.id)===String(state.message))||null:null;
+  });
   const unread=computed(()=>messages.value.filter(message=>message.unread).length);
   function add(title,body){messages.value.unshift({id:Date.now(),title,body,time:'الآن',unread:true});}
   watch(()=>props.orderCount,(value,old)=>{if(!connected&&value>old)add('تم إضافة طلبك',"تفاصيل البطاقة متاحة في صفحة طلباتي");});
@@ -37,7 +41,7 @@ export default {
    <div class="notification-heading"><h2>{{selectedMessage?t("تفاصيل الإشعار"):t("الإشعارات")}}</h2><button type="button" class="notification-close" :aria-label="t(&quot;إغلاق الإشعارات&quot;)" @click="opened=false"><X :size="19"/></button></div>
    <template v-if="!selectedMessage">
    <button v-if="unread" type="button" class="notification-read-all notification-framed" @click="readAll"><CheckCheck :size="16"/>{{t("تحديد الكل كمقروء")}}</button>
-   <PagedList :items="messages" :size="5" :scroll="false" v-slot="{items:notificationRows}"><ul><li v-for="message in notificationRows" :key="message.id" :class="{unread:message.unread}"><button type="button" class="notification-item" @click.stop="openMessage(message)"><span v-if="message.unread" class="notification-dot" :aria-label="t(&quot;غير مقروء&quot;)"></span><div><h3>{{t(message.title)}}</h3><p>{{t(message.body)}}</p><small>{{t(message.time)}}</small></div><span class="notification-item-arrow"><ChevronLeft :size="16"/></span></button></li></ul></PagedList></template>
+   <PagedList history-key="storeheader-1" :items="messages" :size="5" :scroll="false" v-slot="{items:notificationRows}"><ul><li v-for="message in notificationRows" :key="message.id" :class="{unread:message.unread}"><button type="button" class="notification-item" @click.stop="openMessage(message)"><span v-if="message.unread" class="notification-dot" :aria-label="t(&quot;غير مقروء&quot;)"></span><div><h3>{{t(message.title)}}</h3><p>{{t(message.body)}}</p><small>{{t(message.time)}}</small></div><span class="notification-item-arrow"><ChevronLeft :size="16"/></span></button></li></ul></PagedList></template>
    <template v-else><button type="button" class="notification-back notification-framed" @click="selectedMessage=null"><ArrowRight :size="16"/>{{t("العودة إلى الإشعارات")}}</button><article ref="messageDetail" class="notification-detail" tabindex="-1"><h3>{{t(selectedMessage.title)}}</h3><p>{{t(selectedMessage.body)}}</p><small>{{t(selectedMessage.time)}}</small></article></template>
   </section>
  </header>`
