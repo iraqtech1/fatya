@@ -163,6 +163,25 @@ class AdminAccessTest extends TestCase
         $this->assertNotNull(DB::table('admin_staff')->where('id', $employee['id'])->value('deleted_at'));
     }
 
+    public function test_staff_validation_identifies_the_invalid_field_and_accepts_arabic_display_names(): void
+    {
+        $this->owner();
+        $body = ['name' => 'مدير الدعم', 'username' => 'support.admin', 'email' => 'support@example.test', 'password' => 'fixture-password-123', 'roleId' => $this->role(['support.view']), 'active' => true];
+        $cases = [
+            ['username', 'support@example.test', 'اسم المستخدم ليس بريداً إلكترونياً'],
+            ['username', 'OWNER', 'اسم المستخدم محجوز'],
+            ['username', 'support user', 'اسم المستخدم من 3 إلى 64 خانة'],
+            ['name', '', 'اكتب اسم المدير'],
+            ['active', 'true', 'اختر حالة الحساب'],
+        ];
+        foreach ($cases as [$field, $value, $message]) {
+            $response = $this->postJson('/api/admin/access/staff/save', [...$body, $field => $value])->assertUnprocessable();
+            $this->assertStringStartsWith($message, $response->json('error'));
+            $this->assertDatabaseCount('admin_staff', 0);
+        }
+        $this->postJson('/api/admin/access/staff/save', $body)->assertOk()->assertJsonPath('staff.name', 'مدير الدعم')->assertJsonPath('staff.username', 'support.admin');
+    }
+
     public function test_sensitive_confirmation_uses_employee_password_not_owner_password(): void
     {
         $employee = $this->employee(['exports.copy']);

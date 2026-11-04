@@ -272,8 +272,20 @@ class AdminAccess
                 throw new ApiError('البريد الإلكتروني مستخدم', 409);
             }
             $this->profileImage($image);
-            if (! $name || ! preg_match('/^[a-z0-9][a-z0-9_.-]{2,63}$/D', $username) || $username === strtolower((string) config('fatya.admin_user')) || ! is_bool($body['active'] ?? null)) {
-                throw new ApiError('اكتب اسماً ويوزراً إنكليزياً من 3 إلى 64 حرفاً واختر حالة الحساب', 422);
+            if (! $name) {
+                throw new ApiError('اكتب اسم المدير؛ يمكن كتابته بالعربية أو الإنكليزية', 422);
+            }
+            if (str_contains($username, '@')) {
+                throw new ApiError('اسم المستخدم ليس بريداً إلكترونياً؛ اكتب يوزراً مثل fatya.admin وضع البريد في خانة البريد الإلكتروني', 422);
+            }
+            if (! preg_match('/^[a-z0-9][a-z0-9_.-]{2,63}$/D', $username)) {
+                throw new ApiError('اسم المستخدم من 3 إلى 64 خانة، يبدأ بحرف إنكليزي أو رقم ويحتوي حروفاً إنكليزية وأرقاماً ونقطة أو شرطة فقط، دون مسافات', 422);
+            }
+            if ($username === strtolower((string) config('fatya.admin_user'))) {
+                throw new ApiError('اسم المستخدم محجوز لحساب مالك النظام؛ اختر يوزراً آخر', 422);
+            }
+            if (! is_bool($body['active'] ?? null)) {
+                throw new ApiError('اختر حالة الحساب: مفعّل أو موقوف', 422);
             }
             if (DB::table('admin_staff')->where('username', $username)->when($old, fn ($q) => $q->where('id', '!=', $old->id))->exists()) {
                 throw new ApiError('اسم المستخدم مستخدم', 409);
