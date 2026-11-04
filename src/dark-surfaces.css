@@ -1,0 +1,116 @@
+/* Shared night surfaces. Keep brand artwork intact; theme its surrounding UI. */
+html:root[data-theme=dark]{
+  --night-surface:#0c2525;
+  --night-raised:#14352f;
+  --night-hover:#1c4436;
+  --night-line:#42685b;
+  --night-ink:#eef7f3;
+  --night-muted:#afc8bd;
+  --night-accent:#c3ee4c;
+  --night-accent-ink:#163323;
+  --fatya-surface:var(--night-surface);
+  --surface:var(--night-surface);
+}
+html:root[data-fatya-web][data-theme=dark]{
+  --web-bg:#061a14;--web-surface:var(--night-surface);
+  --web-ink:var(--night-ink);--web-muted:var(--night-muted);
+  --web-line:var(--night-line);--web-soft:var(--night-raised);
+  --web-hover:var(--night-hover);--web-action:var(--night-accent);
+  --web-action-ink:var(--night-accent-ink);
+}
+html:root[data-theme=dark] #app .admin-shell{
+  --admin-panel:var(--night-surface);
+  --admin-muted:var(--night-muted);
+}
+
+/* Reports, procurement, account details and support use the same card palette. */
+html:root[data-theme=dark] #app :is(
+  .report-card,.proc-summary,.proc-note,.proc-offer,.admin-session-state,
+  .admin-live-strip,.admin-demo-pill,.admin-qi,.admin-card-logo,
+  .access-role-modal,.access-save,.pwa-banner,.pull-refresh,.auth-outline,
+  .merchant-note,.ticket-reply,.support-contact,.support-contact-icon,
+  .payment-preview-tag,.payment-preview-brand,.payment-logo,
+  .company-catalog-card,.store-card-art,.dialog-art,.dialog-art>img,
+  .dialog-gallery button,.product-art.has-image,.telecom-provider-image,
+  .provider-image-gallery img,.slider-image-list img,.auth-art>span,
+  .deck-card.deck-white,.hero .deck-card.deck-white
+){
+  background:var(--night-surface)!important;
+  color:var(--night-ink)!important;
+  border-color:var(--night-line)!important;
+  box-shadow:none;
+}
+html:root[data-theme=dark] #app :is(.proc-summary,.proc-note,.merchant-note,.ticket-reply,.payment-preview-tag){
+  background:var(--night-raised)!important;
+}
+html:root[data-theme=dark] #app :is(.proc-summary dd,.proc-offer strong,.report-card strong){color:var(--night-ink)!important}
+html:root[data-theme=dark] #app :is(.proc-summary dt,.proc-private,.report-card>span,.report-card small,.proc-note,.ticket-reply small){color:var(--night-muted)!important}
+
+/* Singular catalog tabs and report controls are separate from the older tab set. */
+html:root[data-theme=dark] #app :is(
+  .admin-catalog-tab,.admin-secondary,.admin-row-action,
+  .report-heading button,.report-export-actions button,.report-pagination button,
+  .pagination button,.stock-order-tabs button,.access-photo-control>b,
+  .access-role-modal .admin-panel-title>button,.support-ticket-status
+){
+  background:var(--night-raised)!important;
+  color:var(--night-ink)!important;
+  border-color:var(--night-line)!important;
+}
+html:root[data-theme=dark] #app :is(
+  .admin-catalog-tab.active,.stock-order-tabs button[aria-selected=true],
+  .pagination button.active,.pagination button[aria-current=page]
+){
+  background:var(--night-accent)!important;
+  color:var(--night-accent-ink)!important;
+  border-color:var(--night-accent)!important;
+}
+html:root[data-theme=dark] #app :is(
+  .admin-secondary,.admin-row-action,.admin-catalog-tab,.report-heading button,
+  .report-export-actions button,.report-card,.pagination button,.auth-outline
+):not(:disabled):not(.active):hover{
+  background:var(--night-hover)!important;
+  color:var(--night-ink)!important;
+  border-color:var(--night-accent)!important;
+}
+html:root[data-theme=dark] #app .admin-shell .admin-sidebar nav button.active{
+  background:var(--night-raised)!important;
+  color:var(--night-accent)!important;
+}
+html:root[data-theme=dark] #app .admin-shell .admin-sidebar nav button:hover{
+  background:var(--night-hover)!important;
+}
+html:root[data-theme=dark] #app :is(.admin-card-cell>img,.admin-image-empty,.admin-denom-image-editor>img){
+  background:var(--night-raised)!important;
+  color:var(--night-muted)!important;
+  border-color:var(--night-line)!important;
+}
+html:root[data-theme=dark] #app .admin-shell .access-role-modal .access-save>.admin-primary{
+  background:var(--night-accent)!important;color:var(--night-accent-ink)!important;
+}
+html:root[data-theme=dark] #app input[type=file]::file-selector-button{
+  background:var(--night-raised);color:var(--night-ink);border:1px solid var(--night-line);
+}
+html:root[data-theme=dark] #app .admin-shell .access-staff-photo input[type=file]::file-selector-button{
+  background:var(--night-raised);color:var(--night-ink);
+}
+
+/* Transparent artwork needs a dark backing without recoloring the actual image. */
+html:root[data-theme=dark] #app :is(.store-card-art,.company-catalog-art,.dialog-gallery button,.payment-logo){color:var(--night-ink)!important}
+html:root[data-theme=dark] #app .store-variant-brands .store-card-art{background:var(--night-raised)!important}
+html:root[data-theme=dark] #app .store-variant-featured .store-card-art{background:transparent!important}
+html:root[data-theme=dark] #app :is(.company-catalog-card,.telecom-service,.telecom-offer):hover{
+  background:var(--night-hover)!important;border-color:var(--night-accent)!important;
+}
+html:root[data-theme=dark] #app .telecom-offer.is-selected{
+  background:var(--night-raised)!important;border-color:var(--night-accent)!important;
+}
+html:root[data-theme=dark] #app .notification-panel li{background:var(--night-surface)!important}
+html:root[data-theme=dark] #app .notification-panel li.unread{background:var(--night-raised)!important}
+html:root[data-theme=dark] #app :is(.success>span,.sidebar nav button.active .nav-symbol){
+  background:var(--night-raised)!important;color:var(--night-accent)!important;
+}
+html:root[data-theme=dark] #app :is(.access-error,.telecom-error){color:#ffb3a2}
+html:root[data-theme=dark] #app .access-success{color:#a8e5bc}
+html:root[data-theme=dark] #app .hero-label>span{background:var(--night-accent)!important}
+html:root[data-theme=dark] #app :is(button,a,summary):focus-visible{outline:2px solid var(--night-accent);outline-offset:3px}
