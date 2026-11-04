@@ -19,7 +19,7 @@ const reportHtml=await render(report,r);assert.ok(reportHtml.includes('الفل�
 const scope=Vue.effectScope();
 await scope.run(async()=>{
  const requests=[],store={products:[],companies:[],orders:[]},connection=Vue.reactive({revision:1});let fail=false;
- const stock=component('StockOrdersManager.js',{...Vue,onMounted:()=>{},can:()=>true,importPolicy,importFieldOptions,store,connection,refreshStore:async()=>{},useStockOrderPreview,withBuiltInImportMappings,resolveImportDraft,stockRows,stockCellLabel,parseStockText,detectStockFormat,readStockSheets:()=>{},PagedList:{template:'<div/>'},connected:true,api:async(path,body)=>{requests.push({path,body});if(fail)throw Error('Preview failed');return {previewId:'p1',previewHash:'hash',quantity:1,rejected:0,costTotal:'100',retailTotal:'120',lines:[],errors:[],warnings:[]};}});
+ const stock=component('StockOrdersManager.js',{...Vue,onMounted:()=>{},can:()=>true,importPolicy,importFieldOptions,store,connection,refreshStore:async()=>{},useStockOrderPreview,withBuiltInImportMappings,resolveImportDraft,stockRows,stockCellLabel,parseStockText,detectStockFormat,readStockSheets:()=>{},PagedList:{props:['items'],template:'<div><slot :items="items"/></div>'},connected:true,api:async(path,body)=>{requests.push({path,body});if(fail)throw Error('Preview failed');return {previewId:'p1',previewHash:'hash',quantity:1,rejected:0,costTotal:'100',retailTotal:'120',lines:[],errors:[],warnings:[]};}});
  const c=stock.setup();assert.equal(c.canStep(2),false);c.next();assert.equal(c.phase.value,1);assert.match(c.error.value,/المجهز/);
  c.supplier.value='Supplier';c.source.value='Invoice';c.next();assert.equal(c.phase.value,2);assert.equal(c.lines.value.length,1);
  const line=c.lines.value[0];line.raw=Vue.markRaw([['PIN'],['0001']]);
@@ -27,9 +27,13 @@ await scope.run(async()=>{
  c.goStep(3);assert.equal(c.phase.value,2,'Cannot skip server preview');
  fail=true;await c.check();assert.equal(c.phase.value,2);assert.equal(c.preview.value,null);assert.equal(c.error.value,'Preview failed');fail=false;
  await c.check();assert.equal(c.phase.value,3);assert.ok(c.preview.value);assert.equal(requests.at(-1).path,'/admin/procurement/stock-orders/preview');
- const html=await render(stock,c);assert.equal((html.match(/role="tab"/g)||[]).length,3);assert.ok(html.includes('id="stock-order-panel-3"'));assert.ok(html.includes('aria-selected="true"'));
+ const html=await render(stock,c);assert.equal((html.match(/role="tab"/g)||[]).length,5);assert.ok(html.includes('id="stock-order-panel-3"'));assert.ok(html.includes('aria-selected="true"'));
+ c.switchTab('history');assert.equal(c.activeTab.value,'history');assert.equal(c.phase.value,3);assert.ok(c.preview.value);
+ c.batches.value=[{id:'a',status:'approved',supplier:'Approved supplier',source:'Invoice',lines:[{line:1,name:'Approved card',value:1000,fileName:'approved.xlsx',accepted:2,cost:'900',retail:'1100',costTotal:'1800'}]},{id:'p',status:'pending'},{id:'r',status:'rejected'}];assert.deepEqual(c.approvedBatches.value.map(b=>b.id),['a']);
+ const historyHtml=await render(stock,c);assert.ok(historyHtml.includes('سجل الطلبيات المعتمدة'));assert.ok(historyHtml.includes('approved.xlsx'));assert.ok(historyHtml.includes('Approved card'));assert.ok(historyHtml.includes('عرض تفاصيل الطلبية'));assert.ok(historyHtml.includes('id="stock-section-panel-new"'));
+ c.switchTab('new');assert.equal(c.lines.value[0].raw[1][0],'0001');assert.equal(c.phase.value,3);
  c.goStep(2);assert.ok(c.preview.value,'Returning without edits preserves a valid preview');c.goStep(3);line.cost='200';assert.equal(c.preview.value,null);assert.equal(c.phase.value,2,'Invalid preview cannot remain on approval tab');assert.equal(c.canStep(3),false);
- c.busy.value=true;c.goStep(1);assert.equal(c.phase.value,2);c.busy.value=false;
+ c.busy.value=true;c.switchTab('history');assert.equal(c.activeTab.value,'new');c.goStep(1);assert.equal(c.phase.value,2);c.busy.value=false;
 });
 scope.stop();
 console.log('Reports and stock-order tabs render without missing bindings; files persist and server preview gates approval after edits.');
