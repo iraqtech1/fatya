@@ -23,6 +23,24 @@ html:root[data-theme=dark] #app .admin-shell{
   --admin-muted:var(--night-muted);
 }
 
+/* Login inputs and their autofill inset share one surface, including the icons. */
+html:root[data-theme=dark] #app .masal-login .masal-login-field{
+  --login-field:var(--night-surface);
+  --login-ink:var(--night-ink);
+  background:var(--login-field)!important;
+  border-color:var(--night-line)!important;
+  color:var(--night-muted)!important;
+}
+html:root[data-theme=dark] #app .masal-login .masal-login-field input{
+  background:transparent!important;
+  color:var(--login-ink)!important;
+  caret-color:var(--night-accent);
+}
+html:root[data-theme=dark] #app .masal-login .masal-login-field input::placeholder{color:var(--night-muted)!important}
+html:root[data-theme=dark] #app .masal-login .masal-login-field input:focus-visible{outline:0!important}
+html:root[data-theme=dark] #app .masal-login .masal-login-field button{color:var(--night-muted)!important}
+html:root[data-theme=dark] #app .masal-login .masal-login-field:focus-within{border-color:var(--night-accent)!important;box-shadow:0 0 0 3px #c3ee4c18}
+
 /* Reports, procurement, account details and support use the same card palette. */
 html:root[data-theme=dark] #app :is(
   .report-card,.proc-summary,.proc-note,.proc-offer,.admin-session-state,

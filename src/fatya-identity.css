@@ -63,7 +63,7 @@ html:not([data-theme=dark]) .admin-sidebar nav button.active{color:#034037}
 /* Avoid the browser's blue autofill rectangle inside the dashboard fields. */
 .masal-login-field{--login-field:#fff;--login-ink:#034037}
 html[data-theme=dark] .masal-login-field{--login-field:#0c2d23;--login-ink:#f2f7ef}
-.masal-login-field input:-webkit-autofill{box-shadow:0 0 0 1000px var(--login-field) inset!important;-webkit-text-fill-color:var(--login-ink)!important;caret-color:var(--login-ink)}
+html:root #app .masal-login .masal-login-field input:is(:-webkit-autofill,:autofill){box-shadow:0 0 0 1000px var(--login-field) inset!important;-webkit-text-fill-color:var(--login-ink)!important;caret-color:var(--login-ink)}
 
 /* One consistent Cairo Bold face across every screen and control. */
 html,body,#app,#app *,#app *::before,#app *::after{font-family:'Cairo',sans-serif!important;font-weight:700!important}
