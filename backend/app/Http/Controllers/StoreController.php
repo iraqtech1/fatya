@@ -64,7 +64,18 @@ class StoreController extends Controller
             $meta = DB::table('store_meta')->where('id', 1);
             ($request->isMethod('GET') ? $meta->sharedLock() : $meta->lockForUpdate())->first();
             try {
-                return $this->dispatch($request, $path, $this->store->read());
+                $public = $path === '/api/state' && $request->isMethod('GET');
+                $customerId = null;
+                if ($public) {
+                    try {
+                        $customerId = $this->accounts->session($request, 'customer')->customer_id;
+                    } catch (ApiError $e) {
+                        if ($e->status !== 401) {
+                            throw $e;
+                        }
+                    }
+                }
+                return $this->dispatch($request, $path, $public ? $this->store->readPublic($customerId) : $this->store->read());
             } catch (ApiError $e) {
                 // Failed OTP checks must retain their attempt count, not roll it back.
                 return response()->json(['error' => $e->getMessage()], $e->status);
@@ -293,6 +304,13 @@ class StoreController extends Controller
             if (! $subject || ! $message) {
                 throw new ApiError('اكتب عنوان ورسالة');
             }
+            // Account-based limiting avoids penalizing unrelated users on shared networks.
+            $limitKey = 'fatya:tickets:'.$c['id'];
+            if (RateLimiter::tooManyAttempts($limitKey, 5)) {
+                return $json(['error' => 'وصلت للحد المسموح من التذاكر انتظر قليلاً وحاول مرة ثانية'], 429)
+                    ->header('Retry-After', (string) RateLimiter::availableIn($limitKey));
+            }
+            RateLimiter::hit($limitKey, 600);
             $ticket = ['id' => 'TICKET-'.Str::uuid(), 'customerId' => $c['id'], 'customer' => $c['name'], 'phone' => $c['phone'], 'email' => $c['email'], ...isset($c['previewId']) ? ['previewId' => $c['previewId']] : [], 'subject' => $subject, 'message' => $message, 'date' => now('Asia/Baghdad')->toDateString(), 'status' => 'مفتوحة', 'reply' => ''];
             array_unshift($s['tickets'], $ticket);
             $this->store->event($s, 'تذكرة دعم جديدة');

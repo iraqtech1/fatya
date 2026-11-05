@@ -12,12 +12,33 @@ class Store
 
     public function read(bool $lock = false): array
     {
+        return $this->readState($lock, false, null);
+    }
+
+    /** Public polling must not load unrelated customer histories or admin-only records. */
+    public function readPublic(?string $customerId): array
+    {
+        return $this->readState(false, true, $customerId);
+    }
+
+    private function readState(bool $lock, bool $public, ?string $customerId): array
+    {
         $query = DB::table('store_meta')->where('id', 1);
         $meta = ($lock ? $query->lockForUpdate() : $query)->first();
         $s = ['revision' => (int) $meta->revision, 'settings' => json_decode($meta->settings, true, 512, JSON_THROW_ON_ERROR)];
         $s['settings'] = [...array_fill_keys(CatalogEditor::SOCIAL_FIELDS, ''), ...$s['settings']];
         foreach (self::TABLES as $key => $table) {
-            $s[$key] = DB::table($table)->orderBy('position')->get(['payload'])->map(fn ($r) => json_decode($r->payload, true, 512, JSON_THROW_ON_ERROR))->all();
+            if ($public && (in_array($key, ['imports', 'suppliers', 'events']) || ($customerId === null && in_array($key, ['customers', 'orders', 'tickets'])))) {
+                $s[$key] = [];
+                continue;
+            }
+            $entities = DB::table($table)->orderBy('position');
+            if ($public && $key === 'customers') {
+                $entities->where('id', $customerId);
+            } elseif ($public && in_array($key, ['orders', 'tickets'])) {
+                $entities->where('customer_id', $customerId);
+            }
+            $s[$key] = $entities->get(['payload'])->map(fn ($r) => json_decode($r->payload, true, 512, JSON_THROW_ON_ERROR))->all();
         }
 
         return $s;

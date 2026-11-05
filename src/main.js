@@ -10,6 +10,7 @@ import {installScrollLock} from './scroll-lock.js';
 import './scroll-lock.css';
 import {presentProduct,presentProducts,presentCategory,denominationOptions} from './product-metadata.js';
 import {api,connected} from './api.js';
+import {startStateSync} from './state-sync.js';
 import {copyOrderCodes} from './order-delivery.js';
 import {denominationAvailable,deliveredOrder,cancellableOrder,orderStateLabel,paymentStateLabel,orderTime} from './order-state.js';
 import PaymentPreview from './PaymentPreview.js';
@@ -155,9 +156,9 @@ const supportBusy=ref(false);
 async function support(){if(!session.value){requestAuth('login','support');return;}if(supportBusy.value)return;supportBusy.value=true;try{await createTicket(subject.value,message.value,session.value);notify('تم إرسال تذكرتك إلى لوحة الإدارة');subject.value='';message.value='';}catch(e){notify(e.message);}finally{supportBusy.value=false;}}
 async function copy(order){if(connected){try{await copyOrderCodes(order,api,navigator.clipboard);notify('تم نسخ الكود');}catch(e){notify(e.message||'تعذّر النسخ');}return;}try{await navigator.clipboard.writeText('FATYA-NOT-REDEEMABLE');notify('تم نسخ الكود')}catch{notify("تعذّر النسخ الكود: FATYA-NOT-REDEEMABLE")}}
 if(document.modelContext?.registerTool){try{document.modelContext.registerTool({name:'browse_cards',description:'Filter demo cards in the visible catalog; does not purchase.',inputSchema:{type:'object',properties:{query:{type:'string'}},required:['query'],additionalProperties:false},execute:async input=>{if(typeof input.query!=='string')throw Error('query must be a string');page.value='cards';query.value=input.query;await nextTick();return filtered.value.map(p=>({id:p.id,name:p.name}))}})}catch{}}
-let syncTimer;
-onMounted(async()=>{if(!connected)return;await refreshStore().catch(()=>{});try{const user=await api('/auth/me');session.value=user;entered.value=true;}catch{}syncTimer=setInterval(()=>{if(!document.hidden)refreshStore().catch(()=>{});},3000);});
-onBeforeUnmount(()=>clearInterval(syncTimer));
+let stopStateSync,syncDisposed=false;
+onMounted(async()=>{if(!connected)return;await refreshStore().catch(()=>{});try{const user=await api('/auth/me');session.value=user;entered.value=true;}catch{}if(!syncDisposed)stopStateSync=startStateSync(refreshStore);});
+onBeforeUnmount(()=>{syncDisposed=true;stopStateSync?.();});
 return {companyBrowse,companyProducts,openCatalogCard,available,denominationAvailable,deliveredOrder,cancellableOrder,orderStateLabel,paymentStateLabel,orderTime,cancelOrder,cancellationBusy,WebStore,StoreLayout,webMode,authVisible,authView,requestAuth,cancelAuth,productForSlide,asiacellProduct,asiacellDraft,backFromAsiacell,checkoutAsiacell,homeQuery,catalogSections,browseCards,supportPhoneHref,connected,connection,refreshStore,supportBusy,t,language,cardCount,profileError,saveProfile,marketing,store,admin,myTickets,entered,session,authRequest,enterStore,accountAccess,navMotion,navIcons,page,category,query,selected,quantity,denom,orders,toast,subject,message,success,dialog,products,number,filtered,price,filterCats,categoryIcons,categoryLabel,categoryImage,categoryDescription,denominationOptions,previewImage,gallery,shownImage,selectGalleryImage,nav,mobileNav,go,notify,open,close,startCheckout,paymentMethod,paymentDraft,paymentReceipt,confirmPayment,returnCheckout,support,copy};
 },
 template:`

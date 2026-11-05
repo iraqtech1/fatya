@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {startStateSync} from '../src/state-sync.js';
+let callback,wait,cleared=0,listener,calls=0,fail=false;
+const document={hidden:false,addEventListener:(_,fn)=>listener=fn,removeEventListener:(_,fn)=>{assert.equal(fn,listener);listener=null;}};
+const stop=startStateSync(async()=>{calls++;if(fail)throw Error('offline');},{document,setTimeout:(fn,ms)=>{callback=fn;wait=ms;return 1;},clearTimeout:()=>{cleared++;}});
+assert.equal(wait,15000);
+await callback();assert.equal(calls,1);assert.equal(wait,15000);
+fail=true;await callback();assert.equal(wait,30000);
+await callback();assert.equal(wait,60000);
+await callback();await callback();assert.equal(wait,120000);
+document.hidden=true;listener();const old=calls;await callback();assert.equal(calls,old,'Hidden pages must not send requests');
+fail=false;document.hidden=false;listener();await new Promise(resolve=>setImmediate(resolve));
+assert.equal(calls,old+1,'Returning to the page refreshes immediately');assert.equal(wait,15000);
+stop();assert.equal(listener,null);await callback();assert.equal(calls,old+1);
+assert.ok(cleared>0);
+// Leaving during a request must not restart a timer after it finishes.
+let finish,timers=0;
+const stopPending=startStateSync(()=>new Promise(resolve=>finish=resolve),{document,setTimeout:(fn)=>{callback=fn;timers++;return 1;},clearTimeout:()=>{}});
+const pending=callback();stopPending();finish();await pending;assert.equal(timers,1);
+console.log('State synchronization pauses when hidden, backs off on failures, resumes promptly and cleans up pending requests.');
