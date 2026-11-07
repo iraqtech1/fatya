@@ -2,5 +2,11 @@
 .order-created{white-space:nowrap;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
 html[data-theme="dark"] .order-reference{background:#163c32;color:#d8f5d2;border-color:#38634e}
 .admin-sidebar .admin-nav-count{display:inline-flex;align-items:center;justify-content:center;margin-inline-start:auto;min-width:23px;height:23px;padding:0 6px;flex-shrink:0;border-radius:999px;background:#075841;color:#fff;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+.admin-shell .admin-table-wrap tr.admin-order-attention>td{background:#e9f6d8!important}
+.admin-shell .admin-table-wrap tr.admin-order-attention>td:first-child{border-inline-start:4px solid #16835b}
+.admin-shell .admin-order-attention-label{display:table;margin:0 0 7px auto;padding:3px 9px;border-radius:6px;background:#075841;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}
+html[data-theme="dark"] #app .admin-shell .admin-table-wrap tr.admin-order-attention>td{background:#183c2a!important}
+html[data-theme="dark"] #app .admin-shell .admin-table-wrap tr.admin-order-attention>td:first-child{border-inline-start-color:#b8ff55}
+html[data-theme="dark"] #app .admin-shell .admin-order-attention-label{background:#b8ff55!important;color:#102c24!important}
 html[data-theme="dark"] #app .admin-sidebar .admin-nav-count{background:#b8ff55!important;color:#102c24!important}
 .admin-order-details .order-technical-id{grid-column:1/-1;min-width:0;font-size:12px}.order-technical-id summary{cursor:pointer;padding:7px 0;color:var(--muted,#607e72)}.order-technical-id code{display:block;direction:ltr;unicode-bidi:isolate;overflow-wrap:anywhere;user-select:all;font-size:12px;padding:8px 0}

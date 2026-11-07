@@ -48,3 +48,17 @@ section.value='orders';assert.match(await render(),/طلبات تحتاج متا
 rows[0].paymentStatus='confirmed';rows[0].fulfillmentStatus='delivered';assert.match(await render(),/طلبات تحتاج متابعة: 1/);
 rows[1].paymentStatus='confirmed';rows[1].fulfillmentStatus='delivered';assert.ok(!(await render()).includes('admin-nav-count'),'Badge disappears only after all follow-up is resolved');
 console.log('Order references, Baghdad timestamps, legacy dates and persistent follow-up badge passed.');
+
+// Render the reference cell from both real tables; use the same attention rule as the count.
+for(const tableRow of source.matchAll(/<tr v-for="o in (?:orderRows|store\.orders\.slice\(0,5\))"[\s\S]*?<\/tr>/g)){
+ const row=tableRow[0].replace(/v-for="[^"]+"/,'');
+ const cell=row.match(/<tr[^>]*><td>[\s\S]*?<\/td>/)[0]+'</tr>';
+ async function renderRow(o){return renderToString(createSSRApp({setup:()=>({o,needsAttention:value=>orderNeedsAttention(value,now),orderRef:shortOrderReference,orderCreatedLabel}),template:'<table><tbody>'+cell+'</tbody></table>'}));}
+ const active=await renderRow({...order,paymentStatus:'pending',fulfillmentStatus:'reserved',reservationExpiresAt:now+60000});
+ assert.match(active,/class="admin-order-attention"/);assert.match(active,/يحتاج متابعة/);
+ for(const complete of [{paymentStatus:'confirmed',fulfillmentStatus:'delivered'},{paymentStatus:'pending',fulfillmentStatus:'expired'},{paymentStatus:'pending',fulfillmentStatus:'cancelled'}]){
+  const html=await renderRow({...order,...complete});assert.ok(!html.includes('admin-order-attention'),'Handled orders have no follow-up highlight');
+ }
+}
+assert.equal([...source.matchAll(/<tr v-for="o in (?:orderRows|store\.orders\.slice\(0,5\))"/g)].length,2);
+console.log('Both dashboard order tables highlight exactly the orders counted for follow-up.');
