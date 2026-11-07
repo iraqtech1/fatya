@@ -27,7 +27,7 @@ export function buildOrderReferences(orders){
   return result;
 }
 export function orderNeedsAttention(order,now=Date.now()){
-  if(!order)return false;
+  if(!order||order.adminHiddenAt)return false;
   if(order.paymentStatus==='review'||order.fulfillmentStatus==='review')return true;
   if(['cancelled','expired'].includes(order.fulfillmentStatus))return false;
   if(order.fulfillmentStatus==='delivered')return order.paymentStatus!=='confirmed';

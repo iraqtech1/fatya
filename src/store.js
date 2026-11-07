@@ -21,6 +21,12 @@ if(!connected&&typeof window!=='undefined')subscribePreviewSettings(previewSetti
 if(!connected)try{const rows=JSON.parse(previewSettingsStorage?.getItem('fatya-web-slides-v1')||'null');if(Array.isArray(rows))store.settings.webSlides=rows;}catch{}
 if(!connected&&typeof window!=='undefined')window.addEventListener('storage',event=>{if(event.key==='fatya-web-slides-v1')try{const rows=JSON.parse(event.newValue);if(Array.isArray(rows))store.settings.webSlides=rows;}catch{}});
 export function savePreviewStoreSettings(settings){Object.assign(store.settings,savePreviewSettings(settings,previewSettingsStorage));}
+export function hidePreviewOrders(ids){
+  const selected=new Set(ids),time=new Date().toISOString();
+  const next=store.orders.map(order=>selected.has(order.id)?{...order,adminHiddenAt:order.adminHiddenAt||time}:order);
+  savePreviewOrders(previewSettingsStorage,next);
+  store.orders.splice(0,store.orders.length,...next);
+}
 watch(()=>store.categories.map(c=>c.name),names=>CATEGORIES.splice(0,CATEGORIES.length,...names),{flush:'sync'});
 export const number=n=>new Intl.NumberFormat('en-US').format(n);
 export const isoDate=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Baghdad',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());

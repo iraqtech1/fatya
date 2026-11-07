@@ -21,6 +21,7 @@ const now=Date.now();
 const pending={id:'pending',paymentStatus:'pending',fulfillmentStatus:'reserved',reservationExpiresAt:now+60000};
 const cases=[
  [pending,true],
+ [{...pending,adminHiddenAt:'2026-11-08T00:00:00Z'},false],
  [{...pending,reservationExpiresAt:now-1},false],
  [{fulfillmentStatus:'cancelled',paymentStatus:'pending'},false],
  [{fulfillmentStatus:'expired',paymentStatus:'review'},true],
@@ -50,15 +51,15 @@ rows[1].paymentStatus='confirmed';rows[1].fulfillmentStatus='delivered';assert.o
 console.log('Order references, Baghdad timestamps, legacy dates and persistent follow-up badge passed.');
 
 // Render the reference cell from both real tables; use the same attention rule as the count.
-for(const tableRow of source.matchAll(/<tr v-for="o in (?:orderRows|store\.orders\.slice\(0,5\))"[\s\S]*?<\/tr>/g)){
+for(const tableRow of source.matchAll(/<tr v-for="o in (?:orderRows|visibleAdminOrders\.slice\(0,5\))"[\s\S]*?<\/tr>/g)){
  const row=tableRow[0].replace(/v-for="[^"]+"/,'');
- const cell=row.match(/<tr[^>]*><td>[\s\S]*?<\/td>/)[0]+'</tr>';
- async function renderRow(o){return renderToString(createSSRApp({setup:()=>({o,needsAttention:value=>orderNeedsAttention(value,now),orderRef:shortOrderReference,orderCreatedLabel}),template:'<table><tbody>'+cell+'</tbody></table>'}));}
+ const cell=row.match(/<tr[^>]*>/)[0]+row.match(/<td><span v-if="needsAttention\(o\)"[\s\S]*?<\/td>/)[0]+'</tr>';
+ async function renderRow(o){return renderToString(createSSRApp({setup:()=>({o,selectedOrders:[],needsAttention:value=>orderNeedsAttention(value,now),orderRef:shortOrderReference,orderCreatedLabel}),template:'<table><tbody>'+cell+'</tbody></table>'}));}
  const active=await renderRow({...order,paymentStatus:'pending',fulfillmentStatus:'reserved',reservationExpiresAt:now+60000});
  assert.match(active,/class="admin-order-attention"/);assert.match(active,/يحتاج متابعة/);
  for(const complete of [{paymentStatus:'confirmed',fulfillmentStatus:'delivered'},{paymentStatus:'pending',fulfillmentStatus:'expired'},{paymentStatus:'pending',fulfillmentStatus:'cancelled'}]){
   const html=await renderRow({...order,...complete});assert.ok(!html.includes('admin-order-attention'),'Handled orders have no follow-up highlight');
  }
 }
-assert.equal([...source.matchAll(/<tr v-for="o in (?:orderRows|store\.orders\.slice\(0,5\))"/g)].length,2);
+assert.equal([...source.matchAll(/<tr v-for="o in (?:orderRows|visibleAdminOrders\.slice\(0,5\))"/g)].length,2);
 console.log('Both dashboard order tables highlight exactly the orders counted for follow-up.');

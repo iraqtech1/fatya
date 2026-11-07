@@ -114,6 +114,7 @@ class AdminPolicy
             ['GET', 'otp/balance'] => 'dashboard.otp',
             ['POST', 'customers/status'] => 'customers.status',
             ['POST', 'customers/delete'] => 'customers.delete',
+            ['POST', 'orders/hide'] => 'orders.delete',
             ['POST', 'cards/search'] => 'products.search_serial',
             ['POST', 'import'] => 'inventory.import',
             ['GET', 'procurement/stock-orders'] => 'stock_orders.view',

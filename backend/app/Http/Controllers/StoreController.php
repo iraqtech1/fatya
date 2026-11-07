@@ -13,6 +13,7 @@ use App\Services\DigitalSales;
 use App\Services\ImportCategories;
 use App\Services\Inventory;
 use App\Services\OrderFulfillment;
+use App\Services\OrderVisibility;
 use App\Services\Otp;
 use App\Services\ProductFields;
 use App\Services\Store;
@@ -117,7 +118,7 @@ class StoreController extends Controller
             $s[$key] = $customer ? array_values(array_filter($s[$key], fn ($item) => $item['customerId'] === $customer['id'])) : [];
         }
         foreach ($s['orders'] as &$order) {
-            unset($order['costTotal'], $order['profitBeforeFees']);
+            unset($order['costTotal'], $order['profitBeforeFees'], $order['adminHiddenAt']);
         }
         unset($order);
         foreach (['customers', 'imports', 'suppliers', 'companies', 'events', 'inventorySummary', 'paymentReceipts'] as $key) {
@@ -337,6 +338,18 @@ class StoreController extends Controller
             }
             $this->store->event($s, $b['active'] ? 'تم تفعيل حساب عميل' : 'تم إيقاف حساب عميل');
             $this->store->save($s);
+
+            return $json($this->publicState($req, $s, true));
+        }
+        if ($path === '/api/admin/orders/hide' && $req->isMethod('POST')) {
+            $this->accounts->session($req, 'admin');
+            $this->revision($s, $b);
+            $ids = app(OrderVisibility::class)->hide($s, $b['ids'] ?? null, $b['confirm'] ?? null);
+            if ($ids) {
+                $this->store->event($s, 'حذف '.count($ids).' طلب من قائمة الإدارة');
+                $this->store->save($s);
+                app(AdminAccess::class)->audit('orders.hidden', null, ['ids' => $ids]);
+            }
 
             return $json($this->publicState($req, $s, true));
         }
