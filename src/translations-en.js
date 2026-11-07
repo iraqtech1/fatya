@@ -1,4 +1,6 @@
 export default {
+  "جاري التحميل...": "Loading...",
+  "تعذّر الاتصال بالخادم": "Could not connect to the server",
 "التصنيفات":"Categories","الشركات":"Companies","الفئات":"Denominations","الكارتات":"Cards","شحن مباشر":"Direct top-up",
   "ابتداءً من":"From",
   "فاتيا — الرئيسية":"Fatya — Home",
