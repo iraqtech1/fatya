@@ -8,6 +8,7 @@ assert.equal(requests[0].options.headers['If-None-Match'],undefined);
 next=()=>new Response(null,{status:304});
 assert.equal(await reader.read('/state'),null,'304 must skip JSON parsing and state replacement');
 assert.equal(requests.at(-1).options.headers['If-None-Match'],'"first"');
+assert.equal(requests.at(-1).options.headers['X-Fatya-State-Tag'],'"first"','The hosting-safe validator must match the standard validator');
 assert.equal(requests.at(-1).options.cache,'no-store','No private response may enter the browser HTTP cache');
 reader.invalidate();
 next=()=>new Response(JSON.stringify({viewer:{id:'second'},revision:1}),{headers:{ETag:'"second"'}});

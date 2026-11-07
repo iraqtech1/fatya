@@ -4,7 +4,7 @@ export function createSnapshotReader(fetcher){
   function invalidate(){generation++;validators.clear();}
   async function read(path){
     const current=generation,etag=validators.get(path);
-    const response=await fetcher('/api'+path,{method:'GET',credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json',...(etag?{'If-None-Match':etag}:{})}});
+    const response=await fetcher('/api'+path,{method:'GET',credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json',...(etag?{'If-None-Match':etag,'X-Fatya-State-Tag':etag}:{})}});
     if(current!==generation)return read(path);
     if(response.status===304){if(!etag)throw Error('تعذّر تحديث البيانات');return null;}
     let data;

@@ -24,6 +24,9 @@ class StateValidatorsTest extends TestCase
         $first = $this->getJson('/api/state')->assertOk()->assertHeader('ETag')->assertHeader('Vary', 'Cookie');
         $tag = $first->headers->get('ETag');
         $this->withHeader('If-None-Match', $tag)->getJson('/api/state')->assertStatus(304)->assertContent('')->assertHeader('ETag', $tag);
+        $this->withHeader('If-None-Match', '')->withHeader('X-Fatya-State-Tag', 'W/'.$tag)->getJson('/api/state')->assertStatus(304)->assertContent('');
+        $this->withHeader('X-Fatya-State-Tag', 'not-a-validator')->getJson('/api/state')->assertOk();
+        $this->withHeader('X-Fatya-State-Tag', '')->withHeader('If-None-Match', $tag);
         $store = app(Store::class);
         $state = $store->read();
         $state['settings']['name'] = 'Changed shop';
@@ -54,7 +57,8 @@ class StateValidatorsTest extends TestCase
         $this->withCredentials()->withUnencryptedCookie('masal_admin', $token);
         $response = $this->getJson('/api/admin/state')->assertOk()->assertHeader('ETag');
         DB::table('auth_tokens')->where('role', 'admin')->delete();
-        $this->withHeader('If-None-Match', $response->headers->get('ETag'))->getJson('/api/admin/state')->assertStatus(401);
+        $this->withHeader('If-None-Match', $response->headers->get('ETag'))
+            ->withHeader('X-Fatya-State-Tag', $response->headers->get('ETag'))->getJson('/api/admin/state')->assertStatus(401);
     }
 
     public function test_notification_changes_without_store_revision_invalidate_snapshot(): void
