@@ -1,4 +1,4 @@
-import {api,connected} from './api.js';
+import {api,connected,readStateSnapshot,invalidateStateSnapshot} from './api.js';
 import {normalizeBrandSettings} from './branding.js';
 import {slides,middleSlides} from './slides.js';
 import {reactive,watch} from 'vue/dist/vue.esm-bundler.js';
@@ -58,6 +58,7 @@ export function createTicket(subject,message,customer){
 export const connection=reactive({admin:false,ready:false,error:'',revision:0,customer:null,access:null,adminMetrics:{}});
 export function setStoreRole(admin){
   if(connection.admin===admin)return;
+  invalidateStateSnapshot();
   connection.admin=admin;connection.ready=false;connection.access=null;connection.adminMetrics={};
   for(const key of ['orders','customers','tickets','imports','suppliers','companies','events','notifications','inventorySummary','paymentReceipts'])store[key].splice(0);
 }
@@ -77,7 +78,7 @@ export async function refreshStore(){
   if(!connected)return;
   if(refreshing){const sameRole=refreshRole===connection.admin;await refreshing;if(sameRole)return;return refreshStore();}
   refreshRole=connection.admin;
-  refreshing=(async()=>{const role=refreshRole;try{const data=await api(role?'/admin/state':'/state');if(role===connection.admin)applyState(data);}catch(e){if(role===connection.admin){if(role&&e.status===401)setStoreRole(false);connection.error=e.message;}throw e;}finally{refreshing=null;}})();
+  refreshing=(async()=>{const role=refreshRole;try{const data=await readStateSnapshot(role?'/admin/state':'/state');if(role===connection.admin){if(data)applyState(data);else connection.error='';}}catch(e){if(role===connection.admin){if(role&&e.status===401)setStoreRole(false);connection.error=e.message;}throw e;}finally{refreshing=null;}})();
   return refreshing;
 }
 export async function saveAdmin(collection,data,revision=connection.revision){

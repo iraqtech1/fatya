@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import {createSnapshotReader} from '../src/state-snapshot.js';
+const requests=[];let next;
+const reader=createSnapshotReader(async(url,options)=>{requests.push({url,options});return next();});
+next=()=>new Response(JSON.stringify({viewer:{id:'first'},revision:1}),{headers:{ETag:'"first"'}});
+assert.equal((await reader.read('/state')).viewer.id,'first');
+assert.equal(requests[0].options.headers['If-None-Match'],undefined);
+next=()=>new Response(null,{status:304});
+assert.equal(await reader.read('/state'),null,'304 must skip JSON parsing and state replacement');
+assert.equal(requests.at(-1).options.headers['If-None-Match'],'"first"');
+assert.equal(requests.at(-1).options.cache,'no-store','No private response may enter the browser HTTP cache');
+reader.invalidate();
+next=()=>new Response(JSON.stringify({viewer:{id:'second'},revision:1}),{headers:{ETag:'"second"'}});
+assert.equal((await reader.read('/state')).viewer.id,'second');assert.equal(requests.at(-1).options.headers['If-None-Match'],undefined,'Account changes discard validators even at the same revision');
+await reader.read('/admin/state');assert.equal(requests.at(-1).options.headers['If-None-Match'],undefined,'Admin and customer validators are separate');
+next=()=>new Response(JSON.stringify({error:'Denied'}),{status:401});
+await assert.rejects(reader.read('/admin/state'),e=>e.status===401);
+next=()=>new Response('{}');await reader.read('/admin/state');assert.equal(requests.at(-1).options.headers['If-None-Match'],undefined);
+// A read begun before a login/logout must refetch and never publish the old identity.
+let release;next=()=>new Promise(resolve=>release=resolve);
+const pending=reader.read('/state');reader.invalidate();
+next=()=>new Response(JSON.stringify({viewer:{id:'new-login'}}),{headers:{ETag:'"new"'}});
+release(new Response(JSON.stringify({viewer:{id:'old-login'}}),{headers:{ETag:'"old"'}}));
+assert.equal((await pending).viewer.id,'new-login');assert.equal(requests.at(-1).options.headers['If-None-Match'],undefined);
+reader.invalidate();next=()=>new Response(null,{status:304});await assert.rejects(reader.read('/state'));
+next=()=>new Response('<!doctype html><title>Maintenance</title>');await assert.rejects(reader.read('/state'),/تعذّر الاتصال بالخادم/);
+console.log('Conditional snapshots skip unchanged bodies, isolate roles, clear on authentication changes and reject stale in-flight identities.');

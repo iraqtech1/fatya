@@ -1,5 +1,5 @@
 /* Fatya green identity. Palette and type from the supplied visual identity guide. */
-@font-face{font-family:'Cairo';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/cairo-bold.ttf') format('truetype')}
+@font-face{font-family:'Cairo';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/cairo-bold.woff2') format('woff2')}
 :root{
  --fatya-green:#034037;--fatya-emerald:#0a8b61;--fatya-lime:#7dbc30;
  --fatya-lime-light:#c3ee4c;--fatya-night:#061a14;--fatya-forest:#023b33;

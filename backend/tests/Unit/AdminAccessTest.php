@@ -63,6 +63,22 @@ class AdminAccessTest extends TestCase
         return $token;
     }
 
+    public function test_state_validator_is_computed_after_permissions_and_changes_when_role_changes(): void
+    {
+        $store = app(Store::class);
+        $state = $store->read();
+        $state['customers'] = [Accounts::newCustomer(['name' => 'Private customer', 'email' => ''], '07712345678')];
+        $store->save($state);
+        $this->owner();
+        $owner = $this->getJson('/api/admin/state')->assertOk()->assertJsonCount(1, 'customers');
+        $employee = $this->employee(['support.view']);
+        $this->asEmployee($employee);
+        $staff = $this->withHeader('If-None-Match', $owner->headers->get('ETag'))->getJson('/api/admin/state')->assertOk()->assertJsonCount(0, 'customers');
+        $this->withHeader('If-None-Match', $staff->headers->get('ETag'))->getJson('/api/admin/state')->assertStatus(304)->assertContent('');
+        DB::table('admin_roles')->where('id', $employee['roleId'])->update(['permissions' => json_encode(['support.view', 'customers.view']), 'version' => 2]);
+        $this->getJson('/api/admin/state')->assertOk()->assertJsonCount(1, 'customers');
+    }
+
     public function test_owner_can_create_named_role_and_employee_then_employee_signs_in_with_own_password(): void
     {
         $this->owner();
