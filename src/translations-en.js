@@ -1,4 +1,5 @@
 export default {
+  "معرف العملية الكامل": "Full transaction ID",
   "جاري التحميل...": "Loading...",
   "تعذّر الاتصال بالخادم": "Could not connect to the server",
 "التصنيفات":"Categories","الشركات":"Companies","الفئات":"Denominations","الكارتات":"Cards","شحن مباشر":"Direct top-up",
