@@ -6,7 +6,7 @@ export function catalogCompanies(products,query=''){
  for(const product of products){
   const company=product.manufacturer;
   const id=company?.id?'company:'+company.id:product.manufacturerId?'company:'+product.manufacturerId:'product:'+product.id;
-  if(!groups.has(id))groups.set(id,{id,name:company?.name||product.name,en:company?.name||product.en,image:product.image||'',color:product.color,products:[]});
+  if(!groups.has(id))groups.set(id,{id,name:company?.name||product.name,en:company?.name||product.en,image:company?.image||product.image||'',color:product.color,products:[]});
   groups.get(id).products.push(product);
  }
  return [...groups.values()].filter(g=>!search||[g.name,g.en,...g.products.flatMap(p=>[p.name,p.en,...(p.denomNames||[])])].join(' ').toLowerCase().includes(search));

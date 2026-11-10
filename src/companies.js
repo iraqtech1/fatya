@@ -8,7 +8,7 @@ export function upsertCompany(companies,d,makeId=()=>crypto.randomUUID()){
   const name=typeof d.name==='string'?d.name.trim():'';
   if(!name||name.length>80||!Object.hasOwn(COMPANY_ROLES,d.role)||typeof d.active!=='boolean')throw Error('اكتب اسم الشركة واختر نوعها');
   if(companies.some(c=>c.id!==d.id&&c.name===name))throw Error('اسم الشركة موجود بالفعل');
-  const item={id:old?.id||makeId(),name,role:d.role,active:d.active};
+  const item={id:old?.id||makeId(),name,role:d.role,active:d.active,image:d.image??old?.image??''};
   if(old)Object.assign(old,item);else companies.push(item);
   return item;
 }

@@ -108,7 +108,7 @@ class StoreController extends Controller
         foreach ($s['products'] as &$p) {
             unset($p['importFields'], $p['denomImportFields'], $p['denomImportCodes']);
             $manufacturer = collect($s['companies'])->first(fn ($c) => $c['id'] === ($p['manufacturerId'] ?? ''));
-            $p['manufacturer'] = $manufacturer ? ['id' => $manufacturer['id'], 'name' => $manufacturer['name']] : null;
+            $p['manufacturer'] = $manufacturer ? ['id' => $manufacturer['id'], 'name' => $manufacturer['name'], 'image' => $manufacturer['image'] ?? ''] : null;
             $p['availability'] = array_map(fn ($quantity) => $quantity > 0, $p['stock']);
             $p['stock'] = array_fill(0, count($p['stock']), 0);
         } unset($p);

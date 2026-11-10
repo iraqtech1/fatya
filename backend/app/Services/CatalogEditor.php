@@ -87,7 +87,8 @@ class CatalogEditor
                         throw new ApiError('نوع الشركة مرتبط ببطاقات عدّل ربط البطاقات أولاً');
                     }
                 }
-                $item = ['id' => $id, 'name' => $name, 'role' => $role, 'active' => $d['active']];
+                $item = ['id' => $id, 'name' => $name, 'role' => $role, 'active' => $d['active'], 'image' => $d['image'] ?? $old['image'] ?? ''];
+                self::image($item['image']);
                 break;
             case 'settings':
                 $socialLinks = [];

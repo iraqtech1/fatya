@@ -247,7 +247,7 @@ class AdminPolicy
         $maps = match ($collection) {
             'products' => ['update' => ['name', 'en', 'tag', 'unit', 'category', 'color', 'displayOrder', 'denomNames', 'denomDescriptions', 'denomOrder'], 'images' => ['image', 'denomImages'], 'denominations' => ['values'], 'prices' => ['prices'], 'visibility' => ['active'], 'companies' => ['manufacturerId', 'supplierCompanyId'], 'import_fields' => ['importFields', 'denomImportFields', 'denomImportCodes']],
             'categories' => ['update' => ['name', 'en', 'icon'], 'images' => ['image'], 'visibility' => ['active']],
-            'companies' => ['update' => ['name', 'role'], 'status' => ['active']],
+            'companies' => ['update' => ['name', 'role'], 'images' => ['image'], 'status' => ['active']],
             'customers' => ['update' => ['name', 'phone', 'email'], 'status' => ['active']],
             'suppliers' => ['update' => ['name', 'method', 'url'], 'status' => ['active']],
         };

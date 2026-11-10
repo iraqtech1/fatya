@@ -13,3 +13,5 @@ assert.equal(groups.find(g=>g.id.endsWith('pub-two')).cards[0].index,1);
 assert.equal(JSON.stringify([product,second,korek]),before,'Browsing must not rewrite IDs, stock, prices or company assignments');
 assert.equal(catalogCompanies([{...product,manufacturerId:'',manufacturer:null}])[0].id,'product:1','Existing unassigned cards stay reachable');
 console.log('Company browsing groups linked cards, preserves physical denominations and independent provider services, and keeps existing IDs and legacy cards.');
+
+assert.equal(catalogCompanies([{...product,image:'cards/product.webp',manufacturer:{...product.manufacturer,image:'cards/company.webp'}}])[0].image,'cards/company.webp','Keep the independent company image already deployed in production');
