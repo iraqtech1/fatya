@@ -125,7 +125,8 @@ class CatalogEditor
             case 'featuredCards':
                 $ids = $d['productIds'] ?? null;
                 $interval = $d['interval'] ?? null;
-                if (! is_bool($d['visible'] ?? null) || ! is_int($interval) || $interval < 0 || ($interval > 0 && $interval < 1000) || $interval > 30000 || ! is_array($ids) || ! array_is_list($ids) || count($ids) > 10) {
+                $webVisible = array_key_exists('webVisible', $d) ? $d['webVisible'] : ($s['settings']['featuredCards']['webVisible'] ?? true);
+                if (! is_bool($d['visible'] ?? null) || ! is_bool($webVisible) || ! is_int($interval) || $interval < 0 || ($interval > 0 && $interval < 1000) || $interval > 30000 || ! is_array($ids) || ! array_is_list($ids) || count($ids) > 10) {
                     throw new ApiError('إعدادات الكارتات المميزة غير صحيحة');
                 }
                 $productIds = [];
@@ -149,7 +150,7 @@ class CatalogEditor
                 }
                 self::image($d['backgroundImage'] ?? '');
                 $s['settings']['featuredCards'] = [
-                    'visible' => $d['visible'], 'interval' => $interval, 'productIds' => $productIds,
+                    'visible' => $d['visible'], 'webVisible' => $webVisible, 'interval' => $interval, 'productIds' => $productIds,
                     'label' => self::text($d['label'] ?? null, 160),
                     'title' => self::text($d['title'] ?? null, 120),
                     'accent' => self::text($d['accent'] ?? null, 120),

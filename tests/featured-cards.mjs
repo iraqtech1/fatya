@@ -11,9 +11,9 @@ assert.deepEqual(featuredProducts({...config,productIds:[]},products,categories)
 assert.equal(featuredConfig({featuredCards:{visible:false,productIds:[]}},products).visible,false);
 assert.ok(featuredBackground({...config,backgroundStart:'#112233'}).background.includes('#112233'));
 let persisted,stored,receivedRevision;
-const store=Vue.reactive({products,categories,settings:{}}),connection={revision:12};
+const store=Vue.reactive({products,categories,settings:{}}),connection=Vue.reactive({revision:12});
 const source=readFileSync(new URL('../src/FeaturedCardsManager.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export default','return');
-function manager(connected=false){return Function('computed','ref','store','connection','saveAdmin','connected','prepareSlide','FEATURED_KEY','featuredConfig','featuredProducts','FeaturedCards','localStorage',source)(Vue.computed,Vue.ref,store,connection,async(key,next,revision)=>{assert.equal(key,'featuredCards');persisted=next;receivedRevision=revision;},connected,async()=>({src:'cards/background.webp'}),FEATURED_KEY,featuredConfig,featuredProducts,{template:'<div></div>'}, {setItem(key,value){assert.equal(key,FEATURED_KEY);stored=JSON.parse(value);}});}
+function manager(connected=false){return Function('computed','ref','watch','store','connection','saveAdmin','connected','prepareSlide','FEATURED_KEY','featuredConfig','featuredProducts','FeaturedCards','localStorage',source)(Vue.computed,Vue.ref,Vue.watch,store,connection,async(key,next,revision)=>{assert.equal(key,'featuredCards');persisted=next;receivedRevision=revision;},connected,async()=>({src:'cards/background.webp'}),FEATURED_KEY,featuredConfig,featuredProducts,{template:'<div></div>'}, {setItem(key,value){assert.equal(key,FEATURED_KEY);stored=JSON.parse(value);}});}
 const c=manager(),draft=c.setup();
 draft.move(1,-1);assert.deepEqual([...draft.draft.value.productIds],[2,1]);
 draft.remove(0);draft.productId.value=2;draft.add();assert.deepEqual([...draft.draft.value.productIds],[1,2]);
@@ -22,7 +22,7 @@ assert.equal(store.settings.featuredCards,undefined,'Draft edits must not affect
 await draft.save();assert.equal(stored.title,'New title');assert.equal(store.settings.featuredCards.visible,false);
 draft.draft.value.interval=500;await draft.save();assert.ok(draft.error.value);assert.equal(store.settings.featuredCards.interval,0);
 draft.reset();assert.equal(draft.draft.value.interval,0);
-const remote=manager(true).setup();connection.revision=13;await remote.save();assert.equal(receivedRevision,12,'Save must use the revision from when editing started');assert.equal(persisted.title,'New title');
+const remote=manager(true).setup();connection.revision=13;await remote.save();assert.equal(receivedRevision,13,'Unrelated revisions must not block unchanged featured settings');assert.equal(persisted.title,'New title');
 const app=Vue.createSSRApp({...c,setup:()=>draft});app.directive('permit',{});app.directive('readonly-access',{});
 const warnings=[];app.config.warnHandler=m=>warnings.push(m);const {renderToString}=require('@vue/server-renderer');
 await renderToString(app);assert.deepEqual(warnings,[]);

@@ -184,3 +184,5 @@ html[data-fatya-web] #app .web-card-deck .deck-controls button:hover{background:
 html:root[data-fatya-web] #app .web-preferences .theme-web-toggle{display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;margin:0;border:1px solid var(--web-line)!important;border-radius:11px;background:var(--web-surface)!important;color:var(--web-brand)!important;box-shadow:none!important;line-height:1}
 html:root[data-fatya-web] #app .web-preferences .theme-web-toggle:hover{background:var(--web-soft)!important}
 html:root[data-fatya-web] #app .web-preferences .theme-web-toggle svg{display:block;width:20px;height:20px}
+
+.web-editorial-hero.web-hero-cards-hidden{grid-template-columns:minmax(0,1fr)}

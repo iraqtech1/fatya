@@ -40,13 +40,13 @@ export default {
   },
   template:`<section class="card-deck" :class="{'web-card-deck':variant==='web'}" :aria-label="t(&quot;الكارتات المميزة&quot;)" aria-roledescription="carousel" @mouseenter="hovered=true" @mouseleave="hovered=false" @focusin="focused=true" @focusout="focused=false" @keydown="key">
     <div class="deck-stage" :class="{'is-dragging':dragging}" @touchstart="touchDown" @touchmove="touchDrag" @touchend="touchUp" @touchcancel="reset" @pointerdown="down" @pointermove="drag" @pointerup="up" @pointercancel="cancel" @lostpointercapture="cancel">
-      <button v-for="(p,i) in products" :key="p.id" class="deck-card" :class="{'deck-current':i===active,'deck-white':i%2===1,'deck-card-with-art':!!p.image}" :style="style(i)" :tabindex="Math.abs(offset(i))<=2?0:-1" :aria-hidden="Math.abs(offset(i))>2" :aria-label="i===active?t(&quot;اختيار بطاقة &quot;)+(p.translations?p.name:t(p.name)):t(&quot;عرض بطاقة &quot;)+(p.translations?p.name:t(p.name))" @click="select(p,i)">
+      <button type="button" v-for="(p,i) in products" :key="p.id" class="deck-card" :class="{'deck-current':i===active,'deck-white':i%2===1,'deck-card-with-art':!!p.image}" :style="style(i)" :tabindex="Math.abs(offset(i))<=2?0:-1" :aria-hidden="Math.abs(offset(i))>2" :aria-label="i===active?t(&quot;اختيار بطاقة &quot;)+(p.translations?p.name:t(p.name)):t(&quot;عرض بطاقة &quot;)+(p.translations?p.name:t(p.name))" @click="select(p,i)">
         <img v-if="p.image" class="deck-card-art" :src="p.image" :alt="(p.translations?p.name:t(p.name))" loading="lazy"/>
         <span class="deck-card-top"><span>FATYA / {{String(i+1).padStart(2,'0')}}</span><span>{{t(p.category)}}</span></span>
         <strong dir="ltr">{{p.en}}</strong><span class="deck-card-bottom"><span>{{(p.translations?p.name:t(p.name))}}</span><span>{{t(p.tag)}}</span></span>
       </button>
     </div>
-    <div class="deck-controls"><button @click="move(-1)" :aria-label="t(&quot;الكارت السابق&quot;)"><ChevronUp :size="18"/></button><span>{{(current.translations?current.name:t(current.name))}} <small dir="ltr">{{active+1}} / {{products.length}}</small></span><button @click="move(1)" :aria-label="t(&quot;الكارت التالي&quot;)"><ChevronDown :size="18"/></button></div>
+    <div class="deck-controls"><button type="button" @click="move(-1)" :aria-label="t(&quot;الكارت السابق&quot;)"><ChevronUp :size="18"/></button><span>{{(current.translations?current.name:t(current.name))}} <small dir="ltr">{{active+1}} / {{products.length}}</small></span><button type="button" @click="move(1)" :aria-label="t(&quot;الكارت التالي&quot;)"><ChevronDown :size="18"/></button></div>
 
   </section>`
 };
