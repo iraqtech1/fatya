@@ -6,12 +6,13 @@ import {deckSwipeStep} from './deck-gesture.js';
 
 export default {
   components:{ChevronUp,ChevronDown},
-  props:{products:Array,variant:{type:String,default:'app'}},
+  props:{products:Array,variant:{type:String,default:'app'},interval:{type:Number,default:3200}},
   emits:['select'],
   setup(props,{emit}){
     const dragY=ref(0),dragging=ref(false);
     const active=ref(0),hovered=ref(false),focused=ref(false),reduced=ref(false);
     const current=computed(()=>props.products[active.value]||props.products[0]||{name:''});
+    watch(()=>props.interval,()=>startTimer());
     watch(()=>props.products.length,length=>{active.value=length?active.value%length:0;});
     let timer,media,start=null,moved=false;
     const move=step=>{if(props.products.length)active.value=(active.value+step+props.products.length)%props.products.length;};
@@ -31,8 +32,9 @@ export default {
     function touchUp(e){if(!start||start.kind!=='touch')return;const t=Array.from(e.changedTouches).find(t=>t.identifier===start.id);if(t)finish(t.clientX,t.clientY)}
     function select(p,i){if(moved){moved=false;return}if(i===active.value)emit('select',p);else active.value=i}
     function key(e){if(e.key==='ArrowDown'||e.key==='ArrowRight'){e.preventDefault();move(1)}if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();move(-1)}}
+    function startTimer(){clearInterval(timer);const interval=props.interval??3200;if(interval<=0)return;timer=setInterval(()=>{if(!hovered.value&&!focused.value&&!reduced.value&&!document.hidden)move(1)},Math.max(1000,interval));}
     const motion=e=>reduced.value=e.matches;
-    onMounted(()=>{media=matchMedia('(prefers-reduced-motion: reduce)');reduced.value=media.matches;media.addEventListener('change',motion);timer=setInterval(()=>{if(!hovered.value&&!focused.value&&!reduced.value&&!document.hidden)move(1)},3200)});
+    onMounted(()=>{media=matchMedia('(prefers-reduced-motion: reduce)');reduced.value=media.matches;media.addEventListener('change',motion);startTimer()});
     onUnmounted(()=>{clearInterval(timer);media?.removeEventListener('change',motion)});
     return {t,language,dragging,active,current,hovered,focused,reduced,move,offset,style,down,drag,up,cancel,touchDown,touchDrag,touchUp,reset,select,key};
   },

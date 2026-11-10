@@ -1,0 +1,6 @@
+.featured-manager fieldset{border:0;padding:0;margin:0;display:grid;gap:16px;min-width:0}
+.featured-manager .featured-visibility{display:flex;align-items:center;gap:10px}.featured-manager .featured-visibility input{width:20px;height:20px}
+.featured-colors{display:flex;gap:20px;flex-wrap:wrap}.featured-colors input{min-width:80px;min-height:44px;padding:4px}
+.featured-order{padding-inline-start:24px}.featured-order li{padding:12px 0;border-bottom:1px solid var(--line,#d6e4df)}.featured-order li>div{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.featured-preview.app-shell{display:block;position:relative;inset:auto;height:auto;width:100%;min-height:0;overflow:hidden;background:transparent;padding:12px 0;max-width:800px}
+.featured-cards-hero .hero-copy{min-width:0}.featured-cards-hero .hero-label{white-space:normal;overflow-wrap:anywhere}.featured-cards-hero h2{overflow-wrap:anywhere}

@@ -39,12 +39,12 @@ class AdminPolicy
         }
         if ($method === 'PUT' && ! str_starts_with($path, 'procurement/')) {
             // Field changes are checked again against the revision-validated store.
-            if (! in_array($path, ['products', 'categories', 'companies', 'customers', 'orders', 'suppliers', 'tickets', 'settings', 'slides', 'middleSlides', 'webSlides', 'faqs'], true)) {
+            if (! in_array($path, ['products', 'categories', 'companies', 'customers', 'orders', 'suppliers', 'tickets', 'settings', 'slides', 'middleSlides', 'webSlides', 'faqs', 'featuredCards'], true)) {
                 throw new ApiError('العملية الإدارية غير معرّفة', $this->access->current()['owner'] ? 404 : 403);
             }
 
             $group = match ($path) {
-                'middleSlides' => 'middle_slides', 'webSlides' => 'web_slides', 'tickets' => 'support', default => $path
+                'featuredCards' => 'featured_cards', 'middleSlides' => 'middle_slides', 'webSlides' => 'web_slides', 'tickets' => 'support', default => $path
             };
             $this->oneOf(array_values(array_filter(AdminAccess::keys(), fn ($key) => str_starts_with($key, $group.'.') && ! in_array($key, [$group.'.view', $group.'.contact', $group.'.export', $group.'.search_serial'], true))));
 
@@ -192,10 +192,15 @@ class AdminPolicy
         }
         $old = collect($state[$collection] ?? [])->firstWhere('id', $data['id'] ?? null);
         $group = match ($collection) {
-            'middleSlides' => 'middle_slides', 'webSlides' => 'web_slides', 'tickets' => 'support', default => $collection
+            'featuredCards' => 'featured_cards', 'middleSlides' => 'middle_slides', 'webSlides' => 'web_slides', 'tickets' => 'support', default => $collection
         };
         $operations = array_values(array_filter(AdminAccess::keys(), fn ($key) => str_starts_with($key, $group.'.') && ! in_array($key, [$group.'.view', $group.'.contact', $group.'.export', $group.'.search_serial'], true)));
         $this->oneOf($operations);
+        if ($collection === 'featuredCards') {
+            $this->access->require('featured_cards.update');
+
+            return;
+        }
         if (in_array($collection, ['slides', 'middleSlides', 'webSlides', 'faqs'], true)) {
             $before = $collection === 'webSlides' || $collection === 'faqs' ? ($state['settings'][$collection] ?? []) : $state[$collection];
             $ids = array_column($data, 'id');

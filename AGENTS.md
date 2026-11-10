@@ -9,3 +9,5 @@ Existing GitHub Pages deployment is a browser-local static preview. Production p
 Push and pull-request workflows validate the frontend and backend without publishing. Pages deployment requires a separate manual dispatch on main; do not trigger it or change cPanel/production when the user requests a code-only upload.
 
 For continuation on another workstation, read `docs/project-handoff-ar.txt` for completed work, validation and priorities, and `docs/company-setup-ar.txt` for Windows setup. These documents describe the implementation checkpoint; inspect current Git history and working-tree changes before continuing. Real payment-gateway integration remains deferred until the user supplies its details. Preserve the design and encrypted data keys.
+
+Standing user instruction (10 November 2026): after every requested modification, validate it, push it to GitHub, and deploy it to the existing cPanel production site. This is ongoing deployment authorization; preserve remote changes, production data, credentials, and rollback copies. Verify the deployed result before reporting success.

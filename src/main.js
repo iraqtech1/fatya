@@ -28,6 +28,8 @@ import './category-filters.css';
 import './payment-methods.css';
 import './mobile-navigation.css';
 import CardDeck from './CardDeck.js';
+import FeaturedCards from './FeaturedCards.js';
+import {featuredConfig,featuredProducts} from './featured-cards.js';
 import StoreCards from './StoreCards.js';
 import CompanyCatalog from './CompanyCatalog.js';
 import AsiacellFlow from './AsiacellFlow.js';
@@ -68,7 +70,7 @@ import './interface-polish.css';
 import './dark-surfaces.css';
 const StoreLayout={inheritAttrs:false,template:'<slot/>'};
 const app=createApp({
-components:{CompanyCatalog,QuickAnswers,TicketHistory,WebStore,AsiacellFlow,StoreCards,StoreBrandMark,PaymentMethods,PaymentPreview,PagedList,StoreHeader,MobileDock,AccountPage,PullToRefresh,SplashIntro,BannerSlider,MarketingSite,Dashboard,PwaControls,AuthGate,NavIcon,CardDeck,Home,Grid2X2,ShoppingBag,Headphones,Phone,Search,ChevronLeft,X,Check,Copy,CreditCard,Gamepad2,Smartphone,Layers,User,Plus,Minus,ShieldCheck,SlidersHorizontal,Ticket,ArrowUpRight,Signal,Wifi},
+components:{FeaturedCards,CompanyCatalog,QuickAnswers,TicketHistory,WebStore,AsiacellFlow,StoreCards,StoreBrandMark,PaymentMethods,PaymentPreview,PagedList,StoreHeader,MobileDock,AccountPage,PullToRefresh,SplashIntro,BannerSlider,MarketingSite,Dashboard,PwaControls,AuthGate,NavIcon,CardDeck,Home,Grid2X2,ShoppingBag,Headphones,Phone,Search,ChevronLeft,X,Check,Copy,CreditCard,Gamepad2,Smartphone,Layers,User,Plus,Minus,ShieldCheck,SlidersHorizontal,Ticket,ArrowUpRight,Signal,Wifi},
 setup(){
 let scrollLock,dialogHistory;onMounted(()=>{scrollLock=installScrollLock();dialogHistory=installDialogHistory();});onBeforeUnmount(()=>{scrollLock?.dispose();dialogHistory?.dispose();});
 const admin=ref(inRoute(routePath(),'/admin'));
@@ -101,6 +103,8 @@ const paymentMethod=ref('Qi'),paymentDraft=ref(null),paymentReceipt=ref('');
 const navIcons={Home,Grid2X2,ShoppingBag,Headphones,User,Plus};
 const page=ref(restored?.page||'home'),category=ref('الكل'),query=ref(''),selected=ref(null),quantity=ref(1),denom=ref(0),orders=computed(()=>store.orders.filter(o=>matchesCustomer(o,session.value)).map(o=>{const product=store.products.find(p=>String(p.id)===String(o.productId));if(!product)return o;const displayed=presentProduct(product,language.value);return{...o,name:displayed.name,nameLocalized:!!product.translations,denominationName:displayed.denomNames?.[o.denomIndex],denominationDescription:displayed.denomDescriptions?.[o.denomIndex]};})),toast=ref(''),subject=ref(''),message=ref(''),success=ref(false),dialog=ref(null);
 watch([entered,session,page],()=>{if(!connected)saveStoreSession(previewStorage,{entered:entered.value,user:session.value,page:page.value});},{flush:'sync'});
+const featured=computed(()=>featuredConfig(store.settings,store.products,store.categories));
+const featuredItems=computed(()=>featuredProducts(featured.value,presentProducts(store.products,language.value),store.categories));
 const products=computed(()=>presentProducts(store.products,language.value).filter(p=>p.active&&store.categories.some(c=>c.active&&c.name===p.category)));
 const homeQuery=ref(''),companyBrowse=ref({});
 watch(category,()=>{companyBrowse.value={};},{flush:'sync'});
@@ -164,7 +168,7 @@ if(document.modelContext?.registerTool){try{document.modelContext.registerTool({
 let stopStateSync,syncDisposed=false;
 onMounted(async()=>{if(!connected)return;await refreshStore().catch(()=>{});try{const user=await api('/auth/me');session.value=user;entered.value=true;}catch{}if(!syncDisposed)stopStateSync=startStateSync(refreshStore);});
 onBeforeUnmount(()=>{syncDisposed=true;stopStateSync?.();});
-return {orderRef,orderCreatedLabel,companyBrowse,companyProducts,openCatalogCard,available,denominationAvailable,deliveredOrder,cancellableOrder,orderStateLabel,paymentStateLabel,orderTime,cancelOrder,cancellationBusy,WebStore,StoreLayout,webMode,authVisible,authView,requestAuth,cancelAuth,productForSlide,asiacellProduct,asiacellDraft,backFromAsiacell,checkoutAsiacell,homeQuery,catalogSections,browseCards,supportPhoneHref,connected,connection,refreshStore,supportBusy,t,language,cardCount,profileError,saveProfile,marketing,store,admin,myTickets,entered,session,authRequest,enterStore,accountAccess,navMotion,navIcons,page,category,query,selected,quantity,denom,orders,toast,subject,message,success,dialog,products,number,filtered,price,filterCats,categoryIcons,categoryLabel,categoryImage,categoryDescription,denominationOptions,previewImage,gallery,shownImage,selectGalleryImage,nav,mobileNav,go,notify,open,close,startCheckout,paymentMethod,paymentDraft,paymentReceipt,confirmPayment,returnCheckout,support,copy};
+return {featured,featuredItems,orderRef,orderCreatedLabel,companyBrowse,companyProducts,openCatalogCard,available,denominationAvailable,deliveredOrder,cancellableOrder,orderStateLabel,paymentStateLabel,orderTime,cancelOrder,cancellationBusy,WebStore,StoreLayout,webMode,authVisible,authView,requestAuth,cancelAuth,productForSlide,asiacellProduct,asiacellDraft,backFromAsiacell,checkoutAsiacell,homeQuery,catalogSections,browseCards,supportPhoneHref,connected,connection,refreshStore,supportBusy,t,language,cardCount,profileError,saveProfile,marketing,store,admin,myTickets,entered,session,authRequest,enterStore,accountAccess,navMotion,navIcons,page,category,query,selected,quantity,denom,orders,toast,subject,message,success,dialog,products,number,filtered,price,filterCats,categoryIcons,categoryLabel,categoryImage,categoryDescription,denominationOptions,previewImage,gallery,shownImage,selectGalleryImage,nav,mobileNav,go,notify,open,close,startCheckout,paymentMethod,paymentDraft,paymentReceipt,confirmPayment,returnCheckout,support,copy};
 },
 template:`
 <SplashIntro :enabled="!admin&&!webMode"/><div id="masal-content">
@@ -179,7 +183,7 @@ template:`
 <main><StoreHeader v-if="!webMode" :show-theme="true" :name="store.settings.name" :order-count="orders.length" :ticket-count="myTickets.length"/>
 <div class="content"><p v-if="connected&&connection.error" role="alert">{{connection.error}} <button @click="refreshStore">إعادة المحاولة</button></p><Transition name="view" mode="out-in"><div :key="page">
 <template v-if="page==='home'">
-<BannerSlider :resolve-product="productForSlide" @select="open"/><div class="hero"><div class="hero-copy"><span class="hero-label"><span></span> {{t("رصيد • ألعاب • بطاقات عالمية")}}</span><h2>{{t("بطاقات الرصيد")}}<br><span>{{t("والألعاب")}}</span></h2></div><CardDeck v-if="products.length" :products="products.slice(0,6)" @select="open"/></div>
+<BannerSlider :resolve-product="productForSlide" @select="open"/><FeaturedCards :config="featured" :products="featuredItems" @select="open"/>
 <section class="store-discover" :aria-label="t('اكتشف البطاقات')">
 <form class="search" role="search" @submit.prevent="browseCards('الكل',homeQuery)"><Search aria-hidden="true"/><input v-model="homeQuery" :placeholder="t('ابحث عن شركة أو بطاقة')" :aria-label="t('البحث عن بطاقة')"/><button type="submit" class="store-search-submit" :aria-label="t('بحث')"><ChevronLeft :size="20"/></button></form>
 <div class="store-category-shortcuts store-home-shortcuts" :aria-label="t('تصنيفات البطاقات')"><button v-for="c in filterCats" :key="c" type="button" @click="browseCards(c)"><span class="store-category-icon"><img v-if="categoryImage(c)" :src="categoryImage(c)" alt=""/><component v-else :is="categoryIcons[c]" :size="25" :stroke-width="1.6" aria-hidden="true"/></span><span>{{categoryLabel(c)}}</span></button><button type="button" @click="go('orders')"><span class="store-category-icon"><ShoppingBag :size="25" :stroke-width="1.6" aria-hidden="true"/></span><span>{{t('طلباتي')}}</span></button><button type="button" @click="go('support')"><span class="store-category-icon"><Headphones :size="25" :stroke-width="1.6" aria-hidden="true"/></span><span>{{t('الدعم')}}</span></button></div>

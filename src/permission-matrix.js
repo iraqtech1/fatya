@@ -15,6 +15,7 @@ const sections=[
   ['faqs','الإجابات السريعة',['faqs']],
   ['support','الدعم والتذاكر',['support']],
   ['reports','التقارير',groups.filter(g=>g.id.startsWith('reports_')||g.id==='finance').map(g=>g.id)],
+  ['featured-cards','الكارتات المميزة',['featured_cards']],
   ['web-slider','سلايدر المتجر',['web_slides']],
   ['slider','سلايدر التطبيق',['slides']],
   ['middle-slider','السلايدر الوسطي',['middle_slides']],

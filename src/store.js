@@ -1,3 +1,4 @@
+import {FEATURED_KEY} from './featured-cards.js';
 import {api,connected,readStateSnapshot,invalidateStateSnapshot} from './api.js';
 import {normalizeBrandSettings} from './branding.js';
 import {slides,middleSlides} from './slides.js';
@@ -20,6 +21,8 @@ if(!connected)try{const rows=JSON.parse(previewSettingsStorage?.getItem('fatya-f
 if(!connected&&typeof window!=='undefined')subscribePreviewSettings(previewSettingsStorage,window,next=>Object.assign(store.settings,next));
 if(!connected)try{const rows=JSON.parse(previewSettingsStorage?.getItem('fatya-web-slides-v1')||'null');if(Array.isArray(rows))store.settings.webSlides=rows;}catch{}
 if(!connected&&typeof window!=='undefined')window.addEventListener('storage',event=>{if(event.key==='fatya-web-slides-v1')try{const rows=JSON.parse(event.newValue);if(Array.isArray(rows))store.settings.webSlides=rows;}catch{}});
+if(!connected)try{const data=JSON.parse(previewSettingsStorage?.getItem(FEATURED_KEY)||'null');if(data&&typeof data==='object'&&!Array.isArray(data))store.settings.featuredCards=data;}catch{}
+if(!connected&&typeof window!=='undefined')window.addEventListener('storage',event=>{if(event.key===FEATURED_KEY||event.key===null)try{const data=JSON.parse(previewSettingsStorage?.getItem(FEATURED_KEY)||'null');if(data)store.settings.featuredCards=data;else delete store.settings.featuredCards;}catch{}});
 export function savePreviewStoreSettings(settings){Object.assign(store.settings,savePreviewSettings(settings,previewSettingsStorage));}
 export function hidePreviewOrders(ids){
   const selected=new Set(ids),time=new Date().toISOString();

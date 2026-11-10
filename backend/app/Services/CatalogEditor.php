@@ -38,7 +38,7 @@ class CatalogEditor
 
     public function update(array &$s, string $collection, array $d): ?array
     {
-        if (! array_key_exists($collection, Store::TABLES) && ! in_array($collection, ['settings', 'webSlides', 'faqs'])) {
+        if (! array_key_exists($collection, Store::TABLES) && ! in_array($collection, ['settings', 'webSlides', 'faqs', 'featuredCards'])) {
             throw new ApiError('غير موجود', 404);
         }
         $old = collect($s[$collection] ?? [])->firstWhere('id', $d['id'] ?? null);
@@ -99,6 +99,7 @@ class CatalogEditor
                     }
                     $socialLinks[$key] = $value;
                 }
+                $featuredCards = $s['settings']['featuredCards'] ?? null;
                 $webSlides = $s['settings']['webSlides'] ?? null;
                 $faqs = $s['settings']['faqs'] ?? null;
                 $name = self::text($d['name'] ?? null, 60);
@@ -109,12 +110,50 @@ class CatalogEditor
                 $s['settings'] = ['name' => $name, 'supportEmail' => $email, 'supportPhone' => self::text($d['supportPhone'] ?? null, 30), 'lowStock' => $d['lowStock'], 'privacyText' => self::text($d['privacyText'] ?? $s['settings']['privacyText'], 10000), 'aboutText' => self::text($d['aboutText'] ?? $s['settings']['aboutText'], 10000)];
                 $s['settings'] = [...$s['settings'], ...$socialLinks];
 
+                if ($featuredCards !== null) {
+                    $s['settings']['featuredCards'] = $featuredCards;
+                }
                 if ($webSlides !== null) {
                     $s['settings']['webSlides'] = $webSlides;
                 }
                 if ($faqs !== null) {
                     $s['settings']['faqs'] = $faqs;
                 }
+
+                return null;
+            case 'featuredCards':
+                $ids = $d['productIds'] ?? null;
+                $interval = $d['interval'] ?? null;
+                if (! is_bool($d['visible'] ?? null) || ! is_int($interval) || $interval < 0 || ($interval > 0 && $interval < 1000) || $interval > 30000 || ! is_array($ids) || ! array_is_list($ids) || count($ids) > 10) {
+                    throw new ApiError('إعدادات الكارتات المميزة غير صحيحة');
+                }
+                $productIds = [];
+                $previousIds = $s['settings']['featuredCards']['productIds'] ?? [];
+                foreach ($ids as $productId) {
+                    if (! is_int($productId) || in_array($productId, $productIds, true)) {
+                        throw new ApiError('اختر بطاقات مختلفة وصحيحة');
+                    }
+                    $product = collect($s['products'])->firstWhere('id', $productId);
+                    if (! $product && ! in_array($productId, $previousIds, true)) {
+                        throw new ApiError('البطاقة غير موجودة');
+                    }
+                    $productIds[] = $productId;
+                }
+                $colors = [];
+                foreach (['backgroundStart', 'backgroundEnd'] as $key) {
+                    if (! is_string($d[$key] ?? null) || ! preg_match('/^#[a-f0-9]{6}$/iD', $d[$key])) {
+                        throw new ApiError('اختر لون خلفية صحيحاً');
+                    }
+                    $colors[$key] = $d[$key];
+                }
+                self::image($d['backgroundImage'] ?? '');
+                $s['settings']['featuredCards'] = [
+                    'visible' => $d['visible'], 'interval' => $interval, 'productIds' => $productIds,
+                    'label' => self::text($d['label'] ?? null, 160),
+                    'title' => self::text($d['title'] ?? null, 120),
+                    'accent' => self::text($d['accent'] ?? null, 120),
+                    ...$colors, 'backgroundImage' => $d['backgroundImage'] ?? '',
+                ];
 
                 return null;
             case 'faqs':
