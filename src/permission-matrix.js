@@ -3,7 +3,8 @@ import groups from '../backend/resources/admin-permissions.json' with {type:'jso
 export const matrixColumns=[{id:'view',label:'إظهار'},{id:'create',label:'إنشاء'},{id:'update',label:'تعديل'},{id:'delete',label:'حذف'}];
 const sections=[
   ['overview','لوحة التحكم',['dashboard','events']],
-  ['cards','البطاقات',['products','companies']],
+  ['cards','البطاقات والفئات',['products']],
+  ['companies','الشركات والمصادر',['companies']],
   ['categories','التصنيفات',['categories']],
   ['inventory','المخزون والاستيراد',['inventory','exports']],
   ['stock-orders','رفع الطلبيات',['stock_orders']],
