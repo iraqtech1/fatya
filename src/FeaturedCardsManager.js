@@ -4,7 +4,6 @@ import {connected} from './api.js';
 import {prepareSlide} from './slides.js';
 import {FEATURED_KEY,featuredConfig,featuredProducts} from './featured-cards.js';
 import FeaturedCards from './FeaturedCards.js';
-import './featured-cards.css';
 export default {
   components:{FeaturedCards},
   setup(){

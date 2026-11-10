@@ -1,6 +1,7 @@
 import {computed} from 'vue/dist/vue.esm-bundler.js';
 import {t} from './i18n.js';
 import CardDeck from './CardDeck.js';
+import './featured-cards.css';
 import {featuredBackground,featuredDefaults} from './featured-cards.js';
 export default {
   components:{CardDeck},
