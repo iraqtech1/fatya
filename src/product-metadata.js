@@ -4,7 +4,7 @@ export const importPolicy=(p,denom)=>({pin:true,expiry:true,serial:false,cvc:fal
 export function prepareCatalogDraft(d,{category=false,position=0}={}){
  const count=category?0:d.values.length;
  if(!category){d.displayOrder??=(position+1)*10;d.importFields={...importPolicy(d),...(!d.id&&!d.importFields?{serial:true}:{})};
- for(const key of ['denomNames','denomDescriptions','denomImportCodes'])d[key]=Array.from({length:count},(_,i)=>d[key]?.[i]||'');d.denomImportFields=Array.from({length:count},(_,i)=>d.denomImportFields?.[i]??null);d.denomOrder=Array.from({length:count},(_,i)=>d.denomOrder?.[i]??(i+1)*10);}
+ for(const key of ['denomNames','denomDescriptions','denomImportCodes','denomSupplierIds'])d[key]=Array.from({length:count},(_,i)=>d[key]?.[i]||'');d.denomImportFields=Array.from({length:count},(_,i)=>d.denomImportFields?.[i]??null);d.denomOrder=Array.from({length:count},(_,i)=>d.denomOrder?.[i]??(i+1)*10);}
  const translations={};for(const {id} of catalogLocales){const r=d.translations?.[id]||{},ar=id==='ar';translations[id]={name:r.name??(ar?d.name||'':''),description:r.description??(ar?d.tag||'':''),image:r.image??(ar?d.image||'':'')};
  if(!category)for(const key of ['denomNames','denomDescriptions','denomImages'])translations[id][key]=Array.from({length:count},(_,i)=>r[key]?.[i]??(ar?d[key]?.[i]||'':''));}
  d.translations=translations;return d;

@@ -83,12 +83,27 @@ class CatalogEditor
                     throw new ApiError('اسم الشركة موجود بالفعل');
                 }
                 foreach ($s['products'] as $p) {
-                    if ((($p['manufacturerId'] ?? '') === $id && ! in_array($role, ['manufacturer', 'both'])) || (($p['supplierCompanyId'] ?? '') === $id && ! in_array($role, ['supplier', 'both']))) {
+                    if ((($p['manufacturerId'] ?? '') === $id && ! in_array($role, ['manufacturer', 'both'])) || ((($p['supplierCompanyId'] ?? '') === $id || in_array($id, $p['denomSupplierIds'] ?? [], true)) && ! in_array($role, ['supplier', 'both']))) {
                         throw new ApiError('نوع الشركة مرتبط ببطاقات عدّل ربط البطاقات أولاً');
+                    }
+                }
+                foreach ($s['companies'] as $linkedCompany) {
+                    if (($linkedCompany['sourceId'] ?? '') === $id && ! in_array($role, ['supplier', 'both'], true)) {
+                        throw new ApiError('هذا المصدر مرتبط بشركات؛ عدّل الربط أولاً', 422);
                     }
                 }
                 $item = ['id' => $id, 'name' => $name, 'role' => $role, 'active' => $d['active'], 'image' => $d['image'] ?? $old['image'] ?? ''];
                 self::image($item['image']);
+                $item['phone'] = self::text($d['phone'] ?? $old['phone'] ?? '', 30);
+                $item['address'] = self::text($d['address'] ?? $old['address'] ?? '', 300);
+                if ($item['phone'] !== '' && (! preg_match('/^\+?[0-9 ()-]{7,30}$/D', $item['phone']) || strlen(preg_replace('/\D/', '', $item['phone'])) < 7 || strlen(preg_replace('/\D/', '', $item['phone'])) > 15)) {
+                    throw new ApiError('اكتب رقم هاتف صحيحاً للمصدر', 422);
+                }
+                $item['sourceId'] = $d['sourceId'] ?? $old['sourceId'] ?? '';
+                CatalogSources::resolve($s, $item['sourceId'], $old['sourceId'] ?? '');
+                if ($item['sourceId'] === $id) {
+                    throw new ApiError('لا يمكن اختيار الشركة نفسها مصدراً لها', 422);
+                }
                 break;
             case 'settings':
                 $socialLinks = [];

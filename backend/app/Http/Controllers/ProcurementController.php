@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiError;
 use App\Services\Accounts;
+use App\Services\CatalogSources;
 use App\Services\DigitalConnections;
 use App\Services\DigitalManualPayments;
 use App\Services\DigitalProviders;
@@ -49,7 +50,7 @@ class ProcurementController extends Controller
             RateLimiter::hit($key, 60);
         }
         $data = match ([$request->method(), $path]) {
-            ['GET', 'stock-orders'] => ['batches' => $stock->batches(), 'submissions' => app(StockWorkflow::class)->submissions(), 'policy' => app(StockWorkflow::class)->policy(), ...app(ImportCategories::class)->read()],
+            ['GET', 'stock-orders'] => ['sources' => CatalogSources::storedOptions(), 'batches' => $stock->batches(), 'submissions' => app(StockWorkflow::class)->submissions(), 'policy' => app(StockWorkflow::class)->policy(), ...app(ImportCategories::class)->read()],
             ['POST', 'reports'] => app(InventoryReports::class)->read($b),
             ['GET', 'exports'] => app(InventoryExports::class)->listing(),
             ['POST', 'exports'] => app(InventoryExports::class)->create($b),

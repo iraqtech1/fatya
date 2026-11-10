@@ -37,11 +37,15 @@ class StockOrders
             if (! is_array($lines) || ! array_is_list($lines) || ! count($lines) || count($lines) > 200) {
                 throw new ApiError('اختر من فئة واحدة إلى 200 فئة', 422);
             }
-            $supplier = CatalogEditor::text($b['supplier'] ?? '', 100);
+            $supplierRecord = array_key_exists('supplierId', $b) ? CatalogSources::resolve($s, $b['supplierId']) : null;
+            if (array_key_exists('supplierId', $b) && ! $supplierRecord) {
+                throw new ApiError('اختر المصدر من القائمة', 422);
+            }
+            $supplier = $supplierRecord['name'] ?? CatalogEditor::text($b['supplier'] ?? '', 100);
             $source = CatalogEditor::text($b['source'] ?? '', 100);
             $city = CatalogEditor::text($b['city'] ?? '', 100);
             if (! $supplier || ! $source) {
-                throw new ApiError('اسم المجهز ومصدر الطلبية مطلوبان', 422);
+                throw new ApiError('المصدر ومرجع الطلبية مطلوبان', 422);
             }
             $seen = $serials = $accepted = $errors = $warnings = $summaries = $categoryPrices = [];
             $total = BigDecimal::zero()->toScale(3);
@@ -169,7 +173,7 @@ class StockOrders
                 throw new ApiError('عدد الفئات لا يطابق الفئات المختلفة الفعلية', 422);
             }
             $id = (string) Str::uuid();
-            $summary = ['id' => $id, 'supplier' => $supplier, 'source' => $source, 'city' => $city, 'quantity' => count($valid), 'rejected' => count($errors), 'costTotal' => (string) $total, 'nominalTotal' => (string) $nominal, 'retailTotal' => (string) $retailTotal, 'uploaded' => $count, 'fileCount' => count($lines), 'categoryCount' => $categoryCount, 'actor' => ProcurementAudit::actor(), 'currency' => 'IQD', 'lines' => $summaries];
+            $summary = ['id' => $id, ...($supplierRecord ? ['supplierId' => $supplierRecord['id'], 'supplierPhone' => $supplierRecord['phone'] ?? '', 'supplierAddress' => $supplierRecord['address'] ?? ''] : []), 'supplier' => $supplier, 'source' => $source, 'city' => $city, 'quantity' => count($valid), 'rejected' => count($errors), 'costTotal' => (string) $total, 'nominalTotal' => (string) $nominal, 'retailTotal' => (string) $retailTotal, 'uploaded' => $count, 'fileCount' => count($lines), 'categoryCount' => $categoryCount, 'actor' => ProcurementAudit::actor(), 'currency' => 'IQD', 'lines' => $summaries];
             $draft = Store::json(['cards' => $valid, 'summary' => $summary]);
             $hash = hash_hmac('sha256', $draft, config('app.key'));
             DB::table('stock_order_previews')->where('expires', '<', time())->delete();
@@ -206,6 +210,9 @@ class StockOrders
                 throw new ApiError('المعاينة تغيرت أو انتهت؛ اطلب معاينة جديدة', 409);
             }
             $draft = json_decode(Crypt::decryptString($preview->encrypted_draft), true, 512, JSON_THROW_ON_ERROR);
+            if (isset($draft['summary']['supplierId'])) {
+                CatalogSources::resolve($s, $draft['summary']['supplierId']);
+            }
             if (! $draft['summary']['quantity'] || ($draft['summary']['rejected'] && ! $b['excludeRejected']) || collect($draft['summary']['lines'])->contains(fn ($l) => ! $l['accepted'])) {
                 throw new ApiError('أكد استبعاد المرفوض أو صحح الطلبية', 422);
             }

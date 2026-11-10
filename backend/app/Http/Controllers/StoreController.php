@@ -7,6 +7,7 @@ use App\Services\Accounts;
 use App\Services\AdminAccess;
 use App\Services\AdminPolicy;
 use App\Services\CatalogEditor;
+use App\Services\CatalogOrdering;
 use App\Services\CustomerNotifications;
 use App\Services\DigitalPublications;
 use App\Services\DigitalSales;
@@ -320,6 +321,16 @@ class StoreController extends Controller
             $notifications->send($c['id'], 'وصلتنا تذكرتك', 'يمكنك متابعة تفاصيلها من صفحة الدعم', 'ticket-'.$ticket['id']);
 
             return $json($ticket, 201);
+        }
+        if ($path === '/api/admin/products/reorder' && $req->isMethod('POST')) {
+            $this->accounts->session($req, 'admin');
+            $this->revision($s, $b);
+            if (app(CatalogOrdering::class)->move($s, $b['id'] ?? null, $b['direction'] ?? null)) {
+                $this->store->event($s, 'تم تحديث ترتيب البطاقات');
+                $this->store->save($s);
+            }
+
+            return $json($this->publicState($req, $s, true));
         }
         if ($path === '/api/admin/customers/status' && $req->isMethod('POST')) {
             $this->accounts->session($req, 'admin');

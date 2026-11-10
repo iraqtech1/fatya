@@ -143,7 +143,7 @@ class StockWorkflow
                     }
                 }
                 $service = app(StockOrders::class);
-                $preview = $service->preview(['revision' => $s['revision'], 'supplier' => $summary['supplier'], 'source' => $summary['source'], 'city' => $summary['city'], 'lines' => $lines]);
+                $preview = $service->preview(['revision' => $s['revision'], ...(isset($summary['supplierId']) ? ['supplierId' => $summary['supplierId']] : []), 'supplier' => $summary['supplier'], 'source' => $summary['source'], 'city' => $summary['city'], 'lines' => $lines]);
                 if ($preview['rejected'] || $preview['quantity'] !== $summary['quantity']) {
                     throw new ApiError('المخزون أو الصلاحية تغيرت؛ أعد الطلبية للتصحيح', 409);
                 }

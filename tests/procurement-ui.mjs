@@ -21,7 +21,7 @@ const scope=Vue.effectScope();
 await scope.run(async()=>{
  const exports=[],requests=[],store={products:[],companies:[],orders:[]},connection=Vue.reactive({revision:1});let fail=false;
  const stock=component('StockOrdersManager.js',{...Vue,onMounted:()=>{},exportWorkbook:async(...args)=>exports.push(args),stockOrderTotals,stockOrderDate,filterStockOrders,stockOrderHeaders,stockOrderExportRows,can:()=>true,importPolicy,importFieldOptions,store,connection,refreshStore:async()=>{},useStockOrderPreview,withBuiltInImportMappings,resolveImportDraft,stockRows,stockCellLabel,parseStockText,detectStockFormat,readStockSheets:()=>{},PagedList:{props:['items'],template:'<div><slot :items="items"/></div>'},connected:true,api:async(path,body)=>{requests.push({path,body});if(fail)throw Error('Preview failed');return {previewId:'p1',previewHash:'hash',quantity:1,rejected:0,costTotal:'100',retailTotal:'120',lines:[],errors:[],warnings:[]};}});
- const c=stock.setup();assert.equal(c.canStep(2),false);c.next();assert.equal(c.phase.value,1);assert.match(c.error.value,/المجهز/);
+ const c=stock.setup();assert.equal(c.canStep(2),false);c.next();assert.equal(c.phase.value,1);assert.match(c.error.value,/المصدر/);
  c.supplier.value='Supplier';c.source.value='Invoice';c.next();assert.equal(c.phase.value,2);assert.equal(c.lines.value.length,1);
  const line=c.lines.value[0];line.raw=Vue.markRaw([['PIN'],['0001']]);
  c.goStep(1);c.goStep(2);assert.equal(c.lines.value[0].raw[1][0],'0001','Returning through tabs retains uploaded rows');

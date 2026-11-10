@@ -42,7 +42,7 @@ class StockOrderCatalog
             $product['manufacturerId'] = $manufacturer;
         }
         $new = ($line['denom'] ?? null) === -1;
-        $request = array_intersect_key($line, array_flip(['productId', 'manufacturerId', 'denom', 'newValue', 'newName', 'retail', 'categoryCode']));
+        $request = array_intersect_key($line, array_flip(['productId', 'manufacturerId', 'denom', 'newValue', 'newName', 'retail', 'categoryCode', 'supplierCompanyId']));
         if ($new) {
             if (! $manufacturer) {
                 throw new ApiError('حدد الشركة المصنّعة للفئة الجديدة', 422);
@@ -76,6 +76,10 @@ class StockOrderCatalog
             if (! is_int($di) || ! isset($product['values'][$di])) {
                 throw new ApiError('اختر الفئة أو أدخل فئة جديدة', 422);
             }
+        }
+        if ($new && array_key_exists('supplierCompanyId', $line)) {
+            CatalogSources::resolve($state, $line['supplierCompanyId']);
+            $product['denomSupplierIds'][$di] = $line['supplierCompanyId'];
         }
         $retail = StockOrders::money($line['retail'] ?? (string) $product['prices'][$di]);
         if (! BigDecimal::of($retail)->isGreaterThan(0)) {

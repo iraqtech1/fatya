@@ -102,7 +102,7 @@ class ProductFields
                     return $i === false ? '' : ($values[$i] ?? '');
                 }, $item['values']);
             };
-            foreach (['denomNames', 'denomDescriptions', 'denomImportCodes', 'denomOrder'] as $field) {
+            foreach (['denomNames', 'denomDescriptions', 'denomImportCodes', 'denomOrder', 'denomSupplierIds'] as $field) {
                 $before = $field === 'denomImportCodes' ? app(ImportCategories::class)->forProduct($old) : ($old[$field] ?? []);
                 if (! array_key_exists($field, $data) || $data[$field] === $before || $data[$field] === ($old[$field] ?? [])) {
                     $data[$field] = $remap($before);
@@ -180,6 +180,11 @@ class ProductFields
         $item['denomOrder'] = array_map(fn ($i) => self::order($orders[$i] ?? (($i + 1) * 10)), array_keys($item['values']));
         $codes = $data['denomImportCodes'] ?? ($old ? app(ImportCategories::class)->forProduct($old) : []);
         $item['denomImportCodes'] = array_map(fn ($v) => implode(', ', self::codes($v)), self::list($codes, $count, 'معرّفات الفئات', 500));
+        $item['denomSupplierIds'] = self::list($data['denomSupplierIds'] ?? $old['denomSupplierIds'] ?? [], $count, 'مصادر الفئات', 100);
+        foreach ($item['denomSupplierIds'] as $i => $sourceId) {
+            $oldIndex = $old ? array_search($item['values'][$i], $old['values']) : false;
+            CatalogSources::resolve($state, $sourceId, $oldIndex === false ? '' : ($old['denomSupplierIds'][$oldIndex] ?? ''));
+        }
         $item['translations'] = self::translations($item, $data, $old);
         $item['name'] = $item['translations']['ar']['name'];
         $item['image'] = $item['translations']['ar']['image'];

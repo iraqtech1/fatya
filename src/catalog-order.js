@@ -1,0 +1,2 @@
+export function orderedCards(products){return products.map((product,index)=>({product,order:product.displayOrder??(index+1)*10})).sort((a,b)=>a.order-b.order).map(row=>row.product);}
+export function moveCardPreview(products,id,direction){const rows=orderedCards(products),index=rows.findIndex(p=>String(p.id)===String(id)),to=index+direction;if(index<0||to<0||to>=rows.length)return;[rows[index],rows[to]]=[rows[to],rows[index]];rows.forEach((p,i)=>p.displayOrder=(i+1)*10);}

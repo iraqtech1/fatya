@@ -112,6 +112,7 @@ class AdminPolicy
         }
         $permission = match ([$method, $path]) {
             ['GET', 'otp/balance'] => 'dashboard.otp',
+            ['POST', 'products/reorder'] => 'products.update',
             ['POST', 'customers/status'] => 'customers.status',
             ['POST', 'customers/delete'] => 'customers.delete',
             ['POST', 'orders/hide'] => 'orders.delete',
@@ -245,9 +246,9 @@ class AdminPolicy
             $this->access->require($group.'.create');
         }
         $maps = match ($collection) {
-            'products' => ['update' => ['name', 'en', 'tag', 'unit', 'category', 'color', 'displayOrder', 'denomNames', 'denomDescriptions', 'denomOrder'], 'images' => ['image', 'denomImages'], 'denominations' => ['values'], 'prices' => ['prices'], 'visibility' => ['active'], 'companies' => ['manufacturerId', 'supplierCompanyId'], 'import_fields' => ['importFields', 'denomImportFields', 'denomImportCodes']],
+            'products' => ['update' => ['name', 'en', 'tag', 'unit', 'category', 'color', 'displayOrder', 'denomNames', 'denomDescriptions', 'denomOrder'], 'images' => ['image', 'denomImages'], 'denominations' => ['values'], 'prices' => ['prices'], 'visibility' => ['active'], 'companies' => ['manufacturerId', 'supplierCompanyId', 'denomSupplierIds'], 'import_fields' => ['importFields', 'denomImportFields', 'denomImportCodes']],
             'categories' => ['update' => ['name', 'en', 'icon'], 'images' => ['image'], 'visibility' => ['active']],
-            'companies' => ['update' => ['name', 'role'], 'images' => ['image'], 'status' => ['active']],
+            'companies' => ['update' => ['name', 'role', 'phone', 'address', 'sourceId'], 'images' => ['image'], 'status' => ['active']],
             'customers' => ['update' => ['name', 'phone', 'email'], 'status' => ['active']],
             'suppliers' => ['update' => ['name', 'method', 'url'], 'status' => ['active']],
         };
