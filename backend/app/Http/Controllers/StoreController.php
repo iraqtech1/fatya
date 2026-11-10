@@ -76,6 +76,7 @@ class StoreController extends Controller
                         }
                     }
                 }
+
                 return $this->dispatch($request, $path, $public ? $this->store->readPublic($customerId) : $this->store->read());
             } catch (ApiError $e) {
                 // Failed OTP checks must retain their attempt count, not roll it back.

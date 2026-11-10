@@ -59,7 +59,7 @@ class ProductFieldsTest extends TestCase
     public function test_company_and_category_links_are_editable_and_public_company_data_is_minimal(): void
     {
         $s = $this->fixture();
-        $s['companies'] = [['id' => 'maker', 'name' => 'الشركة المصنّعة', 'role' => 'manufacturer', 'active' => true, 'privateNote' => 'private-company-data'], ['id' => 'supplier', 'name' => 'مجهّز خاص', 'role' => 'supplier', 'active' => true]];
+        $s['companies'] = [['id' => 'maker', 'name' => 'الشركة المصنّعة', 'role' => 'manufacturer', 'active' => true, 'privateNote' => 'private-company-data', 'image' => 'cards/company.webp'], ['id' => 'supplier', 'name' => 'مجهّز خاص', 'role' => 'supplier', 'active' => true]];
         $s['categories'][] = ['id' => 'second', 'name' => 'تصنيف آخر', 'en' => 'Other', 'active' => true, 'icon' => 'Layers'];
         app(Store::class)->save($s);
         $this->admin();
@@ -70,7 +70,7 @@ class ProductFieldsTest extends TestCase
         $this->assertSame([5000, 10000], $saved['values']);
         $this->assertSame('maker', $saved['manufacturerId']);
         $response = $this->getJson('/api/state')->assertOk();
-        $response->assertJsonPath('products.0.manufacturer', ['id' => 'maker', 'name' => 'الشركة المصنّعة']);
+        $response->assertJsonPath('products.0.manufacturer', ['id' => 'maker', 'name' => 'الشركة المصنّعة', 'image' => 'cards/company.webp']);
         $response->assertJsonCount(0, 'companies');
         $this->assertStringNotContainsString('private-company-data', $response->getContent());
         $this->assertStringNotContainsString('مجهّز خاص', $response->getContent());
