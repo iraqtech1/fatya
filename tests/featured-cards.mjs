@@ -13,10 +13,10 @@ assert.ok(featuredBackground({...config,backgroundStart:'#112233'}).background.i
 let persisted,stored,receivedRevision;
 const store=Vue.reactive({products,categories,settings:{}}),connection=Vue.reactive({revision:12});
 const source=readFileSync(new URL('../src/FeaturedCardsManager.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export default','return');
-function manager(connected=false){return Function('computed','ref','watch','store','connection','saveAdmin','connected','prepareSlide','FEATURED_KEY','featuredConfig','featuredProducts','FeaturedCards','localStorage',source)(Vue.computed,Vue.ref,Vue.watch,store,connection,async(key,next,revision)=>{assert.equal(key,'featuredCards');persisted=next;receivedRevision=revision;},connected,async()=>({src:'cards/background.webp'}),FEATURED_KEY,featuredConfig,featuredProducts,{template:'<div></div>'}, {setItem(key,value){assert.equal(key,FEATURED_KEY);stored=JSON.parse(value);}});}
+function manager(connected=false){return Function('computed','ref','watch','nextTick','PagedList','store','connection','saveAdmin','connected','prepareSlide','FEATURED_KEY','featuredConfig','featuredProducts','FeaturedCards','localStorage',source)(Vue.computed,Vue.ref,Vue.watch,Vue.nextTick,{props:['items'],template:'<slot :items="items" :offset="0"/>'},store,connection,async(key,next,revision)=>{assert.equal(key,'featuredCards');persisted=next;receivedRevision=revision;},connected,async()=>({src:'cards/background.webp'}),FEATURED_KEY,featuredConfig,featuredProducts,{template:'<div></div>'}, {setItem(key,value){assert.equal(key,FEATURED_KEY);stored=JSON.parse(value);}});}
 const c=manager(),draft=c.setup();
-draft.move(1,-1);assert.deepEqual([...draft.draft.value.productIds],[2,1]);
-draft.remove(0);draft.productId.value=2;draft.add();assert.deepEqual([...draft.draft.value.productIds],[1,2]);
+await draft.move(1,-1);assert.deepEqual([...draft.draft.value.productIds],[2,1]);
+draft.remove(0);draft.productId.value=2;await draft.add();assert.deepEqual([...draft.draft.value.productIds],[1,2]);
 draft.draft.value.title='New title';draft.draft.value.interval=0;draft.draft.value.visible=false;
 assert.equal(store.settings.featuredCards,undefined,'Draft edits must not affect the application before save');
 await draft.save();assert.equal(stored.title,'New title');assert.equal(store.settings.featuredCards.visible,false);
