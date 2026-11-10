@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import {orderedCards,moveCardPreview} from '../src/catalog-order.js';
+import {orderedCards,moveCardPreview,denominationIndices,moveDenominationPreview} from '../src/catalog-order.js';
+import {denominationOptions} from '../src/product-metadata.js';
 import {upsertCompany} from '../src/companies.js';
 const rows=[{id:1,displayOrder:30,prices:[11],supplierCompanyId:'source'},{id:2,displayOrder:10,prices:[22]},{id:3,displayOrder:20,prices:[33]}];
 assert.deepEqual(orderedCards(rows).map(p=>p.id),[2,3,1]);
@@ -8,3 +9,10 @@ const snapshot=JSON.stringify(rows);moveCardPreview(rows,2,-1);moveCardPreview(r
 assert.deepEqual(orderedCards([{id:1},{id:2,displayOrder:10},{id:3}]).map(p=>p.id),[1,2,3],'Legacy and equal-order entries remain stable');
 const companies=[];const source=upsertCompany(companies,{name:'Source',role:'supplier',active:true,phone:'07701234567',address:'Baghdad'},()=> 'source');upsertCompany(companies,{id:source.id,name:'Renamed',role:'supplier',active:true});assert.equal(source.phone,'07701234567');assert.equal(source.address,'Baghdad');
 console.log('Catalog arrows, global order, boundary no-ops, unchanged prices/links and source contact preservation passed.');
+const card={values:[5000,10000,25000],prices:[5250,10400,25800],stock:[4,5,6],denomOrder:[30,10,20],denomSupplierIds:['a','b','c'],displayOrder:90};
+const stable=structuredClone(card);delete stable.denomOrder;
+moveDenominationPreview(card,0,-1);assert.deepEqual(denominationIndices(card),[1,0,2]);assert.deepEqual(denominationOptions(card).map(d=>d.value),[10000,5000,25000]);
+const reloaded=JSON.parse(JSON.stringify(card));assert.deepEqual(denominationOptions(reloaded).map(d=>d.index),[1,0,2]);
+const unchanged={...card};delete unchanged.denomOrder;assert.deepEqual(unchanged,stable,'Only display order changes; inventory, prices and sources retain original indices');
+const boundary=JSON.stringify(card);moveDenominationPreview(card,1,-1);moveDenominationPreview(card,2,1);assert.equal(JSON.stringify(card),boundary);
+assert.deepEqual(denominationIndices({values:[1,2,3],denomOrder:[10,10]}),[0,1,2]);

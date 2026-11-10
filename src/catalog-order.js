@@ -1,2 +1,5 @@
 export function orderedCards(products){return products.map((product,index)=>({product,order:product.displayOrder??(index+1)*10})).sort((a,b)=>a.order-b.order).map(row=>row.product);}
 export function moveCardPreview(products,id,direction){const rows=orderedCards(products),index=rows.findIndex(p=>String(p.id)===String(id)),to=index+direction;if(index<0||to<0||to>=rows.length)return;[rows[index],rows[to]]=[rows[to],rows[index]];rows.forEach((p,i)=>p.displayOrder=(i+1)*10);}
+export function denominationIndices(product){return (product?.values||[]).map((_,i)=>i).sort((a,b)=>(product.denomOrder?.[a]??(a+1)*10)-(product.denomOrder?.[b]??(b+1)*10));}
+export function denominationPosition(product,index){return denominationIndices(product).indexOf(index);}
+export function moveDenominationPreview(product,index,direction){const indices=denominationIndices(product),position=indices.indexOf(index),to=position+direction;if(position<0||to<0||to>=indices.length)return;[indices[position],indices[to]]=[indices[to],indices[position]];const orders=[];indices.forEach((di,i)=>orders[di]=(i+1)*10);product.denomOrder=orders;}

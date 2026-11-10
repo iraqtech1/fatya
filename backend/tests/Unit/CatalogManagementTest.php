@@ -50,6 +50,32 @@ class CatalogManagementTest extends TestCase
         $this->assertSame($saved['revision'], app(Store::class)->read()['revision']);
     }
 
+    public function test_denomination_arrows_persist_independently_without_moving_inventory_indices(): void
+    {
+        $s = $this->fixture();
+        $s['products'][0] = [...$s['products'][0], 'values' => [5000, 10000, 25000], 'prices' => [5250, 10400, 25800], 'stock' => [0, 0, 0], 'denomOrder' => [30, 10, 20], 'denomSupplierIds' => ['source', '', 'source']];
+        app(Store::class)->save($s);
+        $original = $s['products'];
+        $this->postJson('/api/admin/products/reorder', ['revision' => $s['revision'], 'id' => 1, 'denom' => 0, 'direction' => -1])->assertOk();
+        $saved = app(Store::class)->read();
+        $this->assertSame([20, 10, 30], $saved['products'][0]['denomOrder']);
+        $expected = $original;
+        $expected[0]['denomOrder'] = [20, 10, 30];
+        $this->assertSame($expected, $saved['products']);
+        $this->getJson('/api/admin/state')->assertOk()->assertJsonPath('products.0.denomOrder', [20, 10, 30]);
+        $public = $this->getJson('/api/state')->assertOk()->json('products');
+        $this->assertSame([20, 10, 30], collect($public)->firstWhere('id', 1)['denomOrder']);
+        $this->postJson('/api/admin/products/reorder', ['revision' => $s['revision'], 'id' => 1, 'denom' => 0, 'direction' => 1])->assertConflict();
+        foreach ([[1, -1], [2, 1]] as [$denom, $direction]) {
+            $this->postJson('/api/admin/products/reorder', ['revision' => $saved['revision'], 'id' => 1, 'denom' => $denom, 'direction' => $direction])->assertOk();
+        }
+        $this->assertSame($saved['revision'], app(Store::class)->read()['revision']);
+        $this->postJson('/api/admin/products/reorder', ['revision' => $saved['revision'], 'id' => 1, 'denom' => -1, 'direction' => 1])->assertNotFound();
+        $this->postJson('/api/admin/products/reorder', ['revision' => $saved['revision'], 'id' => 1, 'denom' => '0', 'direction' => 1])->assertStatus(422);
+        $this->postJson('/api/admin/products/reorder', ['revision' => $saved['revision'], 'id' => 1, 'denom' => 0, 'direction' => 0])->assertStatus(422);
+        $this->assertSame($expected, app(Store::class)->read()['products']);
+    }
+
     public function test_source_contacts_and_company_and_denomination_links_persist_privately(): void
     {
         $s = $this->fixture();

@@ -325,8 +325,13 @@ class StoreController extends Controller
         if ($path === '/api/admin/products/reorder' && $req->isMethod('POST')) {
             $this->accounts->session($req, 'admin');
             $this->revision($s, $b);
-            if (app(CatalogOrdering::class)->move($s, $b['id'] ?? null, $b['direction'] ?? null)) {
-                $this->store->event($s, 'تم تحديث ترتيب البطاقات');
+            $ordering = app(CatalogOrdering::class);
+            $isDenomination = array_key_exists('denom', $b);
+            $changed = $isDenomination
+                ? $ordering->moveDenomination($s, $b['id'] ?? null, $b['denom'], $b['direction'] ?? null)
+                : $ordering->move($s, $b['id'] ?? null, $b['direction'] ?? null);
+            if ($changed) {
+                $this->store->event($s, $isDenomination ? 'تم تحديث ترتيب فئات البطاقة' : 'تم تحديث ترتيب البطاقات');
                 $this->store->save($s);
             }
 
