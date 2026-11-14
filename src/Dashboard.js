@@ -46,6 +46,7 @@ import AdminLogin from './AdminLogin.js';
 import './admin-glass.css';
 import './dashboard-layout.css';
 import './admin-polish.css';
+import './admin-workbench.css';
 const importedCodes=new Set(),importedSerials=new Set(),importedEntries=[];
 const sections=[
   {id:'overview',name:'لوحة التحكم',icon:LayoutDashboard},

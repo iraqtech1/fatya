@@ -1,0 +1,213 @@
+/* Shared form rhythm for the recently added administration screens. */
+.admin-shell .admin-workbench {
+  --workbench-control-height: 46px;
+  min-width: 0;
+}
+.admin-shell .admin-workbench .proc-grid {
+  align-items: stretch;
+  gap: 18px 16px;
+  margin-block: 18px;
+}
+.admin-shell .admin-workbench label:not(.admin-checkbox):not(.activation-file) {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.admin-shell .admin-workbench .proc-grid > label {
+  margin: 0;
+}
+.admin-shell .admin-workbench :is(input:not([type=checkbox]):not([type=radio]):not([type=file]), select:not([multiple])) {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: var(--workbench-control-height);
+  min-height: var(--workbench-control-height);
+  margin: 0;
+  border: 1px solid var(--admin-border, #a2c6b5);
+  background-color: var(--admin-rose, #eff7f3);
+  color: inherit;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding-block: 10px;
+  padding-inline: 12px;
+}
+.admin-shell .admin-workbench select:not([multiple]) {
+  padding-inline-end: 40px;
+}
+.admin-shell .admin-workbench :is(textarea, select[multiple]) {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 132px;
+  padding: 12px;
+  border: 1px solid var(--admin-border, #a2c6b5);
+  background-color: var(--admin-rose, #eff7f3);
+  color: inherit;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.admin-shell .admin-workbench textarea {
+  resize: vertical;
+}
+.admin-shell .admin-workbench .workbench-full-width {
+  grid-column: 1 / -1;
+}
+.admin-shell .admin-workbench .admin-checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-block: 16px;
+  font-size: 13px;
+  line-height: 1.9;
+}
+.admin-shell .admin-workbench input[type=checkbox] {
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+  margin: 3px 0 0;
+  flex: 0 0 18px;
+  accent-color: var(--admin-wine, #167b5b);
+}
+.admin-shell .admin-workbench .proc-actions {
+  align-items: flex-end;
+  gap: 10px;
+  margin-block: 16px 0;
+}
+.admin-shell .admin-workbench :is(.admin-primary, .admin-secondary, .activation-file) {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--workbench-control-height);
+  height: auto;
+  padding: 10px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+  white-space: normal;
+}
+.admin-shell .admin-workbench .proc-actions > label {
+  margin: 0;
+}
+.admin-shell .admin-workbench .proc-grid > button {
+  align-self: end;
+}
+.admin-shell .admin-workbench .activation-file {
+  margin: 0;
+  cursor: pointer;
+}
+.notification-compose-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  align-items: start;
+  gap: 24px;
+}
+.notification-compose-layout > form {
+  min-width: 0;
+}
+.admin-shell .notification-workbench .notification-preview {
+  min-width: 0;
+  margin: 18px 0 0;
+  padding: 20px;
+  border: 1px solid var(--admin-border, #c8ded4);
+  border-radius: 16px;
+  background: var(--admin-rose, #eff7f3);
+  overflow-wrap: anywhere;
+}
+.notification-preview > small {
+  display: block;
+  margin-bottom: 16px;
+  color: var(--admin-muted, #58776b);
+}
+.notification-preview > p {
+  white-space: pre-wrap;
+}
+.notification-preview .notification-detail-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+  margin-top: 16px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+.admin-shell .notification-workbench .expiry-rule-options {
+  display: grid;
+  gap: 12px;
+  margin-block: 18px;
+}
+.admin-shell .notification-workbench .expiry-rule-options > .admin-checkbox {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--admin-border, #c8ded4);
+  border-radius: 12px;
+  background: var(--admin-rose, #eff7f3);
+}
+.admin-shell .application-company-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+}
+.application-company-meta {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.admin-shell .application-company-row > .proc-actions {
+  margin: 0;
+}
+.application-phone-preview {
+  box-sizing: border-box;
+  max-width: 390px;
+  max-height: 640px;
+  overflow: auto;
+  margin-inline: auto;
+  border: 1px solid var(--admin-border, #91b9a8);
+  border-radius: 24px;
+  padding: 14px;
+}
+.admin-shell .rabiaa-activation.admin-workbench {
+  max-width: none;
+  width: auto;
+  margin: 0;
+}
+@media (max-width: 1100px) {
+  .notification-compose-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .admin-shell .notification-workbench .notification-preview {
+    margin-top: 0;
+  }
+}
+@media (max-width: 600px) {
+  .admin-shell .admin-workbench .proc-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .admin-shell .admin-workbench .proc-actions > :is(button, .activation-file) {
+    flex: 1 1 150px;
+  }
+  .admin-shell .application-company-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-shell .application-company-row > .proc-actions {
+    justify-content: flex-start;
+  }
+}
