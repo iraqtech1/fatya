@@ -6,3 +6,5 @@ html[data-theme=dark] .catalog-language-tabs button.active{background:#245641;co
 .catalog-category-input{grid-column:1/-1}
 
 .catalog-order-control{display:flex;align-items:center;gap:5px;white-space:nowrap}.catalog-order-control>span{min-width:24px;text-align:center}.catalog-order-control button{width:28px;height:30px;border:1px solid var(--border,#adcabc);border-radius:6px;font-size:18px}.catalog-order-control button:disabled{opacity:.35}
+
+.catalog-company-parent{display:flex;align-items:center;gap:16px;border:1px solid var(--border);border-radius:16px;padding:16px;margin-top:16px}.catalog-company-parent img{width:80px;height:64px;object-fit:contain}.catalog-company-parent strong{font-size:18px}
