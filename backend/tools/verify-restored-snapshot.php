@@ -3,7 +3,7 @@
 use Illuminate\Encryption\Encrypter;
 
 // Only restore into a NEW, explicitly named database on a dedicated local port.
-if (PHP_SAPI !== 'cli' || count($argv) !== 2) {
+if (PHP_SAPI !== 'cli' || ! in_array(count($argv), [2, 3], true) || (isset($argv[2]) && $argv[2] !== '--verify-only')) {
     exit(1);
 }
 umask(0077);
@@ -22,14 +22,18 @@ if (! hash_equals($manifest['sqlSha256'], hash_file('sha256', $private.'/databas
 $pdo = new PDO('mysql:host=127.0.0.1;port=33417;charset=utf8mb4', $connection['user'], $connection['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => false]);
 $name = $connection['database'];
 $started = microtime(true);
-$pdo->exec('CREATE DATABASE `'.$name.'` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
-$pdo->exec('USE `'.$name.'`');
-$sql = file_get_contents($private.'/database.sql');
-if (preg_match('/^(?:USE\s|CREATE\s+DATABASE|DROP\s+DATABASE)/mi', $sql)) {
-    throw new RuntimeException('Cross-database SQL is forbidden');
+if (! isset($argv[2])) {
+    $pdo->exec('CREATE DATABASE `'.$name.'` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
 }
-$pdo->exec($sql);
-unset($sql);
+$pdo->exec('USE `'.$name.'`');
+if (! isset($argv[2])) {
+    $sql = file_get_contents($private.'/database.sql');
+    if (preg_match('/^(?:USE\s|CREATE\s+DATABASE|DROP\s+DATABASE)/mi', $sql)) {
+        throw new RuntimeException('Cross-database SQL is forbidden');
+    }
+    $pdo->exec($sql);
+    unset($sql);
+}
 $restoredAt = microtime(true);
 $verified = [];
 foreach ($manifest['tables'] as $table => $expected) {
@@ -79,5 +83,9 @@ foreach ($foreignKeys as $fk) {
     }
 }
 $report = ['ok' => true, 'at' => gmdate('c'), 'sourceSnapshotAt' => $manifest['at'], 'sourceVersion' => $manifest['server'], 'restoreVersion' => $pdo->query('SELECT VERSION()')->fetchColumn(), 'isolatedLocalOnly' => true, 'networkAddress' => '127.0.0.1:33417', 'sqlSha256Verified' => true, 'tableCount' => count($verified), 'allTableContentAndColumnsMatch' => true, 'rowsByTable' => $verified, 'encryptionChecks' => $encrypted, 'foreignKeysChecked' => count($foreignKeys), 'importSeconds' => round($restoredAt - $started, 3), 'verificationSeconds' => round(microtime(true) - $restoredAt, 3), 'originalKeyUsedWithoutChangingProduction' => true, 'externalRequests' => 0];
-file_put_contents($private.'/restore-verification.json', json_encode($report, JSON_PRETTY_PRINT));
+if (isset($argv[2])) {
+    $report['verificationOnly'] = true;
+    $report['importSeconds'] = null;
+}
+file_put_contents($private.(isset($argv[2]) ? '/restore-recheck.json' : '/restore-verification.json'), json_encode($report, JSON_PRETTY_PRINT));
 echo json_encode(array_intersect_key($report, array_flip(['ok', 'sourceVersion', 'restoreVersion', 'tableCount', 'allTableContentAndColumnsMatch', 'encryptionChecks', 'foreignKeysChecked', 'importSeconds', 'verificationSeconds', 'externalRequests']))).PHP_EOL;
