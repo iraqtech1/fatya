@@ -3,6 +3,8 @@
 namespace Tests\Unit;
 
 use App\Exceptions\ApiError;
+use App\Services\AdminAccess;
+use App\Services\AdminPolicy;
 use App\Services\ApplicationDisplay;
 use App\Services\CatalogEditor;
 use App\Services\CompanyHierarchy;
@@ -52,6 +54,8 @@ class ApplicationDisplayTest extends TestCase
         $state['products'] = [['id' => 1, 'name' => 'Fixture', 'category' => 'Cards', 'manufacturerId' => 'root', 'active' => true, 'unit' => 'IQD', 'values' => [5000], 'prices' => [5250], 'stock' => [0], 'denomImportCodes' => ['E5K'], 'importFields' => ['pin' => true]]];
         app(Store::class)->save($state);
         $preview = app(ApplicationDisplay::class)->preview();
+        request()->attributes->set('adminAccess', app(AdminAccess::class)->resolveSession((object) []));
+        $this->assertSame($preview, app(AdminPolicy::class)->filter($preview, 'api/admin/procurement/application-display'));
         $public = $this->getJson('/api/state')->assertOk()->json();
         $this->assertSame($public['products'], $preview['products']);
         $this->assertStringNotContainsString('private-phone', json_encode($preview));

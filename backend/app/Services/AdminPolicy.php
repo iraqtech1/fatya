@@ -341,7 +341,7 @@ class AdminPolicy
 
     public function filter(array $data, string $path): array
     {
-        if (isset($data['revision'], $data['products'], $data['settings'])) {
+        if (isset($data['revision'], $data['products'], $data['settings'], $data['orders'], $data['customers'], $data['tickets'])) {
             $data = $this->state($data);
         }
         if (isset($data['state']) && is_array($data['state'])) {
