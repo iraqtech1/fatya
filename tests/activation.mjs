@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {ref,nextTick} from 'vue/dist/vue.esm-bundler.js';
+import {activationRequest,deviceIdentifier} from '../src/activation-input.js';
+const long='Ab9_/+=-'.repeat(180);
+assert.equal(deviceIdentifier(' \n'+long+'\r\n '),long);
+assert.throws(()=>deviceIdentifier('https://wrong.example/'));
+const calls=[];const componentSource=readFileSync('src/RabiaaActivation.js','utf8').replace(/^import .*;$/gm,'').replace('export default','return');
+const component=Function('ref','nextTick','onMounted','onBeforeUnmount','api','connected','t','activationRequest','deviceIdentifier','readQr',componentSource)(ref,nextTick,()=>{},()=>{},async(...args)=>{calls.push(args);return args[1]?{data:{message:'mock'}}:{data:[],meta:{last_page:1}};},true,s=>s,activationRequest,deviceIdentifier,()=>null);
+const ui=component.setup({admin:false,orderId:'',allowSubmit:true});let opened=0;ui.dialog.value={showModal(){opened++;},close(){}};
+ui.device.value=long;ui.pin.value='000123456789';assert.equal(calls.length,0,'Pasting cannot activate');
+await ui.prepare();assert.equal(opened,1);assert.equal(calls.length,0,'Review cannot activate');
+ui.cancel();assert.equal(calls.length,0);await ui.prepare();await ui.submit();
+assert.equal(calls.filter(([,body])=>body).length,1);assert.equal(calls[0][1].mac_address,long);assert.equal(calls[0][1].active_code,'000123456789');assert.equal(ui.pin.value,'');
+await ui.submit();assert.equal(calls.filter(([,body])=>body).length,1,'Double clicking cannot repeat activation');
+console.log('Long QR payloads retain exact case and content; paste, review and cancellation cannot activate. Explicit confirmation sends once and clears PIN.');

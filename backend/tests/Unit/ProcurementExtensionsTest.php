@@ -146,10 +146,14 @@ class ProcurementExtensionsTest extends TestCase
     {
         $s = $this->fixture();
         config(['digital.purchases_enabled' => true, 'digital.'.$provider.'.enabled' => true, 'digital.'.$provider.'.key' => 'fixture-key']);
-        $offer = ['providerId' => '71', 'title' => 'Service', 'type' => $type, 'cost' => '4500.000', 'available' => true, 'provinceId' => $provider === 'rabiaa' ? '2' : null];
+        if ($provider === 'rabiaa') {
+            config(['digital.rabiaa.owner_city' => 'Fixture']);
+            Http::fake(['*/vendor/provinces' => Http::response(['data' => [['id' => 2, 'title' => 'Fixture']]])]);
+        }
+        $offer = ['providerId' => '71', 'title' => 'Service', 'type' => $type, 'cost' => '4500.000', 'available' => true, 'provinceId' => $provider === 'rabiaa' ? '2' : null, 'priceBasis' => $provider === 'rabiaa' ? 'public_price' : 'vendor_price'];
         DB::table('digital_catalog')->insert(['connection' => $provider, 'snapshot' => Store::json(['offers' => [$offer]]), 'synced' => time()]);
         DB::table('digital_offers')->insert(['id' => 'c03d8095-0e20-4aa8-9d06-b72a4bd9e601', 'product_id' => '1', 'denom_index' => 0, 'connection' => $provider, 'provider_id' => '71', 'snapshot' => Store::json($offer), 'retail' => '5250.000', 'active' => true, 'updated' => time()]);
-        $input = $provider === 'topup' ? ['mobile' => '07700000000', 'confirmMobile' => '07700000000'] : ($type === 'premium' ? ['firstName' => 'Test', 'lastName' => 'Fixture', 'phoneNumber' => '07700000000', 'address' => 'Fixture address', 'beinProvinceId' => '3'] : []);
+        $input = $provider === 'topup' ? ['mobile' => '07700000000', 'confirmMobile' => '07700000000'] : ($type === 'premium' ? ['firstName' => 'Test', 'lastName' => 'Fixture', 'phoneNumber' => '07700000000', 'confirmMobile' => '07700000000', 'address' => 'Fixture address', 'beinProvinceId' => '3'] : []);
         $body = ['productId' => 1, 'denom' => 0, 'quantity' => 1, 'payment' => 'Qi', 'reference' => 'digital-reference-01', 'digital' => $input];
 
         return [$s, app(OrderFulfillment::class)->reserve($s['customers'][0], $body)['order'], $body];
@@ -162,7 +166,7 @@ class ProcurementExtensionsTest extends TestCase
 
     private function providerCatalog(string $provider = 'topup', string $type = 'standard'): array
     {
-        return $provider === 'topup' ? ['status' => 'ok', 'products' => [['id' => 71, 'title' => 'Service', 'type' => 'topup', 'show2site' => 1, 'price' => 4500]]] : ['data' => [['catalogId' => 71, 'title' => 'Service', 'vendorPrice' => 4500, 'inStock' => true, 'packageType' => $type]]];
+        return $provider === 'topup' ? ['status' => 'ok', 'products' => [['id' => 71, 'title' => 'Service', 'type' => 'topup', 'show2site' => 1, 'price' => 4500]]] : ['data' => [['catalogId' => 71, 'title' => 'Service', 'publicPrice' => 4500, 'vendorPrice' => 0, 'inStock' => true, 'packageType' => $type]]];
     }
 
     public function test_topup_waits_for_verified_payment_and_sends_once_with_no_fake_profit(): void
@@ -211,13 +215,13 @@ class ProcurementExtensionsTest extends TestCase
     public function test_rabiaa_hold_is_saved_before_purchase_and_receipt_is_private(): void
     {
         [$s,$o] = $this->digital('rabiaa', 'standard');
-        $hold = ['holdToken' => '1f89a748-81bb-4e1c-9553-b51903487b66', 'cardId' => 9, 'heldAt' => now()->toIso8601String(), 'expiresInMinutes' => 5, 'vendorPrice' => 4500];
+        $hold = ['holdToken' => '1f89a748-81bb-4e1c-9553-b51903487b66', 'cardId' => 9, 'heldAt' => now()->toIso8601String(), 'expiresInMinutes' => 5, 'publicPrice' => 4500, 'vendorPrice' => 0];
         Http::fake(['*/catalog*' => Http::response($this->providerCatalog('rabiaa')), '*/hold' => Http::response(['data' => $hold]), '*/purchase' => function ($r) use ($hold) {
             $row = DB::table('digital_executions')->first();
             $this->assertSame('purchase_started', $row->state);
             $this->assertSame($hold['holdToken'], json_decode(Crypt::decryptString($row->encrypted_evidence), true)['hold']['holdToken']);
 
-            return Http::response(['data' => ['cardId' => 9, 'transactionId' => 15, 'vendorPrice' => 4499, 'code' => '000012345678', 'serialNumber' => '000123']]);
+            return Http::response(['data' => ['cardId' => 9, 'transactionId' => 15, 'publicPrice' => 4499, 'vendorPrice' => 0, 'code' => '000012345678', 'serialNumber' => '000123']]);
         }]);
         $this->pay($o);
         app(DigitalSales::class)->run();
@@ -235,7 +239,7 @@ class ProcurementExtensionsTest extends TestCase
     public function test_premium_non_success_is_not_delivered(): void
     {
         [, $o] = $this->digital('rabiaa', 'premium');
-        Http::fake(['*/catalog*' => Http::response($this->providerCatalog('rabiaa', 'premium')), '*/bein/provinces' => Http::response(['data' => [['id' => 3, 'title' => 'Fixture']]]), '*/hold' => Http::response(['data' => ['holdToken' => '1f89a748-81bb-4e1c-9553-b51903487b66', 'cardId' => 9, 'heldAt' => now()->toIso8601String(), 'expiresInMinutes' => 5, 'vendorPrice' => 4500]]), '*/purchase' => Http::response(['data' => ['cardId' => 9, 'transactionId' => 15, 'vendorPrice' => 4500, 'code' => 'fixture-pin', 'serialNumber' => 'fixture-serial', 'beinStatus' => 'pending']])]);
+        Http::fake(['*/catalog*' => Http::response($this->providerCatalog('rabiaa', 'premium')), '*/bein/provinces' => Http::response(['data' => [['id' => 3, 'title' => 'Fixture']]]), '*/hold' => Http::response(['data' => ['holdToken' => '1f89a748-81bb-4e1c-9553-b51903487b66', 'cardId' => 9, 'heldAt' => now()->toIso8601String(), 'expiresInMinutes' => 5, 'publicPrice' => 4500, 'vendorPrice' => 0]]), '*/purchase' => Http::response(['data' => ['cardId' => 9, 'transactionId' => 15, 'publicPrice' => 4500, 'vendorPrice' => 0, 'code' => 'fixture-pin', 'serialNumber' => 'fixture-serial', 'beinStatus' => 'pending']])]);
         $this->pay($o);
         app(DigitalSales::class)->run();
         $this->assertSame('review', DB::table('digital_executions')->value('state'));

@@ -13,9 +13,10 @@ const tree=[
  {id:'exports',name:'النسخ والسحب',description:'عمليات تصدير البطاقات وسحب المخزون'},
  {id:'audit',name:'سجل التدقيق',description:'إجراءات المستخدمين ومراجع العمليات'}
 ];
-export function useReportFlow({can,request,download}){
+export function useReportFlow({can,request,download,defaultFilters={}}){
  let generation=0;
- const path=ref([]),filters=ref(emptyReportFilters()),appliedFilters=ref(emptyReportFilters()),result=ref(null),busy=ref(false),error=ref(''),message=ref(''),tablesOpen=ref(false);
+ const initial=()=>({...emptyReportFilters(),...defaultFilters});
+ const path=ref([]),filters=ref(initial()),appliedFilters=ref(initial()),result=ref(null),busy=ref(false),error=ref(''),message=ref(''),tablesOpen=ref(false);
  const cards=computed(()=>tree.flatMap(node=>{
   if(!node.children)return can('reports_'+node.id+'.view')?[node]:[];
   const children=node.children.filter(c=>can('reports_'+c.id+'.view'));
@@ -24,7 +25,7 @@ export function useReportFlow({can,request,download}){
  const current=computed(()=>path.value.at(-1)||null),type=computed(()=>current.value&&!current.value.children?current.value.id:''),visibleCards=computed(()=>current.value?.children||cards.value);
  const customized=computed(()=>Object.values(appliedFilters.value).some(v=>v!==''));
  const dirty=computed(()=>JSON.stringify(filters.value)!==JSON.stringify(appliedFilters.value));
- function reset(){generation++;busy.value=false;filters.value=emptyReportFilters();appliedFilters.value=emptyReportFilters();result.value=null;error.value='';message.value='';tablesOpen.value=false;}
+ function reset(){generation++;busy.value=false;filters.value=initial();appliedFilters.value=initial();result.value=null;error.value='';message.value='';tablesOpen.value=false;}
  async function open(card){
   if(busy.value||!visibleCards.value.some(c=>c.id===card.id))return;
   path.value=[...path.value,card];reset();

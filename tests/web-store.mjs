@@ -8,6 +8,7 @@ import {installScrollLock} from '../src/scroll-lock.js';
 import {isWebStore} from '../src/store-surface.js';
 import * as orderState from '../src/order-state.js';
 import * as orderDisplay from '../src/order-display.js';
+import {catalogLayout} from '../src/catalog-display.js';
 import {initialProducts} from '../src/catalog.js';
 
 assert.equal(isWebStore({path:'/',standalone:false}),true);
@@ -21,7 +22,7 @@ const setup=source.slice(source.indexOf('setup(){'),source.indexOf('\n},\ntempla
 assert.ok(setup.endsWith('\n}'));
 let created=0;
 const store=Vue.reactive({products:initialProducts.map(p=>({...p,active:true})),categories:[...new Set(initialProducts.map(p=>p.category))].map((name,id)=>({id,name,en:name,active:true})),settings:{supportPhone:''},orders:[],tickets:[]});
-const context={useViewHistory,installDialogHistory,presentProduct,presentProducts,presentCategory,denominationOptions,installScrollLock,...Vue,...orderState,...orderDisplay,console,WebStore:{},StoreLayout:{},isWebStore:()=>true,accountPages:new Set(['account','orders','payment']),inRoute:(p,prefix)=>p===prefix||p.startsWith(prefix+'/'),routePath:()=> '/',window:{addEventListener(){},removeEventListener(){},scrollTo(){}},document:{querySelector:()=>null},innerWidth:1200,connected:false,connection:Vue.reactive({admin:false,ready:false,customer:null}),store,restoreStoreSession:()=>null,saveStoreSession(){},upsertCustomer(){},refreshStore:async()=>{},matchesCustomer:(o,u)=>!!u&&o.customerId===u.id,createOrder:async()=>{created++;return {id:'FIXTURE-'+created};},createTicket:async()=>{},isAsiacell:p=>p.en==='asiacell',auth:{},t:s=>s,language:Vue.ref('ar'),cardCount:n=>String(n),crypto:globalThis.crypto,setTimeout,clearTimeout,setInterval,clearInterval};
+const context={catalogLayout,useViewHistory,installDialogHistory,presentProduct,presentProducts,presentCategory,denominationOptions,installScrollLock,...Vue,...orderState,...orderDisplay,console,WebStore:{},StoreLayout:{},isWebStore:()=>true,accountPages:new Set(['account','orders','payment']),inRoute:(p,prefix)=>p===prefix||p.startsWith(prefix+'/'),routePath:()=> '/',window:{addEventListener(){},removeEventListener(){},scrollTo(){}},document:{querySelector:()=>null},innerWidth:1200,connected:false,connection:Vue.reactive({admin:false,ready:false,customer:null}),store,restoreStoreSession:()=>null,saveStoreSession(){},upsertCustomer(){},refreshStore:async()=>{},matchesCustomer:(o,u)=>!!u&&o.customerId===u.id,createOrder:async()=>{created++;return {id:'FIXTURE-'+created};},createTicket:async()=>{},isAsiacell:p=>p.en==='asiacell',auth:{},t:s=>s,language:Vue.ref('ar'),cardCount:n=>String(n),crypto:globalThis.crypto,setTimeout,clearTimeout,setInterval,clearInterval};
 for(const name of source.match(/import \{([^}]+)\} from 'lucide-vue-next'/)[1].split(','))context[name.trim()]={};
 const component=vm.runInNewContext('({'+setup+'})',context);
 const renderer=Vue.createRenderer({insert(){},remove(){},createElement:()=>({}),createText:()=>({}),createComment:()=>({}),setText(){},setElementText(){},parentNode:()=>null,nextSibling:()=>null,patchProp(){}});

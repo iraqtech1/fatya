@@ -291,10 +291,11 @@ class InventoryControlsTest extends TestCase
     public function test_catalogs_retain_province_identity_and_remote_service_type(): void
     {
         $this->stock();
-        config(['digital.rabiaa.enabled' => true, 'digital.rabiaa.key' => 'fixture-provider-key']);
-        Http::fake(['*/catalog*' => Http::response(['data' => [['catalogId' => 9, 'title' => 'Fixture', 'vendorPrice' => 4500, 'inStock' => true, 'packageType' => 'standard']]])]);
+        config(['digital.rabiaa.enabled' => true, 'digital.rabiaa.key' => 'fixture-provider-key', 'digital.rabiaa.owner_city' => 'Fixture1']);
+        Http::fake(['*/vendor/provinces' => Http::response(['data' => [['id' => 1, 'title' => 'Fixture1'], ['id' => 2, 'title' => 'Fixture2']]]), '*/catalog*' => Http::response(['data' => [['catalogId' => 9, 'title' => 'Fixture', 'publicPrice' => 4500, 'vendorPrice' => 0, 'inStock' => true, 'packageType' => 'standard']]])]);
         $p = app(DigitalProviders::class);
         $a = $p->catalog('rabiaa', '1');
+        config(['digital.rabiaa.owner_city' => 'Fixture2']);
         $b = $p->catalog('rabiaa', '2');
         $this->assertSame('1', json_decode($p->catalogRecord('rabiaa', '1')->snapshot, true)['provinceId']);
         $this->assertSame('2', json_decode($p->catalogRecord('rabiaa', '2')->snapshot, true)['provinceId']);

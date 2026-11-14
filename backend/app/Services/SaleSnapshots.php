@@ -12,8 +12,8 @@ class SaleSnapshots
             $row = $product['translations'][$locale] ?? [];
             $translations[$locale] = [
                 'name' => (string) ($row['name'] ?? ''),
-                'denominationName' => (string) ($row['denomNames'][$denom] ?? ''),
-                'denominationDescription' => (string) ($row['denomDescriptions'][$denom] ?? ''),
+                'denominationName' => (string) (($service['display']['translations'][$locale]['title'] ?? '') ?: ($service['display']['translations']['ar']['title'] ?? '') ?: ($row['denomNames'][$denom] ?? '')),
+                'denominationDescription' => (string) (($service['display']['translations'][$locale]['description'] ?? '') ?: ($service['display']['translations']['ar']['description'] ?? '') ?: ($row['denomDescriptions'][$denom] ?? '')),
             ];
         }
 
@@ -29,7 +29,7 @@ class SaleSnapshots
             'denominationDescription' => (string) ($product['denomDescriptions'][$denom] ?? ''),
             'translations' => $translations,
             'source' => $service ? 'api' : 'stock',
-            'serviceTitle' => (string) ($service['title'] ?? ''),
+            'serviceTitle' => (string) (($service['display']['translations']['ar']['title'] ?? '') ?: ($service['title'] ?? '')),
             'providerId' => $service['providerId'] ?? null,
             'serviceType' => $service['type'] ?? null,
             'quantity' => $quantity,

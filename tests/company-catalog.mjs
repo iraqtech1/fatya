@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {reactive} from 'vue/dist/vue.esm-bundler.js';
-import {catalogCompanies,companyDenominations,companyPath} from '../src/company-catalog.js';
+import {catalogCompanies,companyDenominations,companyPath,denominationPath} from '../src/company-catalog.js';
 const product={id:1,name:'آسياسيل',en:'Asiacell',category:'اتصالات',unit:'د.ع',values:[5000,10000],prices:[5250,11000],stock:[2,0],manufacturerId:'asia',manufacturer:{id:'asia',name:'آسياسيل'},providerServices:[{id:'pub-one',type:'topup',price:'11000',title:'تعبئة 10000',purchasable:true},{id:'pub-two',type:'topup',price:'11000',title:'خدمة مستقلة بنفس السعر',purchasable:true}]};
 const second={...product,id:2,name:'كارت آخر',providerServices:[],values:[5000],prices:[5500]};
 const korek={...product,id:3,name:'كورك',en:'Korek',manufacturerId:'korek',manufacturer:{id:'korek',name:'كورك'},providerServices:[]};
@@ -28,3 +28,10 @@ assert.equal(companyDenominations(tree[0]).length,0,'Sub-branch categories stay 
 assert.ok(companyDenominations(tree[0].children[0].children[0]).length>0);
 assert.equal(catalogCompanies([{...product,manufacturerPath:[root,{...branch,active:false},leaf]}]).length,0);
 assert.equal(catalogCompanies([{...product,manufacturerPath:[root,branch,leaf]}],'فرع فرعي').length,1);
+
+const bundles={...product,providerServices:[{id:'first',type:'bundle',title:'Weekly',price:'5250.000',purchasable:true,groupPath:[{remote_id:'g1',name:'Internet'},{remote_id:'g2',name:'Weekly packages'}]},{id:'second',type:'bundle',title:'Monthly',price:'10500.000',purchasable:true,groupPath:[{remote_id:'g3',name:'Calls'}]}]};
+const nested=companyDenominations(catalogCompanies([bundles])[0]);
+const internet=nested.find(node=>node.name==='Internet');assert.equal(internet.offerCount,1);assert.equal(internet.children[0].name,'Weekly packages');
+assert.equal(internet.children[0].children[0].cards[0].name,'Weekly');
+assert.equal(denominationPath(nested,internet.children[0].id).length,2);
+assert.deepEqual(internet.children.flatMap(group=>group.children.flatMap(leaf=>leaf.cards.map(card=>card.name))),['Weekly'],'Opening a package contains only its own offers');

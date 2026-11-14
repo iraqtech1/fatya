@@ -97,7 +97,7 @@ class StockOrderCatalog
         if ($new && ! isset($line['retail'])) {
             throw new ApiError('أدخل سعر بيع الفئة الجديدة', 422);
         }
-        $product['prices'][$di] = (float) $retail;
+        $product['prices'][$di] = $retail;
         $storedCodes = app(ImportCategories::class)->forProduct($product);
         $product['denomImportCodes'] = array_map(fn ($i) => $product['denomImportCodes'][$i] ?? $storedCodes[$i] ?? '', array_keys($product['values']));
         if (! empty($line['categoryCode'])) {

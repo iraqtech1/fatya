@@ -9,8 +9,10 @@ import './account.css';
 import DeveloperAbout from './DeveloperAbout.js';
 import OrderArchive from './OrderArchive.js';
 import PushSettings from './PushSettings.js';
+import {defineAsyncComponent} from 'vue/dist/vue.esm-bundler.js';
+const RabiaaActivation=defineAsyncComponent(()=>import('./RabiaaActivation.js'));
 export default {
-  components:{Trash2,Check,X,PushSettings,OrderArchive,Archive,DeveloperAbout,ThemeScene,UserRoundPen,ShieldCheck,Info,LogOut,Moon,Languages,ChevronDown,ChevronLeft,ArrowRight,User},
+  components:{RabiaaActivation,Trash2,Check,X,PushSettings,OrderArchive,Archive,DeveloperAbout,ThemeScene,UserRoundPen,ShieldCheck,Info,LogOut,Moon,Languages,ChevronDown,ChevronLeft,ArrowRight,User},
   props:{user:Object,error:String,orders:{type:Array,default:()=>[]}},emits:['save','logout','browse'],
   setup(props,{emit}){
     const view=ref('menu'),name=ref(''),email=ref(''),popup=ref(''),accountDialog=ref(null);
@@ -18,7 +20,7 @@ export default {
     watch(popup,async value=>{await nextTick();if(value){if(!accountDialog.value.open)accountDialog.value.showModal();}else accountDialog.value?.close();});
     function chooseLanguage(id){language.value=id;popup.value='';}
     function confirmExit(){popup.value='';emit('logout');}
-    useViewHistory('account',()=>({view:view.value}),state=>{if(state.view==='edit'&&view.value!=='edit'){edit();return;}view.value=['menu','edit','archive','privacy','about'].includes(state.view)?state.view:'menu';});
+    useViewHistory('account',()=>({view:view.value}),state=>{if(state.view==='edit'&&view.value!=='edit'){edit();return;}view.value=['menu','edit','archive','privacy','about','activation'].includes(state.view)?state.view:'menu';});
 
     function edit(){name.value=props.user.previewId&&props.user.name==='حساب تجريبي'?'':props.user.name;email.value=props.user.email;view.value='edit';}
     function save(){emit('save',{name:name.value,email:email.value,done:()=>{view.value='menu';}});}
@@ -28,6 +30,7 @@ export default {
   <template v-if="view==='menu'"><div class="account-identity"><span><User :size="28"/></span><div><h2 v-if="user.name&&!(user.previewId&&user.name==='حساب تجريبي')">{{t(user.name)}}</h2><p v-if="user.phone" dir="ltr">{{user.phone}}</p></div></div>
   <div class="account-menu">
   <PushSettings/>
+  <button class="account-row" @click="view='activation'"><span class="account-row-icon"><ShieldCheck/></span><span>{{t('تفعيل بطاقة الرابعة')}}</span><ChevronLeft class="account-chevron"/></button>
   <button class="account-row" @click="edit"><span class="account-row-icon"><UserRoundPen/></span><span>{{t("الملف الشخصي")}}</span><ChevronLeft class="account-chevron"/></button>
   <button class="account-row" @click="view='archive'"><span class="account-row-icon"><Archive/></span><span>{{t('ارشيف الطلبات')}}</span><ChevronLeft class="account-chevron"/></button>
   <button class="account-row" @click="view='privacy'"><span class="account-row-icon"><ShieldCheck/></span><span>{{t("الخصوصية والشروط")}}</span><ChevronLeft class="account-chevron"/></button>
@@ -39,6 +42,7 @@ export default {
   </div></template>
   <template v-else><button class="account-back" :class="{'archive-back':view==='archive'}" @click="view='menu'"><ArrowRight :size="18"/> {{t("العودة إلى حسابي")}}</button>
   <OrderArchive v-if="view==='archive'" :orders="orders" @browse="$emit('browse')"/>
+  <RabiaaActivation v-if="view==='activation'"/>
   <form v-if="view==='edit'" class="account-panel" @submit.prevent="save"><h2>{{t("الملف الشخصي")}}</h2><label>{{t("الاسم الكامل")}}<input v-model="name" required minlength="2" maxlength="80" autocomplete="name"/></label><label>{{t("رقم الهاتف")}}<input :value="user.phone" :placeholder="t(&quot;غير مضاف&quot;)" readonly dir="ltr"/></label><label>{{t("البريد الإلكتروني")}} <small>{{t("(اختياري)")}}</small><input v-model="email" type="email" maxlength="254" autocomplete="email" dir="ltr"/></label><p v-if="error" class="auth-error" role="alert">{{t(error)}}</p><button class="primary wide">{{t("حفظ التعديلات")}}</button></form>
   <article v-if="view==='privacy'" class="account-panel account-information"><h2>{{t("الخصوصية والشروط")}}</h2><p v-if="store.settings.privacyText" class="account-custom-text" dir="auto">{{store.settings.privacyText}}</p><template v-else><p>{{t("بيانات حسابك تُستخدم لعرض ملفك وطلباتك وتذاكر الدعم داخل التطبيق")}}</p></template></article>
   <article v-if="view==='about'" class="account-panel account-information"><h2>{{t("حول التطبيق")}}</h2><p v-if="store.settings.aboutText" class="account-custom-text" dir="auto">{{store.settings.aboutText}}</p><template v-else><p>{{t("فاتيا — بطاقات الرصيد والألعاب والاشتراكات الرقمية في مكان واحد")}}</p><p>{{t("تصفّح البطاقات تابع مشترياتك وتواصل مع الدعم من داخل التطبيق")}}</p></template><DeveloperAbout/></article></template>

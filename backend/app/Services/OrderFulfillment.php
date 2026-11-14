@@ -51,7 +51,7 @@ class OrderFulfillment
         $s['orders'][$i]['codesAvailable'] = $f->state === 'delivered' && $f->payment_status === 'confirmed' && ($s['orders'][$i]['digitalProvider'] ?? '') !== 'topup';
         $s['orders'][$i]['paymentReviewReason'] = $f->review_reason;
         $s['orders'][$i]['status'] = match ($f->state) {
-            'delivered' => 'مكتمل', 'expired', 'cancelled' => 'ملغي', default => 'قيد المراجعة',
+            'delivered' => 'مكتمل', 'refunded' => 'مسترجع', 'expired', 'cancelled', 'failed' => 'ملغي', default => 'قيد المراجعة',
         };
     }
 
@@ -149,7 +149,8 @@ class OrderFulfillment
             if (! $p || ! is_int($denom) || $denom < 0 || $denom >= count($p['values']) || ! is_int($quantity) || $quantity < 1 || $quantity > 20) {
                 throw new ApiError('تفاصيل الطلب غير صحيحة');
             }
-            if (! in_array($b['payment'] ?? null, isset($b['publicationId']) ? ['Manual'] : ['Qi', 'ZainCash'], true)) {
+            $manualRabiaa = ($b['payment'] ?? '') === 'Manual' && app(DigitalSales::class)->mapping((string) $p['id'], $denom)?->connection === 'rabiaa' && DigitalManualPayments::enabled('rabiaa');
+            if (! $manualRabiaa && ! in_array($b['payment'] ?? null, isset($b['publicationId']) ? ['Manual'] : ['Qi', 'ZainCash'], true)) {
                 throw new ApiError('وسيلة الدفع غير صحيحة');
             }
             if (DB::table('order_fulfillments')->join('orders', 'orders.id', '=', 'order_fulfillments.order_id')->where('orders.customer_id', $customer['id'])->where('order_fulfillments.state', 'reserved')->count() >= 5) {

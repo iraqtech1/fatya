@@ -18,6 +18,24 @@ class AdminAccessTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_new_management_read_permissions_do_not_grant_price_changes_campaign_sending_or_refunds(): void
+    {
+        app(Store::class)->read();
+        $employee = $this->employee(['prices.view', 'notifications.view', 'notifications.create', 'application_display.view', 'archive.view']);
+        $this->asEmployee($employee);
+        $this->getJson('/api/admin/procurement/prices')->assertOk();
+        $this->getJson('/api/admin/procurement/notifications')->assertOk();
+        $this->assertDatabaseCount('notification_rules', 0);
+        $this->postJson('/api/admin/procurement/prices/preview', ['revision' => 0])->assertForbidden();
+        $this->postJson('/api/admin/procurement/notifications/review', ['revision' => 0])->assertForbidden();
+        $this->postJson('/api/admin/procurement/notifications/send', ['revision' => 0])->assertForbidden();
+        $this->putJson('/api/admin/procurement/application-display', ['revision' => 0])->assertForbidden();
+        $this->postJson('/api/admin/procurement/refunds/settle', ['revision' => 0])->assertForbidden();
+        $this->getJson('/api/admin/procurement/digital/activations')->assertForbidden();
+        $this->assertDatabaseCount('notification_campaigns', 0);
+        $this->assertDatabaseCount('digital_refund_entries', 0);
+    }
+
     protected function beforeRefreshingDatabase(): void
     {
         if (DB::connection()->getDriverName() === 'sqlite') {

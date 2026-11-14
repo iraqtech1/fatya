@@ -3,9 +3,62 @@
 namespace App\Services;
 
 use App\Exceptions\ApiError;
+use Illuminate\Support\Facades\DB;
 
 class CompanyHierarchy
 {
+    public static function reorder(array &$companies, array &$item): void
+    {
+        $siblings = array_values(array_filter($companies, fn ($company) => $company['id'] !== $item['id'] && ($company['parentId'] ?? '') === ($item['parentId'] ?? '') && in_array($company['role'], ['manufacturer', 'both'], true) === in_array($item['role'], ['manufacturer', 'both'], true)));
+        usort($siblings, fn ($a, $b) => ($a['displayOrder'] ?? 0) <=> ($b['displayOrder'] ?? 0));
+        $position = min($item['displayOrder'], count($siblings));
+        array_splice($siblings, $position, 0, [$item]);
+        foreach ($siblings as $index => $sibling) {
+            if ($sibling['id'] === $item['id']) {
+                $item['displayOrder'] = $index;
+            }
+            foreach ($companies as &$company) {
+                if ($company['id'] === $sibling['id']) {
+                    $company['displayOrder'] = $index;
+                    break;
+                }
+            }unset($company);
+        }
+    }
+
+    public function move(array $input): array
+    {
+        if (! is_string($input['id'] ?? null) || ! in_array($input['direction'] ?? null, [-1, 1], true)) {
+            throw new ApiError('اختر شركة واتجاهاً صحيحاً', 422);
+        }
+
+        return DB::transaction(function () use ($input) {
+            $store = app(Store::class);
+            $state = $store->read(true);
+            if (($input['revision'] ?? null) !== $state['revision']) {
+                throw new ApiError('الترتيب تغير؛ حدّث الصفحة', 409);
+            }
+            $item = collect($state['companies'])->firstWhere('id', $input['id']);
+            if (! $item) {
+                throw new ApiError('الشركة غير موجودة', 404);
+            }
+            $siblings = array_values(array_filter($state['companies'], fn ($company) => ($company['parentId'] ?? '') === ($item['parentId'] ?? '') && in_array($company['role'], ['manufacturer', 'both'], true) === in_array($item['role'], ['manufacturer', 'both'], true)));
+            usort($siblings, fn ($a, $b) => ($a['displayOrder'] ?? 0) <=> ($b['displayOrder'] ?? 0));
+            $position = array_search($item['id'], array_column($siblings, 'id'), true);
+            $target = $position + $input['direction'];
+            if ($target < 0 || $target >= count($siblings)) {
+                return ['revision' => $state['revision'], 'changed' => false];
+            }
+            $item['displayOrder'] = $target;
+            self::reorder($state['companies'], $item);
+            $store->event($state, 'تحديث ترتيب الشركة: '.$item['name']);
+            $store->save($state);
+            ProcurementAudit::record('company.reordered', $item['id'], ['from' => $position, 'to' => $target, 'parentId' => $item['parentId'] ?? '', 'revision' => $state['revision']]);
+
+            return ['revision' => $state['revision'], 'changed' => true];
+        });
+    }
+
     public static function fields(array $item, array $data, ?array $old, array $companies): array
     {
         $parentId = $data['parentId'] ?? $old['parentId'] ?? '';

@@ -42,6 +42,30 @@ class CardLifecycle
         $pages = max(1, (int) ceil($count / 50));
         $page = min($page, $pages);
         $state = app(Store::class)->read();
+        if ($kind === 'order' && $count === 0 && app(AdminAccess::class)->can('digital.executions')) {
+            $execution = DB::table('digital_executions')->where('order_id', $key)->first();
+            $order = collect($state['orders'])->firstWhere('id', $key);
+            if ($execution && $order) {
+                $fulfillment = DB::table('order_fulfillments')->where('order_id', $key)->first();
+                $timeline = [];
+                if (! empty($order['createdAt'])) {
+                    $timeline[] = ['event' => 'إنشاء طلب خدمة رقمية', 'at' => $order['createdAt'], 'reference' => $key];
+                }
+                foreach (DigitalDispatches::forOrders([$key])[$key] ?? [] as $dispatch) {
+                    $timeline[] = ['event' => $dispatch['endpoint'] === '/vendor/hold' ? 'تسجيل إرسال الحجز إلى المزوّد' : 'تسجيل إرسال الشراء إلى المزوّد', 'at' => $dispatch['startedAt'], 'reference' => $dispatch['id']];
+                }
+                if ($fulfillment?->delivered_at) {
+                    $timeline[] = ['event' => 'تسجيل نجاح تنفيذ الخدمة', 'at' => gmdate(DATE_ATOM, $fulfillment->delivered_at), 'reference' => $execution->provider_reference];
+                }
+                foreach (DB::table('digital_refund_entries')->where('order_id', $key)->orderBy('created')->get() as $refund) {
+                    $timeline[] = ['event' => 'توثيق مبلغ أُعيد للزبون', 'at' => gmdate(DATE_ATOM, $refund->created), 'reference' => $refund->refund_reference];
+                }
+                $row = ['id' => $key, 'name' => $order['saleSnapshot']['serviceTitle'] ?? $order['name'], 'productId' => (string) $order['productId'], 'value' => $order['saleSnapshot']['denominationName'] ?? '', 'serial' => null, 'status' => $execution->state, 'expiry' => null, 'batchId' => null, 'sourceLine' => null, 'sourceRow' => null, 'orderId' => $key, 'source' => $execution->provider, 'company' => $order['saleSnapshot']['companyName'] ?? null, 'paymentStatus' => $fulfillment?->payment_status, 'deliveryStatus' => $fulfillment?->state, 'timeline' => $timeline, 'historyNote' => 'سجل خدمة API من الطلب الأصلي؛ لا تمثل بطاقة مضافة إلى المخزون ولا تعرض PIN. السجل القديم لا يكتسب أدلة إرسال مفترضة'];
+                ProcurementAudit::record('card_lookup', null, ['kind' => $kind, 'results' => 1, 'page' => 1]);
+
+                return ['rows' => [$row], 'count' => 1, 'page' => 1, 'pages' => 1];
+            }
+        }
         $rows = $query->orderBy('id')->offset(($page - 1) * 50)->limit(50)->get()->map(function ($card) use ($state) {
             $product = collect($state['products'])->first(fn ($product) => (string) $product['id'] === $card->product_id);
             $timeline = [];
@@ -57,6 +81,11 @@ class CardLifecycle
             if ($fulfillment?->delivered_at) {
                 $timeline[] = ['event' => 'تسليم بعد تأكيد الدفع', 'at' => gmdate(DATE_ATOM, $fulfillment->delivered_at), 'reference' => $orderId];
             }
+            if ($orderId) {
+                foreach (DB::table('digital_refund_entries')->where('order_id', $orderId)->orderBy('created')->get() as $refund) {
+                    $timeline[] = ['event' => 'توثيق مبلغ أُعيد للزبون', 'at' => gmdate(DATE_ATOM, $refund->created), 'reference' => $refund->refund_reference];
+                }
+            }
             if ($card->withdrawal_id) {
                 $withdrawal = DB::table('inventory_exports')->where('id', $card->withdrawal_id)->first();
                 if ($withdrawal?->approved_at) {
@@ -65,7 +94,10 @@ class CardLifecycle
             }
             usort($timeline, fn ($a, $b) => strtotime($a['at']) <=> strtotime($b['at']));
 
-            return ['id' => (string) $card->id, 'name' => $product['name'] ?? 'بطاقة سابقة', 'productId' => $card->product_id, 'value' => (string) $card->denomination, 'serial' => $card->serial, 'status' => InventoryReports::state($card), 'expiry' => $card->expires_on, 'batchId' => $card->batch_id, 'sourceLine' => $card->source_line, 'sourceRow' => $card->source_row, 'orderId' => $orderId, 'paymentStatus' => $fulfillment?->payment_status, 'deliveryStatus' => $fulfillment?->state, 'timeline' => $timeline, 'historyNote' => 'يعرض الأحداث المحفوظة فقط؛ أي حركة غير مسجلة سابقاً لا يمكن استنتاجها'];
+            $company = collect($state['companies'])->firstWhere('id', $product['manufacturerId'] ?? '');
+            $batch = $card->batch_id ? json_decode(DB::table('stock_batches')->where('id', $card->batch_id)->value('summary') ?? '{}', true) : [];
+
+            return ['company' => $company['name'] ?? null, 'source' => $batch['supplier'] ?? null, 'importActor' => $batch['actor'] ?? null, 'id' => (string) $card->id, 'name' => $product['name'] ?? 'بطاقة سابقة', 'productId' => $card->product_id, 'value' => (string) $card->denomination, 'serial' => $card->serial, 'status' => InventoryReports::state($card), 'expiry' => $card->expires_on, 'batchId' => $card->batch_id, 'sourceLine' => $card->source_line, 'sourceRow' => $card->source_row, 'orderId' => $orderId, 'paymentStatus' => $fulfillment?->payment_status, 'deliveryStatus' => $fulfillment?->state, 'timeline' => $timeline, 'historyNote' => 'يعرض الأحداث المحفوظة فقط؛ أي حركة غير مسجلة سابقاً لا يمكن استنتاجها'];
         })->all();
         ProcurementAudit::record('card_lookup', null, ['kind' => $kind, 'results' => count($rows), 'page' => $page]);
 

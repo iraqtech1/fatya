@@ -95,8 +95,11 @@ export async function saveAdmin(collection,data,revision=connection.revision){
   catch(e){await refreshStore().catch(()=>{});throw e;}
 }
 export async function readNotifications(ids){
+  const owner=connection.customer?.id;
   const result=await api('/notifications/read',{ids});
+  if(owner!==connection.customer?.id)return;
   if(result.revision>=connection.revision){store.notifications.splice(0,store.notifications.length,...result.notifications);connection.revision=result.revision;}
+  const {closeReadNotifications}=await import('./notification-links.js');await closeReadNotifications(ids);
 }
 export async function importStock(rows,name){
   try{const result=await api('/admin/import',{revision:connection.revision,rows,name});applyState(result.state);await refreshStore().catch(()=>{});return result;}

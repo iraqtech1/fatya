@@ -4,6 +4,11 @@ namespace App\Services;
 
 use App\Exceptions\ApiError;
 use App\Exceptions\ProviderTransportError;
+use App\Services\Captain\DigitalMoney;
+use App\Services\Captain\MasalCatalog;
+use App\Services\Captain\Money;
+use App\Services\Captain\ProvinceName;
+use App\Services\Captain\TopupResult;
 use Brick\Math\BigDecimal;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Support\Facades\Cache;
@@ -54,6 +59,7 @@ class DigitalProviders
             }
         }
         $c['version'] = (int) ($connection?->version ?? 0);
+        $c['owner_city'] = $connection?->owner_city ?? ($c['owner_city'] ?? '');
         if (! $c['enabled'] || ! $c['key']) {
             throw new ApiError('الربط غير مفعّل؛ أضف مفتاح الشركة في إعدادات الخادم الخاصة', 409);
         }
@@ -90,13 +96,21 @@ class DigitalProviders
             $responseHash = hash('sha256', $r->body());
             $outcome = 'http_error';
             if (! $r->successful()) {
+                $rejection = strlen($r->body()) <= 4 * 1024 * 1024 ? ProviderJson::decode($r->body()) : null;
+                if ($provider === 'topup' && $path === '/api/v1/transactions' && in_array($status, [400, 401], true) && is_array($rejection) && (TopupResult::classify($rejection, $query['mobile'] ?? '')['status'] ?? '') === 'failed') {
+                    if ($dispatch) {
+                        DigitalDispatches::finish($dispatch, 'response_received', $status, $responseHash);
+                    }
+
+                    return $rejection;
+                }
                 throw new \RuntimeException;
             }
             $outcome = 'invalid_response';
             if (strlen($r->body()) > 4 * 1024 * 1024) {
                 throw new \RuntimeException;
             }
-            $data = json_decode($r->body(), true, 512, JSON_THROW_ON_ERROR | JSON_BIGINT_AS_STRING);
+            $data = ProviderJson::decode($r->body());
             if ($dispatch) {
                 DigitalDispatches::finish($dispatch, 'response_received', $status, $responseHash);
             }
@@ -124,7 +138,7 @@ class DigitalProviders
             $configured = $connection ? (bool) ($connection->active && ($connection->credential || $c['key'])) : (bool) ($c['enabled'] && $c['key']);
             $snapshot = DB::table('digital_catalog')->where(fn ($q) => $q->where('connection', $p)->orWhere('connection', 'like', $p.':%'))->orderByDesc('synced')->first();
 
-            return ['id' => $p, 'name' => $p === 'topup' ? 'التوب أب' : 'الرابعة', 'configured' => $configured, 'active' => $connection ? (bool) $connection->active : (bool) $c['enabled'], 'hasCredential' => (bool) ($connection?->credential || $c['key']), 'version' => (int) ($connection?->version ?? 0), 'balance' => $connection?->balance, 'balanceUpdatedAt' => $connection?->balance_updated ? date(DATE_ATOM, $connection->balance_updated) : null, 'lastSync' => $snapshot ? date(DATE_ATOM, $snapshot->synced) : null, 'balanceSupported' => $p === 'topup'];
+            return ['id' => $p, 'name' => $p === 'topup' ? 'التوب أب' : 'الرابعة', 'configured' => $configured, 'active' => $connection ? (bool) $connection->active : (bool) $c['enabled'], 'hasCredential' => (bool) ($connection?->credential || $c['key']), 'version' => (int) ($connection?->version ?? 0), 'ownerCity' => $connection?->owner_city ?? ($c['owner_city'] ?? ''), 'balance' => $connection?->balance, 'balanceUpdatedAt' => $connection?->balance_updated ? date(DATE_ATOM, $connection->balance_updated) : null, 'lastSync' => $snapshot ? date(DATE_ATOM, $snapshot->synced) : null, 'balanceSupported' => $p === 'topup'];
         }, ['topup', 'rabiaa']);
     }
 
@@ -168,7 +182,7 @@ class DigitalProviders
             throw new ApiError('رد المحافظات غير مفهوم', 502);
         }
 
-        $result = array_values(array_map(fn ($r) => ['id' => (string) ($r['id'] ?? ''), 'title' => CatalogEditor::text($r['title'] ?? '', 100)], $rows));
+        $result = array_values(array_map(fn ($r) => ['id' => (string) ($r['id'] ?? ''), 'title' => CatalogEditor::text($r['title'] ?? $r['name'] ?? '', 100)], $rows));
         if ($premium) {
             DB::transaction(function () use ($result, $version) {
                 app(Store::class)->read(true);
@@ -181,64 +195,81 @@ class DigitalProviders
         return $result;
     }
 
-    public function catalog(string $provider, mixed $province = null): array
+    public function catalog(string $provider, mixed $province = null, bool $preview = false): array
     {
-        $version = $this->settings($provider)['version'];
-        if ($provider === 'rabiaa' && (! is_string($province) || ! preg_match('/^[0-9]{1,10}$/D', $province))) {
-            throw new ApiError('اختر المحافظة أولاً', 422);
-        }
-        $lock = Cache::lock('digital-catalog:'.$provider.':'.($province ?? 'all'), 120);
+        $scope = $provider === 'rabiaa' ? $this->settings($provider)['owner_city'] : 'all';
+        $lock = Cache::lock('digital-catalog:'.$provider.':'.$scope, 120);
         if (! $lock->get()) {
             throw new ApiError('توجد مزامنة لنفس المزود والمنطقة؛ انتظر اكتمالها', 409);
         }
         try {
-            return $this->fetchCatalog($provider, $province, $version, $lock);
+            return $this->readCatalog($provider, $province, $preview, $lock);
         } finally {
             $lock->release();
         }
     }
 
-    private function fetchCatalog(string $provider, mixed $province, int $version, Lock $lock): array
+    private function readCatalog(string $provider, mixed $province, bool $preview, Lock $lock): array
     {
+        $version = $this->settings($provider)['version'];
+        if ($provider === 'rabiaa') {
+            $city = app(ProvinceName::class)->name($this->settings('rabiaa')['owner_city']);
+            if ($city === '') {
+                throw new ApiError('حدد محافظة صاحب توكن الرابعة قبل جلب الفئات', 422);
+            }
+            $matched = array_values(array_filter($this->provinces(), fn ($row) => app(ProvinceName::class)->name($row['title']) === $city));
+            if (count($matched) !== 1 || ($province !== null && (string) $province !== $matched[0]['id'])) {
+                throw new ApiError('تعذرت مطابقة محافظة صاحب التوكن؛ لا يمكن عرض محافظات أخرى', 422);
+            }
+            $province = $matched[0]['id'];
+        }
         $raw = $this->read($provider, $provider === 'topup' ? '/api/v1/products' : '/vendor/catalog', $provider === 'topup' ? [] : ['provinceId' => $province]);
         $rows = $provider === 'topup' ? ($raw['products'] ?? null) : ($raw['data'] ?? null);
         if (($provider === 'topup' && ($raw['status'] ?? null) !== 'ok') || ! is_array($rows) || ! array_is_list($rows) || count($rows) > 5000) {
             throw new ApiError('رد كتالوج الشركة غير مفهوم', 502);
         }
-        // Never retire existing products on an explicitly partial/paginated response.
         $pagination = $raw['meta']['pagination'] ?? $raw['pagination'] ?? [];
         if (($raw['partial'] ?? false) === true || ($raw['complete'] ?? true) === false || (int) ($pagination['pageCount'] ?? 1) > 1 || ! empty($pagination['nextPage']) || ! empty($raw['links']['next'])) {
             throw new ApiError('رد الكتالوج جزئي؛ حُفظ الكتالوج السابق دون إيقاف فئاته', 502);
         }
         $offers = [];
-        $identities = [];
-        foreach ($rows as $row) {
-            if (! is_array($row)) {
-                throw new ApiError('الكتالوج يحتوي صفاً غير مفهوم؛ حُفظ الكتالوج السابق', 502);
+        $excluded = [];
+        if ($provider === 'topup') {
+            $normalized = app(MasalCatalog::class)->normalize($rows);
+            $excluded = $normalized['excluded_catalog'];
+            $source = collect($rows)->keyBy(fn ($row) => ($row['type'] ?? '').':'.(string) ($row['id'] ?? $row['product_id'] ?? ''));
+            foreach ($normalized['catalog'] as $row) {
+                $original = $source->get($row['type'].':'.$row['remote_id'], []);
+                $offers[] = ['providerId' => $row['remote_id'], 'title' => $row['remote_name'], 'type' => $row['type'], 'parentId' => isset($original['parent_id']) ? (string) $original['parent_id'] : null, 'cost' => StockOrders::money($row['cost']), 'costBasis' => 'catalog_snapshot', 'priceBasis' => 'vendor_price', 'available' => true, 'provinceId' => null, 'groupPath' => $row['group_path'], ...ProviderCatalogMetadata::read($original, (string) config('digital.topup.base'))];
+                $at = count($offers) - 1;
+                if (! $offers[$at]['images']) {
+                    foreach (array_reverse($row['group_path']) as $parent) {
+                        $metadata = ProviderCatalogMetadata::read($source->get($row['type'].':'.$parent['remote_id'], []), (string) config('digital.topup.base'));
+                        if ($metadata['images']) {
+                            $offers[$at]['images'] = $metadata['images'];
+                            $offers[$at]['imageSource'] = 'category';
+                            break;
+                        }
+                    }
+                }
             }
-            if ($provider === 'topup' && (string) ($row['show2site'] ?? '0') !== '1') {
-                continue;
+        } else {
+            $identities = [];
+            foreach ($rows as $row) {
+                if (! is_array($row) || ! ctype_digit((string) ($row['catalogId'] ?? '')) || (int) $row['catalogId'] < 1 || ! is_string($row['title'] ?? null) || trim($row['title']) === '' || mb_strlen($row['title']) > 200 || ! in_array($row['packageType'] ?? null, ['standard', 'premium'], true)) {
+                    throw new ApiError('فئة الرابعة لا تطابق عقد الشركة', 422);
+                }
+                if (isset($row['provinceId']) && (string) $row['provinceId'] !== $province || isset($row['province']) && app(ProvinceName::class)->name($row['province']) !== $city) {
+                    throw new ApiError('محافظة الفئة لا تطابق صاحب التوكن', 422);
+                }
+                $id = (string) $row['catalogId'];
+                if (isset($identities[$id])) {
+                    throw new ApiError('فئة الشركة مكررة؛ لم يستبدل الكتالوج السابق', 422);
+                }
+                $identities[$id] = true;
+                $cost = Money::decimal(DigitalMoney::minor($row['publicPrice'] ?? null, 'cost', true));
+                $offers[] = ['providerId' => $id, 'title' => trim($row['title']), 'type' => $row['packageType'], 'parentId' => null, 'cost' => StockOrders::money($cost), 'costBasis' => 'catalog_snapshot', 'priceBasis' => 'public_price', 'available' => ($row['inStock'] ?? null) === true, 'provinceId' => $province, 'province' => $matched[0]['title'], 'groupPath' => [], ...ProviderCatalogMetadata::read($row, (string) config('digital.rabiaa.base'))];
             }
-            $id = $provider === 'topup' ? ($row['id'] ?? $row['product_id'] ?? null) : ($row['catalogId'] ?? null);
-            if (! is_scalar($id) || ! preg_match('/^[0-9]{1,100}$/D', (string) $id)) {
-                throw new ApiError('معرّف فئة الشركة غير مفهوم؛ حُفظ الكتالوج السابق', 502);
-            }
-            $type = $provider === 'topup' ? ($row['type'] ?? '') : ($row['packageType'] ?? '');
-            if (! in_array($type, $provider === 'topup' ? ['topup', 'bundle', 'bill'] : ['standard', 'premium', 'Premium'], true)) {
-                continue;
-            }
-            try {
-                $cost = StockOrders::money((string) ($provider === 'topup' ? ($row['price'] ?? '') : ($row['vendorPrice'] ?? '')));
-            } catch (ApiError) {
-                $cost = null;
-            }
-            $available = $cost !== null && BigDecimal::of($cost)->isGreaterThan(0) && ($provider === 'topup' || ($row['inStock'] ?? null) === true);
-            $identity = (string) $id.':'.strtolower($type);
-            if (isset($identities[$identity])) {
-                throw new ApiError('كتالوج الشركة يتضمن معرّف خدمة مكرراً', 502);
-            }
-            $identities[$identity] = true;
-            $offers[] = ['providerId' => (string) $id, 'title' => CatalogEditor::text($row['title'] ?? '', 200), 'type' => strtolower($type), 'parentId' => isset($row['parent_id']) ? (string) $row['parent_id'] : null, 'cost' => $cost, 'costBasis' => 'catalog_snapshot', 'available' => $available, 'provinceId' => $provider === 'rabiaa' ? $province : null, ...ProviderCatalogMetadata::read($row, (string) config('digital.'.$provider.'.base'))];
         }
         $byId = collect($offers)->keyBy(fn ($o) => $o['type'].':'.$o['providerId']);
         foreach ($offers as &$o) {
@@ -250,12 +281,45 @@ class DigitalProviders
                 }
             }
         } unset($o);
-        $snapshot = ['provider' => $provider, 'offers' => $offers, 'provinceId' => $province, 'syncedAt' => now()->toIso8601String()];
+        $subscriberProvinces = $provider === 'rabiaa' && collect($offers)->contains('type', 'premium') ? $this->provinces(true) : [];
+        $snapshot = ['provider' => $provider, 'offers' => $offers, 'subscriberProvinces' => $subscriberProvinces, 'excluded' => $excluded, 'provinceId' => $province, 'syncedAt' => now()->toIso8601String()];
         $snapshot['hash'] = hash('sha256', Store::json($snapshot));
+        if ($preview && $provider === 'topup') {
+            return DB::transaction(function () use ($provider, $snapshot, $version, $raw, $lock) {
+                app(Store::class)->read(true);
+                if (! $lock->isOwnedByCurrentProcess()) {
+                    throw new ApiError('انتهت مهلة المزامنة؛ لم تُحفظ اللقطة', 409);
+                }
+                if ($this->settings($provider)['version'] !== $version) {
+                    throw new ApiError('تغير مفتاح الربط؛ أعد المعاينة', 409);
+                }
+                $id = DB::table('digital_catalog_previews')->insertGetId(['provider' => $provider, 'connection_version' => $version, 'catalog_hash' => $snapshot['hash'], 'encrypted_snapshot' => Crypt::encryptString(Store::json(['snapshot' => $snapshot, 'raw' => $raw])), 'created' => time(), 'accepted' => false]);
+                $prior = $this->catalogRecord($provider);
+                $before = collect($prior ? json_decode($prior->snapshot, true)['offers'] : [])->keyBy('providerId');
+                $changes = [];
+                foreach ($snapshot['offers'] as $offer) {
+                    $old = $before->get($offer['providerId']);
+                    $changes[] = ['providerId' => $offer['providerId'], 'title' => $offer['title'], 'change' => ! $old ? 'new' : ($old['cost'] !== $offer['cost'] || $old['title'] !== $offer['title'] ? 'changed' : 'unchanged')];
+                }
+                foreach ($before as $offer) {
+                    if (! collect($snapshot['offers'])->contains('providerId', $offer['providerId'])) {
+                        $changes[] = ['providerId' => $offer['providerId'], 'title' => $offer['title'], 'change' => 'retired'];
+                    }
+                }
+
+                return $snapshot + ['preview' => true, 'previewId' => $id, 'connectionVersion' => $version, 'changes' => $changes];
+            });
+        }
+
+        return $this->persistCatalog($provider, $snapshot, $version, $province, $raw, $lock);
+    }
+
+    private function persistCatalog(string $provider, array $snapshot, int $version, ?string $province, array $raw, Lock $lock): array
+    {
         DB::transaction(function () use ($provider, $snapshot, $version, $province, $raw, $lock) {
             app(Store::class)->read(true);
             if (! $lock->isOwnedByCurrentProcess()) {
-                throw new ApiError('انتهت مهلة المزامنة؛ لم يُستبدل الكتالوج ببيانات أقدم', 409);
+                throw new ApiError('انتهت مهلة المزامنة؛ لم يُستبدل الكتالوج', 409);
             }
             if ($this->settings($provider)['version'] !== $version) {
                 throw new ApiError('مفتاح الربط تغير أثناء جلب الكتالوج', 409);
@@ -271,11 +335,53 @@ class DigitalProviders
                 $fresh = collect($snapshot['offers'])->first(fn ($o) => $o['providerId'] === $row->provider_id && $o['type'] === ($old['type'] ?? ''));
                 if (! $fresh || ! $fresh['available']) {
                     DB::table('digital_offers')->where('id', $row->id)->update(['active' => false, 'updated' => time()]);
+                } else {
+                    // Matching an old wholesale price does not authorize an automatic retail change.
+                    DB::table('digital_offers')->where('id', $row->id)->update(['snapshot' => Store::json($fresh), 'updated' => time()]);
                 }
             }
         });
 
         return $snapshot;
+    }
+
+    public function acceptCatalog(array $input): array
+    {
+        $lock = Cache::lock('digital-catalog:topup:all', 120);
+        if (! $lock->get()) {
+            throw new ApiError('توجد مزامنة أو عملية اعتماد لقطة جارية', 409);
+        }
+        try {
+            return $this->acceptLockedCatalog($input, $lock);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    private function acceptLockedCatalog(array $input, Lock $lock): array
+    {
+        return DB::transaction(function () use ($input, $lock) {
+            app(Store::class)->read(true);
+            $id = $input['previewId'] ?? null;
+            if (! is_int($id)) {
+                throw new ApiError('اختر لقطة معاينة صحيحة', 422);
+            }
+            $row = DB::table('digital_catalog_previews')->where('id', $id)->where('provider', 'topup')->lockForUpdate()->first();
+            if (! $row || $row->catalog_hash !== ($input['catalogHash'] ?? null) || (int) $row->connection_version !== ($input['connectionVersion'] ?? null) || $this->settings('topup')['version'] !== (int) $row->connection_version) {
+                throw new ApiError('اللقطة أو مفتاح الربط تغير؛ أعد المعاينة', 409);
+            }
+            $payload = json_decode(Crypt::decryptString($row->encrypted_snapshot), true);
+            if ($row->accepted) {
+                return $payload['snapshot'];
+            }
+            if ($row->created < time() - 1800 || DB::table('digital_catalog_previews')->where('provider', 'topup')->where('id', '>', $id)->exists()) {
+                throw new ApiError('توجد لقطة أحدث أو انتهت المعاينة؛ أعد الجلب', 409);
+            }
+            $snapshot = $this->persistCatalog('topup', $payload['snapshot'], (int) $row->connection_version, null, $payload['raw'], $lock);
+            DB::table('digital_catalog_previews')->where('id', $id)->update(['accepted' => true]);
+
+            return $snapshot;
+        });
     }
 
     public function eligibility(array $b): array
@@ -332,11 +438,23 @@ class DigitalProviders
             if (! $offer || ($b['active'] && (! $offer['available'] || $catalog->synced < time() - 900))) {
                 throw new ApiError('حدّث كتالوج الشركة واختر فئة متوفرة', 409);
             }
+            if ($b['active'] && $offer['cost'] !== null && BigDecimal::of($retail)->isLessThan($offer['cost'])) {
+                throw new ApiError('سعر البيع أقل من سعر الشركة؛ حدّث التسعير', 422);
+            }
             $old = DB::table('digital_offers')->where('product_id', (string) $p['id'])->where('denom_index', $denom)->first();
             if (request()->attributes->has('adminAccess')) {
                 app(AdminPolicy::class)->digitalOffer($old, ['product_id' => (string) $p['id'], 'provider_id' => $offer['providerId'], 'connection' => $provider, 'retail' => $retail, 'active' => $b['active']], false);
             }
             DB::table('digital_offers')->updateOrInsert(['product_id' => (string) $p['id'], 'denom_index' => $denom], ['id' => $old?->id ?? (string) Str::uuid(), 'connection' => $provider, 'provider_id' => $offer['providerId'], 'snapshot' => Store::json($offer), 'retail' => $retail, 'active' => $b['active'], 'updated' => time()]);
+            foreach ($s['products'] as &$product) {
+                if ((string) $product['id'] === (string) $p['id']) {
+                    $product['prices'][$denom] = $retail;
+                    break;
+                }
+            }unset($product);
+            if (! $old || StockOrders::money((string) $old->retail) !== $retail) {
+                ProcurementAudit::record('prices.updated', (string) $p['id'], ['reason' => CatalogEditor::text($b['reason'] ?? '', 500) ?: 'تعديل من محرر ربط API', 'revision' => $s['revision'] + 1, 'source' => 'digital_offer', 'changes' => [['key' => 'product:'.$p['id'].':'.$denom, 'name' => $offer['title'], 'old' => $old ? StockOrders::money((string) $old->retail) : null, 'new' => $retail]]]);
+            }
             app(Store::class)->event($s, 'حفظ ربط فئة رقمية: '.$p['name']);
             app(Store::class)->save($s);
 

@@ -165,9 +165,9 @@ class ProcurementTest extends TestCase
         $service = app(DigitalProviders::class);
         $this->assertSame('100000.000', $service->balance()['balance']);
         $catalog = $service->catalog('topup');
-        $this->assertCount(2, $catalog['offers']);
+        $this->assertCount(1, $catalog['offers']);
         $this->assertSame('9000000000000000001', $catalog['offers'][0]['providerId']);
-        $this->assertFalse($catalog['offers'][1]['available']);
+        $this->assertSame('zero_price', $catalog['excluded'][0]['reason_code']);
         $result = $service->eligibility(['mobile' => '07700000000', 'confirmMobile' => '+9647700000000', 'providerId' => '9000000000000000001']);
         $this->assertFalse($result['eligible']);
         Http::assertSent(fn ($r) => $r->url() === 'https://masal-co.com/api/v1/checkEligibility' && $r['mobile'] === '9647700000000' && $r->hasHeader('x-api-key', 'fixture-key'));
@@ -177,8 +177,8 @@ class ProcurementTest extends TestCase
     public function test_rabiaa_catalog_is_scoped_to_province_and_saved_mapping_uses_current_snapshot(): void
     {
         $s = $this->fixture();
-        config(['digital.rabiaa.enabled' => true, 'digital.rabiaa.key' => 'fixture-key']);
-        Http::fake(['*' => Http::response(['data' => [['catalogId' => 71, 'title' => 'Card', 'vendorPrice' => 4300.75, 'inStock' => true, 'packageType' => 'standard']]])]);
+        config(['digital.rabiaa.enabled' => true, 'digital.rabiaa.key' => 'fixture-key', 'digital.rabiaa.owner_city' => 'Fixture']);
+        Http::fake(['*/vendor/provinces' => Http::response(['data' => [['id' => 2, 'title' => 'Fixture']]]), '*/vendor/catalog*' => Http::response(['data' => [['catalogId' => 71, 'title' => 'Card', 'publicPrice' => 4300.75, 'vendorPrice' => 0, 'inStock' => true, 'packageType' => 'standard']]])]);
         $catalog = app(DigitalProviders::class)->catalog('rabiaa', '2');
         $this->assertSame('4300.750', $catalog['offers'][0]['cost']);
         $this->admin();

@@ -19,3 +19,8 @@ const c={id:'topup',version:2,active:true,credential:'fixture-only',reason:'test
 const call=Function('run','api','refreshStore','load','emit','editing','message',save+';return save;')(fn=>fn(),async(path,body,method)=>sent.push({path,body:{...body},method}),async()=>{},async()=>{},(...event)=>sent.push(event),editing,message);
 await call(c);assert.equal(c.credential,'');assert.equal(editing.value,null);assert.deepEqual(sent[1],['saved',{provider:'topup',refresh:true,tokenUpdated:true}]);assert.equal(sent[0].method,'PUT');
 console.log('Saved tokens are cleared from the editor; successful token changes refresh catalog and balance immediately, with errors and disabled providers handled.');
+
+const acceptSource=source.slice(source.indexOf('function acceptCatalog('),source.indexOf('    function unpublish'));
+const preview={value:{preview:true,previewId:12,hash:'hash-12',connectionVersion:3}},acceptedCalls=[];
+const accept=Function('run','catalog','api','chosen','publishing','load','refreshStore','message',acceptSource+';return acceptCatalog;')(fn=>fn(),preview,async(path,body)=>{acceptedCalls.push({path,body});return {hash:'hash-12',offers:[]};},{value:{}},{value:{}},async()=>{},async()=>{},{value:''});
+assert.equal(acceptedCalls.length,0);await accept();assert.equal(acceptedCalls.length,1);assert.equal(acceptedCalls[0].body.previewId,12);assert.equal(preview.value.preview,undefined);

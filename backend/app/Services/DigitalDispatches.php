@@ -10,6 +10,21 @@ use Illuminate\Support\Str;
 /** Append-only financial dispatch identity. No tokens, subscriber data, codes or response bodies. */
 class DigitalDispatches
 {
+    public static function state(object $execution, array $attempts): string
+    {
+        if ($execution->journal_version === null) {
+            return 'legacy_unknown';
+        }
+        if ($execution->state === 'delivered') {
+            return 'success_confirmed';
+        }
+        if ($execution->state === 'failed' && $execution->reason === 'provider_rejected') {
+            return 'rejection_confirmed';
+        }
+
+        return $attempts ? 'uncertain' : (in_array($execution->state, ['review', 'failed'], true) ? 'not_sent' : 'not_requested');
+    }
+
     public static function begin(string $orderId, string $provider, int $version, string $endpoint): string
     {
         return DB::transaction(function () use ($orderId, $provider, $version, $endpoint) {

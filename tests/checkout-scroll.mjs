@@ -18,3 +18,12 @@ main.scrollTop=30;props.checkout.amount=12000;await nextTick();assert.equal(main
 props.receipt='';await nextTick();assert.equal(main.scrollTop,30);
 scope.stop();assert.doesNotThrow(()=>revealCheckoutReceipt(null,{doc:{},win:{}}));
 console.log('Payment receipt waits for rendering, restores mobile and window scroll, focuses its heading and does not reset while editing or reading.');
+
+const submitted=[],phoneProps=reactive({receipt:'',checkout:{product:{name:'Company',values:[5000],digitalOffers:{0:{provider:'topup',type:'topup',title:'Direct'}}},denom:0,amount:5250,method:'Manual'}});
+const reviewScope=effectScope(),reviewUi=reviewScope.run(()=>component.setup(phoneProps,{emit:(...args)=>submitted.push(args)}));
+let opened=0;reviewUi.reviewDialog.value={showModal(){opened++;},close(){}};
+reviewUi.digital.value.mobile='07700000000';await reviewUi.reviewPayment();assert.equal(opened,1);assert.equal(submitted.length,0,'Reviewing the number never submits an order');
+assert.equal(reviewUi.review.value.confirmMobile,'07700000000');reviewUi.digital.value.mobile='07800000000';reviewUi.confirmReview();
+assert.equal(submitted.length,1);assert.equal(submitted[0][1].mobile,'07700000000');assert.equal(submitted[0][1].confirmMobile,'07700000000','Submission uses the number actually reviewed');
+reviewUi.confirmReview();assert.equal(submitted.length,1,'Repeated confirmation cannot submit a second request');
+await reviewUi.reviewPayment();reviewUi.cancelReview();assert.equal(submitted.length,1);reviewScope.stop();

@@ -10,7 +10,7 @@ assert.equal(filterStockOrders(rows,{from:'2026-11-05',to:'2026-11-04'}).length,
 assert.equal(filterStockOrders(rows,{supplier:'missing'}).length,0);
 assert.equal(filterStockOrders(rows).length,3);
 assert.equal(stockOrderDate('invalid'),'');
-const data=stockOrderExportRows(filterStockOrders(rows));assert.equal(data.length,3);assert.equal(data[0].length,stockOrderHeaders.length);assert.equal(data[0][9],'90.125');assert.equal(data[0][10],'100.000');
+const data=stockOrderExportRows(filterStockOrders(rows));assert.equal(data.length,3);assert.equal(data[0].length,stockOrderHeaders.length);assert.equal(data[0][9],90.125);assert.equal(data[0][10],100);assert.match(data[0][1],/\d{2}:\d{2}:\d{2}$/);
 assert.equal(filterStockOrders(Array.from({length:125},(_,i)=>({...rows[0],id:String(i)}))).length,125);
 console.log('Stock history: Baghdad date boundaries, supplier/date intersection, empty and invalid ranges, complete export rows verified.');
 

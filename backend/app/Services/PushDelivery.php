@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\ApiError;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 
@@ -36,7 +37,7 @@ class PushDelivery
                     // Detailed order information remains behind the authenticated app.
                     'contents' => ['ar' => 'لديك تحديث جديد في حسابك افتح فاتيا للاطلاع عليه', 'en' => 'You have a new account update. Open Fatya to view it.'],
                     'include_aliases' => ['external_id' => [$provider->alias($row->customer_id)]],
-                    'url' => rtrim(config('app.url'), '/').'/',
+                    'url' => rtrim(config('app.url'), '/').'/app?notification='.$row->id,
                     'collapse_id' => $row->id,
                     'data' => ['notification_id' => $row->id],
                     'ttl' => 86400,
@@ -48,7 +49,7 @@ class PushDelivery
                     continue;
                 }
                 $permanent = in_array($response->status(), [400, 401, 403, 404, 422]);
-            } catch (ConnectionException|\App\Exceptions\ApiError) {
+            } catch (ConnectionException|ApiError) {
                 $permanent = false;
             }
             $failed = $permanent || $row->push_attempts >= 4;

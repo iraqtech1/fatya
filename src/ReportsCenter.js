@@ -11,8 +11,9 @@ import './reports.css';
 import {reportStatuses,reportLabel,formatReportValue,enrichReportRows,reportColumns,reportSummary,reportExportValue,moneyFields} from './report-presentation.js';
 export default{
  components:{ChevronLeft,ArrowRight,SlidersHorizontal,Download,FileBarChart},
- setup(){
-  const flow=useReportFlow({can,request:body=>{if(!connected)throw Error('تعذّر الاتصال. أعد المحاولة.');return api('/admin/procurement/reports',body);},download:async(type,data,scope)=>{
+ props:{initialFilters:{type:Object,default:()=>({})}},
+ setup(props={}){
+  const flow=useReportFlow({defaultFilters:props.initialFilters||{},can,request:body=>{if(!connected)throw Error('تعذّر الاتصال. أعد المحاولة.');return api('/admin/procurement/reports',body);},download:async(type,data,scope)=>{
    const exported=enrichReportRows(data.rows,store.products,store.companies),cols=reportColumns(type,exported,true);
    await exportWorkbook('fatya-'+type+'-'+scope+'-'+new Date().toISOString().slice(0,10)+'.xlsx',cols.map(k=>reportLabel(k,type)),exported.map(r=>cols.map(k=>reportExportValue(k,r[k],r.currency))),{columns:cols.map(k=>moneyFields.has(k)?'#,##0.###':'@'),metadata:[['التقرير',type],['نطاق التصدير',scope==='all'?'عام':'مفلتر'],['وقت الاستخراج UTC',data.generatedAt||'—'],['المنطقة الزمنية للحركات',data.timezone||'Asia/Baghdad'],...Object.entries(data.filters||{}).filter(([,value])=>value!=='').map(([key,value])=>[reportLabel(key,type),formatReportValue(key,value)]),...Object.entries(data.totals||{}).map(([key,value])=>[reportLabel(key,type),reportExportValue(key,value)])]});
   }});

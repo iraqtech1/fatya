@@ -50,6 +50,56 @@ class AdminPolicy
 
             return;
         }
+        if ($path === 'procurement/digital/receipt') {
+            $this->access->require('digital.executions');
+            $this->access->require('inventory.codes');
+
+            return;
+        }
+        if (in_array($path, ['procurement/digital/history', 'procurement/digital/rabiaa-history', 'procurement/digital/topup-profit'], true)) {
+            $this->access->require($path === 'procurement/digital/topup-profit' ? 'finance.profits' : 'digital.executions');
+            if (($b['all'] ?? false) === true) {
+                $this->access->require('digital.export');
+            }
+
+            return;
+        }
+        if ($path === 'procurement/company-order' && $method === 'PUT') {
+            $this->access->require('companies.update');
+
+            return;
+        }
+        if ($path === 'procurement/refunds/settle' && $method === 'POST') {
+            $this->access->require('payments.refund');
+
+            return;
+        }
+        if ($path === 'procurement/application-display' && in_array($method, ['GET', 'PUT'], true)) {
+            $this->access->require($method === 'GET' ? 'application_display.view' : 'application_display.update');
+
+            return;
+        }
+        if (str_starts_with($path, 'procurement/notifications')) {
+            $permission = match ([$method, $path]) {
+                ['GET', 'procurement/notifications'] => 'view',
+                ['POST', 'procurement/notifications/save'] => 'create',
+                ['POST', 'procurement/notifications/review'] => 'review',
+                ['POST', 'procurement/notifications/send'] => 'send',
+                ['POST', 'procurement/notifications/rules'] => 'expiry',
+                default => throw new ApiError('عملية الإشعار غير موجودة', 404),
+            };
+            $this->access->require('notifications.'.$permission);
+
+            return;
+        }
+        if (in_array($path, ['procurement/prices', 'procurement/prices/preview', 'procurement/prices/apply'], true)) {
+            $this->access->require('prices.view');
+            if ($method !== 'GET') {
+                $this->oneOf(['products.prices', 'digital.prices']);
+            }
+
+            return;
+        }
         if ($path === 'procurement/reports' && $method === 'POST') {
             $type = $b['type'] ?? 'inventory';
             if (! is_string($type) || ! in_array($type, ['inventory', 'movements', 'procurement', 'sales', 'digital', 'payments', 'exports', 'audit'], true)) {
@@ -98,9 +148,7 @@ class AdminPolicy
         }
         if ($path === 'procurement/stock-orders/submit' && $method === 'POST') {
             $this->access->require('stock_orders.submit');
-            if (! app(StockWorkflow::class)->policy()['required']) {
-                $this->access->require('stock_orders.approve');
-            }
+            $this->access->require('stock_orders.approve');
 
             return;
         }
@@ -137,8 +185,11 @@ class AdminPolicy
             ['POST', 'procurement/exports/renew'] => 'exports.renew',
             ['GET', 'procurement/digital'] => 'digital.view',
             ['GET', 'procurement/digital/balance'] => 'dashboard.balances',
-            ['POST', 'procurement/digital/catalog'] => 'digital.catalog',
+            ['POST', 'procurement/digital/catalog/accept'], ['POST', 'procurement/digital/catalog'] => 'digital.catalog',
             ['POST', 'procurement/digital/provinces'], ['POST', 'procurement/digital/eligibility'] => 'digital.eligibility',
+            ['GET', 'procurement/digital/activations'] => 'digital.activation_view',
+            ['POST', 'procurement/digital/activations'] => 'digital.activate',
+            ['POST', 'procurement/digital/refund-check'], ['POST', 'procurement/digital/refund-settle'] => 'digital.refund',
             ['POST', 'procurement/digital/reconcile'] => 'digital.reconcile',
             ['POST', 'procurement/digital/manual-payment'] => 'digital.manual_payment',
             ['PUT', 'procurement/digital/connections'] => 'digital.connections_update',
@@ -243,7 +294,7 @@ class AdminPolicy
             return;
         }
         if ($collection === 'tickets') {
-            $this->changes('support', $old ?? [], $data, ['reply' => ['reply'], 'status' => ['status']]);
+            $this->changes('support', $old ?? [], $data, ['reply' => ['reply', 'replyImage'], 'status' => ['status']]);
 
             return;
         }

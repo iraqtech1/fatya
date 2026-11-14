@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import ExcelJS from 'exceljs';
+import {priceChanges,readPrices} from '../src/price-import.js';
+const rows=[{key:'product:1:0',importCode:'E5K',remoteId:''},{key:'publication:uuid',remoteId:'00001234567890123456'}];
+assert.deepEqual(priceChanges([['key','retail','import_code'],['product:1:0','5250.001','E5K']],rows),{'product:1:0':'5250.001'});
+assert.throws(()=>priceChanges([['key','retail'],['Fixture name','5250']],rows));
+assert.throws(()=>priceChanges([['key','retail'],['product:1:0','=1+1']],rows));
+assert.throws(()=>priceChanges([['key','retail','import_code'],['product:1:0','5250','E10K']],rows));
+assert.throws(()=>priceChanges([['key','retail'],['product:1:0','5250'],['product:1:0','5500']],rows));
+const book=new ExcelJS.Workbook(),sheet=book.addWorksheet('Fatya');sheet.addRow(['key','retail','remote_id']);sheet.addRow(['publication:uuid',5500.125,'00001234567890123456']);const buffer=await book.xlsx.writeBuffer();
+assert.deepEqual(await readPrices({name:'prices.xlsx',size:buffer.length,arrayBuffer:async()=>buffer},rows),{'publication:uuid':'5500.125'});
+sheet.getCell('B2').value={formula:'1+1',result:2};const formula=await book.xlsx.writeBuffer();await assert.rejects(()=>readPrices({name:'prices.xlsx',size:formula.length,arrayBuffer:async()=>formula},rows));
+console.log('Price import matches stable IDs and codes, preserves long provider IDs and decimals, and rejects duplicates, unknown names and formulas.');

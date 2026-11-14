@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Exceptions\ApiError;
+use Brick\Math\BigDecimal;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CatalogEditor
@@ -105,6 +107,9 @@ class CatalogEditor
                     throw new ApiError('لا يمكن اختيار الشركة نفسها مصدراً لها', 422);
                 }
                 $item += CompanyHierarchy::fields($item, $d, $old, $s['companies']);
+                if (! $old || ($item['parentId'] ?? '') !== ($old['parentId'] ?? '') || $item['displayOrder'] !== ($old['displayOrder'] ?? 0)) {
+                    CompanyHierarchy::reorder($s['companies'], $item);
+                }
                 break;
             case 'settings':
                 $socialLinks = [];
@@ -119,6 +124,7 @@ class CatalogEditor
                 $featuredCards = $s['settings']['featuredCards'] ?? null;
                 $webSlides = $s['settings']['webSlides'] ?? null;
                 $faqs = $s['settings']['faqs'] ?? null;
+                $catalogDisplay = $s['settings']['catalogDisplay'] ?? null;
                 $name = self::text($d['name'] ?? null, 60);
                 $email = self::text($d['supportEmail'] ?? null, 254);
                 if (! $name || ! is_int($d['lowStock'] ?? null) || $d['lowStock'] < 0 || $d['lowStock'] > 10000 || ($email && ! preg_match('/^\S+@\S+\.\S+$/', $email))) {
@@ -135,6 +141,9 @@ class CatalogEditor
                 }
                 if ($faqs !== null) {
                     $s['settings']['faqs'] = $faqs;
+                }
+                if ($catalogDisplay !== null) {
+                    $s['settings']['catalogDisplay'] = $catalogDisplay;
                 }
 
                 return null;
@@ -244,11 +253,30 @@ class CatalogEditor
                     throw new ApiError('فئات وأسعار غير صحيحة');
                 }
                 foreach ($values as $i => $v) {
-                    if ((! is_int($v) && ! is_float($v)) || $v <= 0 || ! is_finite((float) $v) || (! is_int($prices[$i]) && ! is_float($prices[$i])) || $prices[$i] <= 0 || ! is_finite((float) $prices[$i])) {
+                    if ((! is_int($v) && ! is_float($v)) || $v <= 0 || ! is_finite((float) $v) || (! is_int($prices[$i]) && ! is_float($prices[$i]) && ! (is_string($prices[$i]) && preg_match('/^\d{1,16}(?:\.\d{1,3})?$/D', $prices[$i]))) || $prices[$i] <= 0 || ! is_finite((float) $prices[$i])) {
                         throw new ApiError('فئات وأسعار غير صحيحة');
                     }
                 }
+                $apiPriceChanges = [];
+                $apiOldPrices = [];
                 if ($old) {
+                    foreach (DB::table('digital_offers')->where('product_id', (string) $old['id'])->get() as $mapping) {
+                        $index = (int) $mapping->denom_index;
+                        if (! isset($values[$index], $old['values'][$index]) || StockOrders::money((string) $values[$index]) !== StockOrders::money((string) $old['values'][$index])) {
+                            throw new ApiError('الفئة مرتبطة بخدمة API؛ لا يمكن تبديل موضعها أو قيمتها الاسمية', 422);
+                        }
+                        if (StockOrders::money((string) $prices[$index]) !== StockOrders::money((string) $old['prices'][$index])) {
+                            if (request()->attributes->has('adminAccess')) {
+                                app(AdminAccess::class)->require('digital.prices');
+                            }
+                            $technical = json_decode($mapping->snapshot, true);
+                            if (($technical['cost'] ?? null) !== null && BigDecimal::of((string) $prices[$index])->isLessThan($technical['cost'])) {
+                                throw new ApiError('سعر البيع أقل من تكلفة المزوّد', 422);
+                            }
+                            $apiPriceChanges[] = ['id' => $mapping->id, 'retail' => StockOrders::money((string) $prices[$index])];
+                            $apiOldPrices[$index] = StockOrders::money((string) $mapping->retail);
+                        }
+                    }
                     foreach ($old['values'] as $i => $v) {
                         if (! in_array($v, $values) && (($old['stock'][$i] ?? 0) > 0 || collect($s['orders'])->contains(fn ($o) => $o['productId'] === $old['id'] && $o['value'] == $v))) {
                             throw new ApiError('الفئة مرتبطة بمخزون أو طلب');
@@ -272,6 +300,23 @@ class CatalogEditor
                     return $index === false ? 0 : ($old['stock'][$index] ?? 0);
                 }, $values)];
                 ProductFields::product($item, $d, $old, $s);
+                foreach ($apiPriceChanges as $change) {
+                    DB::table('digital_offers')->where('id', $change['id'])->update(['retail' => $change['retail'], 'updated' => time()]);
+                }
+                if ($old) {
+                    $changes = [];
+                    foreach ($values as $index => $value) {
+                        $prior = array_search($value, $old['values'], true);
+                        $before = $apiOldPrices[$index] ?? ($prior === false ? null : StockOrders::money((string) $old['prices'][$prior]));
+                        $after = StockOrders::money((string) $prices[$index]);
+                        if ($before !== $after) {
+                            $changes[] = ['key' => 'product:'.$item['id'].':'.$index, 'name' => $item['name'].' '.$value, 'old' => $before, 'new' => $after];
+                        }
+                    }
+                    if ($changes) {
+                        ProcurementAudit::record('prices.updated', (string) $item['id'], ['reason' => self::text($d['priceChangeReason'] ?? '', 500) ?: 'تعديل من محرر الفئات', 'revision' => $s['revision'] + 1, 'source' => 'catalog_editor', 'changes' => $changes]);
+                    }
+                }
                 break;
             case 'customers':
                 $p = self::profile($d);
@@ -297,7 +342,9 @@ class CatalogEditor
                 if (! $old || ! in_array($d['status'] ?? '', ['مفتوحة', 'قيد المعالجة', 'مغلقة'])) {
                     throw new ApiError('تذكرة غير صحيحة');
                 }
-                $item = [...$old, 'status' => $d['status'], 'reply' => self::text($d['reply'] ?? '', 2000)];
+                $replyImage = $d['replyImage'] ?? $old['replyImage'] ?? '';
+                self::image($replyImage);
+                $item = [...$old, 'status' => $d['status'], 'reply' => self::text($d['reply'] ?? '', 2000), 'replyImage' => $replyImage];
                 break;
             case 'orders':
                 throw new ApiError('استخدم خدمة حجز وتسليم الطلبات', 409);

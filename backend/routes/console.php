@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\DigitalSales;
+use App\Services\NotificationCampaigns;
 use App\Services\OrderFulfillment;
 use App\Services\PushDelivery;
 use App\Services\Store;
@@ -34,3 +35,18 @@ Artisan::command('fatya:digital-deliver', function (DigitalSales $sales) {
     $this->info(json_encode($sales->run(), JSON_THROW_ON_ERROR));
 })->purpose('Execute paid digital orders once; uncertain outcomes require review');
 Schedule::command('fatya:digital-deliver')->everyMinute()->withoutOverlapping();
+
+Artisan::command('fatya:notification-campaigns', function (NotificationCampaigns $campaigns) {
+    $this->info(json_encode($campaigns->run(), JSON_THROW_ON_ERROR));
+})->purpose('Create messages for explicitly reviewed and scheduled campaigns');
+Schedule::command('fatya:notification-campaigns')->everyMinute()->withoutOverlapping();
+
+Artisan::command('fatya:expiry-alerts', function (NotificationCampaigns $campaigns) {
+    try {
+        $this->info(json_encode($campaigns->expiry(), JSON_THROW_ON_ERROR));
+    } catch (Throwable $error) {
+        DB::table('notification_rules')->where('id', 1)->update(['last_run' => time(), 'last_result' => 'failed']);
+        throw $error;
+    }
+})->purpose('Create per-card expiry alerts only when explicitly enabled');
+Schedule::command('fatya:expiry-alerts')->hourly()->withoutOverlapping();

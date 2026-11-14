@@ -32,8 +32,16 @@ export function companyDenominations(company){
   }
   for(const service of ['direct','bundles'])for(const [index,offer] of serviceOffers(product,service,false).entries()){
    const key='service:'+product.id+':'+(offer.publicationId||service+':'+offer.index);
-   groups.set(key,{id:key,name:offer.label||String(offer.value),unit:service==='direct'?'شحن مباشر':'باقة',image:offer.image||'',cards:[{id:key,product,index,service,name:offer.label||product.name,price:offer.price,image:offer.image||'',kind:'service'}]});
+   groups.set(key,{id:key,name:offer.label||String(offer.value),unit:service==='direct'?'شحن مباشر':'باقة',image:offer.image||'',groupPath:offer.groupPath||[],serviceType:offer.type||service,cards:[{id:key,product,index,service,name:offer.label||product.name,price:offer.price,image:offer.image||'',kind:'service'}]});
   }
  }
- return [...groups.values()];
+ const roots=[],paths=new Map();
+ for(const node of groups.values()){
+  if(!node.groupPath?.length){roots.push(node);continue;}
+  let target=roots;
+  node.groupPath.forEach((group,index)=>{const id='group:topup:'+node.serviceType+':'+JSON.stringify(node.groupPath.slice(0,index+1).map(p=>p.remote_id));let parent=paths.get(id);if(!parent){parent={id,name:group.name,image:group.image||'',unit:'',cards:[],children:[],offerCount:0};paths.set(id,parent);target.push(parent);}parent.offerCount+=node.cards.length;target=parent.children;});
+  target.push(node);
+ }
+ return roots;
 }
+export function denominationPath(nodes,id){for(const node of nodes){if(node.id===id)return [node];const nested=denominationPath(node.children||[],id);if(nested.length)return [node,...nested];}return [];}

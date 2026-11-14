@@ -2,6 +2,8 @@ import {reactive} from 'vue/dist/vue.esm-bundler.js';
 import {api,connected} from './api.js';
 export const pushState=reactive({busy:false,enabled:false,error:'',supported:typeof Notification!=='undefined'&&typeof navigator!=='undefined'&&'serviceWorker' in navigator&&'PushManager' in globalThis});
 let sdkReady,owner='',generation=0;
+const preferences=new Map();
+function preference(value){const key='fatya.push.preference.'+owner;if(value!==undefined){preferences.set(key,value);try{localStorage.setItem(key,value?'on':'off');}catch{}}try{return localStorage.getItem(key)==='on';}catch{return preferences.get(key)===true;}}
 function loadSdk(){
   if(!sdkReady)sdkReady=new Promise((resolve,reject)=>{if(window.Takeed)return resolve(window.Takeed);const script=document.createElement('script');script.src='/push/takeed.js';script.onload=()=>resolve(window.Takeed);script.onerror=()=>{sdkReady=null;reject(Error('تعذّر تفعيل الإشعارات حاول لاحقاً'));};document.head.append(script);});
   return sdkReady;
@@ -30,19 +32,19 @@ export async function syncPushCustomer(id){
   if(!connected||!pushState.supported||id===owner)return;
   const ticket=++generation;owner=id||'';
   if(!id){await disconnectPush().catch(()=>{});return;}
-  if(Notification.permission!=='granted')return;
+  if(Notification.permission!=='granted'||!preference())return;
   try{const sdk=await identify();if(ticket===generation)pushState.enabled=sdk.User.PushSubscription.optedIn;}catch{pushState.enabled=false;}
 }
 export async function togglePush(){
   if(pushState.busy||!connected||!pushState.supported)return;
   pushState.busy=true;pushState.error='';
   try{
-    if(pushState.enabled){const sdk=await loadSdk();await sdk.User.PushSubscription.optOut();pushState.enabled=false;}
+    if(pushState.enabled){preference(false);const sdk=await loadSdk();await sdk.User.PushSubscription.optOut();pushState.enabled=false;}
     else {
       // Request permission directly from the user's click, before asynchronous setup.
       const permission=await Notification.requestPermission();
       if(permission!=='granted')throw Error('اسمح بالإشعارات من إعدادات المتصفح');
-      const sdk=await identify();await sdk.User.PushSubscription.optIn();await sdk.Notifications.requestPermission();pushState.enabled=sdk.User.PushSubscription.optedIn;
+      const sdk=await identify();await sdk.User.PushSubscription.optIn();await sdk.Notifications.requestPermission();pushState.enabled=sdk.User.PushSubscription.optedIn;preference(pushState.enabled);
     }
   }catch{pushState.error='تعذّر تفعيل الإشعارات راجع سماح المتصفح وإعدادات الخدمة';}
   finally{pushState.busy=false;}

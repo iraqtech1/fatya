@@ -33,7 +33,7 @@ class InventoryReports
         return $out;
     }
 
-    private function boundary(string $day, bool $end = false): int
+    public function boundary(string $day, bool $end = false): int
     {
         $format = match (true) {
             (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/D', $day) => 'Y-m-d',
@@ -217,6 +217,7 @@ class InventoryReports
         } elseif (in_array($type, ['sales', 'digital', 'payments'], true)) {
             $fulfillments = DB::table('order_fulfillments')->get()->keyBy('order_id');
             $digital = DB::table('digital_executions')->get()->keyBy('order_id');
+            $refunds = DigitalRefunds::totals();
             $receipts = $type === 'payments' ? DB::table('payment_receipts')->orderByDesc('received_at')->get() : $orders;
             foreach ($receipts as $item) {
                 $o = $type === 'payments' ? ($orders[$item->order_id] ?? null) : $item;
@@ -245,6 +246,9 @@ class InventoryReports
                     continue;
                 }
                 $row = ['id' => $o['id'], 'date' => $knownTime ? CarbonImmutable::createFromTimestamp($time)->setTimezone('Asia/Baghdad')->toDateTimeString() : $o['date'], 'timePrecision' => $knownTime ? 'second' : 'day', 'name' => $o['saleSnapshot']['name'] ?? $o['name'], ...isset($o['saleSnapshot']) ? ['companyId' => $o['saleSnapshot']['companyId'], 'company' => $o['saleSnapshot']['companyName'] ?? null] : [], 'productId' => (string) $o['productId'], 'value' => ! empty($o['digitalProvider']) && ! ($o['value'] > 0) ? null : $o['value'], 'serviceTitle' => $o['saleSnapshot']['serviceTitle'] ?? null, 'quantity' => $o['quantity'], 'customer' => $o['customer'], 'channel' => $o['channel'] ?? 'unknown', 'amount' => StockOrders::money((string) ($a?->amount ?? $o['saleSnapshot']['total'] ?? $o['price'])), 'currency' => 'IQD', 'paymentStatus' => $a?->payment_status ?? 'unknown', 'executionStatus' => $d?->state ?? ($a?->state ?? 'unknown'), 'deliveryStatus' => $a?->state ?? 'unknown', 'cost' => $o['costTotal'] ?? null, 'grossProfit' => $o['profitBeforeFees'] ?? null, 'paymentFee' => null, 'netProfit' => null];
+                $refund = $refunds[$o['id']]['amount'] ?? '0.000';
+                $recognized = $a?->delivered_at !== null || $a?->state === 'delivered' || ($refunds[$o['id']]['revenueRecognized'] ?? false);
+                $row += ['revenueRecognized' => (bool) $recognized, 'refundAmount' => $refund, 'refundStatus' => $o['refundStatus'] ?? 'none', 'netRevenue' => $recognized ? (string) BigDecimal::of($row['amount'])->minus($refund)->toScale(3) : '0.000', 'grossProfitAfterRefund' => $recognized && $row['grossProfit'] !== null ? (string) BigDecimal::of($row['grossProfit'])->minus($refund)->toScale(3) : null];
                 if ($type === 'digital') {
                     $row += ['provider' => $d->provider, 'quotedCost' => $d->quoted_cost, 'actualCost' => $d->actual_cost, 'reference' => $d->provider_reference, 'reason' => $d->reason, 'lastChecked' => date(DATE_ATOM, $d->updated)];
                 }
@@ -302,8 +306,8 @@ class InventoryReports
             }
         }
         if (in_array($type, ['sales', 'digital'], true)) {
-            $delivered = array_values(array_filter($rows, fn ($r) => $r['deliveryStatus'] === 'delivered' && $r['paymentStatus'] === 'confirmed'));
-            foreach (['deliveredAmount' => 'amount', 'knownDeliveredCost' => 'cost', 'deliveredGrossProfit' => 'grossProfit'] as $total => $field) {
+            $delivered = array_values(array_filter($rows, fn ($r) => ($r['revenueRecognized'] ?? $r['deliveryStatus'] === 'delivered') && $r['paymentStatus'] === 'confirmed'));
+            foreach (['deliveredAmount' => 'amount', 'knownDeliveredCost' => 'cost', 'deliveredGrossProfit' => 'grossProfitAfterRefund'] as $total => $field) {
                 $sum = BigDecimal::zero()->toScale(3);
                 $known = 0;
                 foreach ($delivered as $row) {
@@ -329,6 +333,20 @@ class InventoryReports
             if ($type === 'procurement') {
                 $totals[$key] = array_sum(array_column($rows, $key));
             }
+        }
+        if (in_array($type, ['sales', 'digital', 'payments'], true)) {
+            $refunded = BigDecimal::of('0.000');
+            $netRevenue = BigDecimal::of('0.000');
+            foreach ($rows as $r) {
+                // Payments can contain multiple callbacks. Count each order's refund only once.
+                if (isset($seenRefunds[$r['id']])) {
+                    continue;
+                }
+                $seenRefunds[$r['id']] = true;
+                $refunded = $refunded->plus($r['refundAmount'] ?? '0.000');
+                $netRevenue = $netRevenue->plus($r['netRevenue'] ?? '0.000');
+            }
+            $totals += ['refundedAmount' => (string) $refunded, 'netDeliveredAmount' => (string) $netRevenue];
         }
         if ($type === 'movements') {
             foreach (['opening', 'incoming', 'delivered', 'withdrawn', 'ending', 'unknownOpening'] as $key) {

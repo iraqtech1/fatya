@@ -7,3 +7,6 @@ assert.equal(calls.length,2);assert.equal(result.balance.balance,'0.000');assert
 const partial=await refreshProviderCatalog(async path=>{if(path.endsWith('/balance'))throw Error('Fixture offline');return {offers:rows};},'topup');assert.equal(partial.catalog.offers.length,4);assert.equal(partial.balance,null);assert.equal(partial.errors.length,1);
 const rabiaaCalls=[];await refreshProviderCatalog(async(path,body)=>{rabiaaCalls.push({path,body});return {offers:[]};},'rabiaa','2');assert.equal(rabiaaCalls.length,1);assert.equal(rabiaaCalls[0].body.provinceId,'2');
 console.log('Provider refresh fetches catalog and balance together, preserves zero and partial results, groups service types independently and never invents Rabiaa balance.');
+
+const providerPaths=groupProviderCatalog([{type:'bundle',providerId:'71',groupPath:[{remote_id:'g1',name:'Internet'},{remote_id:'g2',name:'Weekly'}],title:'Bundle A'},{type:'bundle',providerId:'72',groupPath:[{remote_id:'g3',name:'Calls'}],title:'Bundle B'}]);
+assert.equal(providerPaths[0].title,'Internet / Weekly');assert.equal(providerPaths[0].rows.length,1);assert.equal(providerPaths[1].title,'Calls');

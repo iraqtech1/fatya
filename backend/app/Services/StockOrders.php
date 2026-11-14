@@ -42,7 +42,8 @@ class StockOrders
                 throw new ApiError('اختر المصدر من القائمة', 422);
             }
             $supplier = $supplierRecord['name'] ?? CatalogEditor::text($b['supplier'] ?? '', 100);
-            $source = CatalogEditor::text($b['source'] ?? '', 100);
+            $source = CatalogEditor::text($b['source'] ?? '', 100) ?: 'بدون مرجع خارجي';
+            $notes = CatalogEditor::text($b['notes'] ?? '', 2000);
             $city = CatalogEditor::text($b['city'] ?? '', 100);
             if (! $supplier || ! $source) {
                 throw new ApiError('المصدر ومرجع الطلبية مطلوبان', 422);
@@ -173,7 +174,7 @@ class StockOrders
                 throw new ApiError('عدد الفئات لا يطابق الفئات المختلفة الفعلية', 422);
             }
             $id = (string) Str::uuid();
-            $summary = ['id' => $id, ...($supplierRecord ? ['supplierId' => $supplierRecord['id'], 'supplierPhone' => $supplierRecord['phone'] ?? '', 'supplierAddress' => $supplierRecord['address'] ?? ''] : []), 'supplier' => $supplier, 'source' => $source, 'city' => $city, 'quantity' => count($valid), 'rejected' => count($errors), 'costTotal' => (string) $total, 'nominalTotal' => (string) $nominal, 'retailTotal' => (string) $retailTotal, 'uploaded' => $count, 'fileCount' => count($lines), 'categoryCount' => $categoryCount, 'actor' => ProcurementAudit::actor(), 'currency' => 'IQD', 'lines' => $summaries];
+            $summary = ['id' => $id, ...($supplierRecord ? ['supplierId' => $supplierRecord['id'], 'supplierPhone' => $supplierRecord['phone'] ?? '', 'supplierAddress' => $supplierRecord['address'] ?? ''] : []), 'supplier' => $supplier, 'source' => $source, 'notes' => $notes, 'city' => $city, 'quantity' => count($valid), 'rejected' => count($errors), 'costTotal' => (string) $total, 'nominalTotal' => (string) $nominal, 'retailTotal' => (string) $retailTotal, 'uploaded' => $count, 'fileCount' => count($lines), 'categoryCount' => $categoryCount, 'actor' => ProcurementAudit::actor(), 'currency' => 'IQD', 'lines' => $summaries];
             $draft = Store::json(['cards' => $valid, 'summary' => $summary]);
             $hash = hash_hmac('sha256', $draft, config('app.key'));
             DB::table('stock_order_previews')->where('expires', '<', time())->delete();
@@ -216,10 +217,17 @@ class StockOrders
             if (! $draft['summary']['quantity'] || ($draft['summary']['rejected'] && ! $b['excludeRejected']) || collect($draft['summary']['lines'])->contains(fn ($l) => ! $l['accepted'])) {
                 throw new ApiError('أكد استبعاد المرفوض أو صحح الطلبية', 422);
             }
+            $priceChanges = [];
             $changedProducts = [];
             foreach ($draft['summary']['lines'] as $line) {
                 if (isset($line['catalogRequest'])) {
+                    $previousProduct = collect($s['products'])->first(fn ($p) => (string) $p['id'] === $line['productId']);
+                    $previousIndex = array_search((float) $line['value'], array_map('floatval', $previousProduct['values']), true);
+                    $previousPrice = $previousIndex === false ? null : StockOrders::money((string) $previousProduct['prices'][$previousIndex]);
                     app(StockOrderCatalog::class)->replay($line, $s);
+                    if ($previousPrice !== $line['retail']) {
+                        $priceChanges[$line['productId'].':'.$line['denom']] = ['key' => 'product:'.$line['productId'].':'.$line['denom'], 'name' => $line['name'].' '.$line['value'], 'old' => $previousPrice, 'new' => $line['retail']];
+                    }
                     if ($line['catalogChanged']) {
                         $changedProducts[$line['productId']] = true;
                     }
@@ -255,6 +263,9 @@ class StockOrders
             DB::table('stock_batches')->insert(['id' => $id, 'request_id' => $key, 'request_hash' => $requestHash, 'summary' => Store::json($result), 'created' => time()]);
             DB::table('stock_order_previews')->where('id', $id)->delete();
             array_unshift($s['imports'], ['id' => $id, 'name' => $result['supplier'].' / '.$result['source'], 'count' => $result['quantity'], 'rejected' => $result['rejected'], 'costTotal' => $result['costTotal'], 'date' => $today]);
+            if ($priceChanges) {
+                ProcurementAudit::record('prices.updated', $id, ['reason' => 'اعتماد طلبية: '.$result['source'], 'source' => 'stock_order', 'revision' => $s['revision'] + 1, 'changes' => array_values($priceChanges)]);
+            }
             ProcurementAudit::record('stock_approved', $id, ['quantity' => $result['quantity'], 'costTotal' => $result['costTotal'], 'supplier' => $result['supplier']]);
             foreach ($s['products'] as $product) {
                 if (isset($changedProducts[(string) $product['id']])) {

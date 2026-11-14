@@ -13,6 +13,7 @@ export function syncArabicDraft(d,{category=false}={}){const ar=d.translations.a
 export function presentProduct(p,locale='ar'){
  const ar=p.translations?.ar||{},r=p.translations?.[locale]||{};
  const shown={...p,name:r.name||ar.name||p.name,tag:r.description||ar.description||p.tag,image:r.image||ar.image||p.image};
+ if(p.providerServices)shown.providerServices=p.providerServices.map(offer=>{const ar=offer.translations?.ar||{},translated=offer.translations?.[locale]||{};return {...offer,title:translated.title||ar.title||offer.title,description:translated.description||ar.description||offer.description,images:translated.image?[translated.image]:ar.image?[ar.image]:offer.images};}).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
  for(const key of ['denomNames','denomDescriptions','denomImages'])shown[key]=p.values.map((_,i)=>r[key]?.[i]||ar[key]?.[i]||p[key]?.[i]||'');return shown;
 }
 export function presentProducts(products,locale='ar'){return products.map((p,i)=>({...presentProduct(p,locale),displayOrder:p.displayOrder??(i+1)*10})).sort((a,b)=>a.displayOrder-b.displayOrder);}

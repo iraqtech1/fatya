@@ -39,7 +39,7 @@ class DigitalPublications
             $rows = [];
             $seen = [];
             foreach ($items as $item) {
-                if (! is_array($item) || ! is_string($item['providerId'] ?? null) || ! preg_match('/^[0-9]{1,100}$/D', $item['providerId']) || ! in_array($item['type'] ?? null, ['topup', 'bundle', 'bill'], true) || ! is_int($item['version'] ?? null)) {
+                if (! is_array($item) || ! is_string($item['providerId'] ?? null) || ! preg_match('/^[^\x00-\x20\x7f]{1,100}$/uD', $item['providerId']) || ! in_array($item['type'] ?? null, ['topup', 'bundle', 'bill'], true) || ! is_int($item['version'] ?? null)) {
                     throw new ApiError('معرّفات التحديد غير صحيحة', 422);
                 }
                 $identity = hash('sha256', Store::json(['topup', $item['type'], $item['providerId']]));
@@ -91,16 +91,36 @@ class DigitalPublications
                     throw new ApiError('سعر البيع لكل فئة يجب أن يكون أكبر من صفر', 422);
                 }
                 $price = StockOrders::money($price);
+                if ($old) {
+                    $previous = json_decode($old->snapshot, true);
+                    if (isset($previous['display'])) {
+                        $offer['display'] = $previous['display'];
+                    }
+                }
+                if ($offer['cost'] !== null && BigDecimal::of($price)->isLessThan($offer['cost'])) {
+                    throw new ApiError('سعر البيع أقل من تكلفة المزوّد: '.$offer['title'], 422);
+                }
                 if (request()->attributes->has('adminAccess')) {
                     app(AdminPolicy::class)->digitalOffer($old, ['product_id' => (string) $p['id'], 'provider_id' => $offer['providerId'], 'connection' => 'topup', 'retail' => $price, 'active' => $action === 'publish' ? true : (bool) ($old?->active ?? false)], true);
                 }
                 $rows[] = ['id' => $old?->id ?? (string) Str::uuid(), 'identity' => $identity, 'product_id' => (string) $p['id'], 'connection' => 'topup', 'provider_id' => $offer['providerId'], 'snapshot' => Store::json($offer), 'retail' => $price, 'active' => $action === 'publish' ? true : (bool) ($old?->active ?? false), 'version' => (int) ($old?->version ?? 0) + 1, 'updated' => time()];
+            }
+            $priceChanges = [];
+            foreach ($rows as $row) {
+                $prior = $existing->get($row['identity']);
+                $before = $prior ? StockOrders::money((string) $prior->retail) : null;
+                if ($before !== $row['retail']) {
+                    $priceChanges[] = ['key' => 'publication:'.$row['id'], 'name' => json_decode($row['snapshot'], true)['title'], 'old' => $before, 'new' => $row['retail']];
+                }
             }
             // Validate every selected row before writing any publication or price.
             foreach (array_chunk($rows, 100) as $chunk) {
                 DB::table('digital_publications')->upsert($chunk, ['identity'], ['product_id', 'snapshot', 'retail', 'active', 'version', 'updated']);
             }
             if ($rows) {
+                if ($priceChanges) {
+                    ProcurementAudit::record('prices.updated', null, ['reason' => CatalogEditor::text($b['reason'] ?? '', 500) ?: 'إجراء تسعير جماعي لخدمات API', 'source' => 'digital_bulk', 'revision' => $s['revision'] + 1, 'changes' => $priceChanges]);
+                }
                 ProcurementAudit::record('digital.bulk.'.$action, null, ['count' => count($rows), 'selectionHash' => hash('sha256', Store::json(array_keys($seen))), 'priceMode' => $b['priceMode'] ?? 'existing']);
                 $store->event($s, 'إجراء جماعي على '.count($rows).' فئات TOPUP: '.$action);
                 $store->save($s);
@@ -165,6 +185,9 @@ class DigitalPublications
             if (! BigDecimal::of($price)->isGreaterThan(0)) {
                 throw new ApiError('حدد سعر بيع أكبر من صفر', 422);
             }
+            if ($offer['cost'] !== null && BigDecimal::of($price)->isLessThan($offer['cost'])) {
+                throw new ApiError('سعر البيع أقل من تكلفة المزوّد', 422);
+            }
             $identity = hash('sha256', Store::json(['topup', $offer['type'], $offer['providerId']]));
             $old = DB::table('digital_publications')->where('identity', $identity)->first();
             if (($b['version'] ?? 0) !== (int) ($old?->version ?? 0)) {
@@ -173,9 +196,18 @@ class DigitalPublications
             if (request()->attributes->has('adminAccess')) {
                 app(AdminPolicy::class)->digitalOffer($old, ['product_id' => (string) $product['id'], 'provider_id' => $offer['providerId'], 'connection' => 'topup', 'retail' => $price, 'active' => $b['published']], true);
             }
+            $previous = $old ? json_decode($old->snapshot, true) : [];
+            $display = ServiceDisplay::validate($b['display'] ?? $previous['display'] ?? []);
+            if ($display !== ServiceDisplay::validate($previous['display'] ?? []) && request()->attributes->has('adminAccess')) {
+                app(AdminAccess::class)->require('digital.publications_update');
+            }
+            $offer['display'] = $display;
             $id = $old?->id ?? (string) Str::uuid();
             DB::table('digital_publications')->updateOrInsert(['identity' => $identity], ['id' => $id, 'product_id' => (string) $product['id'], 'connection' => 'topup', 'provider_id' => $offer['providerId'], 'snapshot' => Store::json($offer), 'retail' => $price, 'active' => $b['published'], 'version' => (int) ($old?->version ?? 0) + 1, 'updated' => time()]);
-            ProcurementAudit::record($b['published'] ? 'digital.publish' : 'digital.unpublish', $id, ['productId' => $product['id'], 'retail' => $price]);
+            if (! $old || StockOrders::money((string) $old->retail) !== $price) {
+                ProcurementAudit::record('prices.updated', $id, ['reason' => CatalogEditor::text($b['reason'] ?? '', 500) ?: 'تسعير من محرر نشر API', 'source' => 'digital_publication', 'revision' => $s['revision'] + 1, 'changes' => [['key' => 'publication:'.$id, 'name' => $offer['title'], 'old' => $old ? StockOrders::money((string) $old->retail) : null, 'new' => $price]]]);
+            }
+            ProcurementAudit::record($b['published'] ? 'digital.publish' : 'digital.unpublish', $id, ['productId' => $product['id'], 'previousRetail' => $old?->retail, 'retail' => $price, 'displayBefore' => $previous['display'] ?? null, 'displayAfter' => $display, 'version' => (int) ($old?->version ?? 0) + 1]);
             $store->event($s, ($b['published'] ? 'نشر خدمة TOPUP: ' : 'إيقاف نشر خدمة TOPUP: ').$offer['title']);
             $store->save($s);
 
@@ -196,9 +228,9 @@ class DigitalPublications
                 if ((string) $p['id'] !== $r->product_id || ! $p['active']) {
                     continue;
                 }
-                $ready = $configured && $o && $o['available'] && ($o['cost'] === $saved['cost']) && config('digital.manual_topup_enabled');
+                $ready = $configured && $o && $o['available'] && ($o['cost'] === $saved['cost']) && $o['cost'] !== null && ! BigDecimal::of((string) $r->retail)->isLessThan($o['cost']) && config('digital.manual_topup_enabled');
                 // No wholesale price, raw provider details, connection settings or credentials enter public state.
-                $p['providerServices'][] = ['id' => $r->id, 'type' => $saved['type'], 'title' => $o['title'] ?? $saved['title'], 'description' => $o['description'] ?? $saved['description'] ?? '', 'images' => $o['images'] ?? $saved['images'] ?? [], 'serviceInfo' => $o['serviceInfo'] ?? $saved['serviceInfo'] ?? [], 'price' => (string) $r->retail, 'purchasable' => (bool) $ready, 'payment' => 'Manual'];
+                $p['providerServices'][] = ['id' => $r->id, 'type' => $saved['type'], ...ServiceDisplay::fields($o ?? $saved, $saved), 'serviceInfo' => $o['serviceInfo'] ?? $saved['serviceInfo'] ?? [], 'groupPath' => $o['groupPath'] ?? $saved['groupPath'] ?? [], 'price' => (string) $r->retail, 'purchasable' => (bool) $ready, 'payment' => 'Manual'];
             } unset($p);
         }
     }
@@ -216,7 +248,6 @@ class DigitalPublications
             throw new ApiError('سعر البيع تغير؛ حدّث التطبيق وراجع السعر الجديد', 409);
         }
         $offer = json_decode($r->snapshot, true);
-        $p['name'] .= ' · '.$offer['title'];
         $p['unit'] = 'خدمة';
         $p['values'] = [null];
 

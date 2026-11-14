@@ -1,0 +1,69 @@
+{
+  "date": "2026-11-14",
+  "evidence": "verified deployed source + isolated mocks; current external vendor contract and actual financial acceptance still pending",
+  "referencePackageMissing": true,
+  "providers": {
+    "topup": {
+      "host": "masal-co.com",
+      "read": [
+        "GET /api/v1/inventory",
+        "GET /api/v1/products",
+        "POST /api/v1/checkEligibility"
+      ],
+      "financial": [
+        "POST /api/v1/transactions"
+      ],
+      "identity": [
+        "provider",
+        "type",
+        "remoteId"
+      ],
+      "knownRejectionRule": "Captain/TopupResult: body status 400/401 and code 101/103; other errors uncertain",
+      "actualCost": "NULL unless a financial source is documented; catalog price remains a quote"
+    },
+    "rabiaa": {
+      "host": "tryapi.nojoomalrabiaa.com",
+      "basePath": "/api/v2",
+      "read": [
+        "GET /vendor/provinces",
+        "GET /vendor/bein/provinces",
+        "GET /vendor/catalog",
+        "GET /vendor/transactions"
+      ],
+      "financial": [
+        "POST /vendor/hold",
+        "POST /vendor/purchase"
+      ],
+      "scope": "saved token owner city matched to provider province; subscriber province is independent for premium",
+      "actualCost": "positive publicPrice from purchase response for current priceBasis; zero/missing remains unknown"
+    },
+    "rabiaaActivation": {
+      "host": "active.nojoomalrabiaa.com",
+      "path": "POST /v1/active",
+      "fields": [
+        "macAddress",
+        "activeCode"
+      ],
+      "identity": "opaque identifier 6–2048 characters, case and content preserved",
+      "trigger": "explicit confirmation only; PIN HMAC and idempotency guard; encrypted payload; no new sale"
+    }
+  },
+  "financialRules": {
+    "automaticRetries": false,
+    "timeout": "uncertain; inspect evidence instead of resending",
+    "dispatchUnique": [
+      "order_id",
+      "endpoint"
+    ],
+    "newTokens": "encrypted/versioned; reject changes with pending unresolved executions/activations",
+    "manualRefunds": "verified existing payment, actual repayment reference, password confirmation, unique ledger entries, aggregate <= paid amount; never a simulated gateway transfer"
+  },
+  "externalAcceptance": [
+    "current Captain reference package",
+    "Topup actual charged cost evidence per transaction",
+    "actual gateway signatures and refunds",
+    "dedicated approved test card/PIN",
+    "physical devices and Push acceptance",
+    "isolated production MariaDB restore"
+  ]
+}

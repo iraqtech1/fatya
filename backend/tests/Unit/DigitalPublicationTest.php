@@ -30,6 +30,8 @@ class DigitalPublicationTest extends TestCase
 
     private bool $partialCatalog = false;
 
+    private string $purchaseMode = 'success';
+
     protected function beforeRefreshingDatabase(): void
     {
         if (DB::connection()->getDriverName() === 'sqlite') {
@@ -43,6 +45,12 @@ class DigitalPublicationTest extends TestCase
         config(['digital.purchases_enabled' => false, 'digital.manual_topup_enabled' => true, 'digital.topup.enabled' => true, 'digital.topup.key' => 'fixture-key', 'fatya.admin_password' => 'fixture-only-password-12345']);
         Http::preventStrayRequests();
         Http::fake(['*/products' => fn () => Http::response($this->catalog($this->providerCost)), '*/checkEligibility' => Http::response(['status' => true]), '*/transactions' => function () {
+            if ($this->purchaseMode === 'known-rejection') {
+                return Http::response(['status' => '400', 'code' => '101'], 400);
+            }
+            if ($this->purchaseMode === 'unknown-error') {
+                return Http::response(['error' => 'unclassified response'], 400);
+            }
             if ($this->purchaseTimeout) {
                 throw new ConnectionException('fixture timeout');
             }
@@ -102,6 +110,60 @@ class DigitalPublicationTest extends TestCase
         $this->assertSame($order['saleSnapshot'], $repeated['saleSnapshot']);
         $this->assertSame($order['name'], $repeated['name']);
         $this->assertArrayNotHasKey('cost', $repeated['saleSnapshot']);
+    }
+
+    public function test_local_service_display_survives_sync_and_bulk_pricing_without_changing_provider_identity(): void
+    {
+        [$state, $catalog] = $this->fixture();
+        $saved = app(DigitalPublications::class)->save(['revision' => app(Store::class)->read()['revision'], 'provider' => 'topup', 'providerId' => '71', 'type' => 'topup', 'productId' => '1', 'retail' => '5250', 'published' => true, 'version' => 0, 'catalogHash' => $catalog['hash'], 'display' => ['order' => 4, 'translations' => ['ar' => ['title' => 'خدمة محلية', 'image' => 'cards/local-fixture.webp'], 'en' => ['title' => 'Local service']]]]);
+        $publication = $saved['publications'][0];
+        $this->providerCost = 4600;
+        $updatedCatalog = app(DigitalProviders::class)->catalog('topup');
+        $this->publish($updatedCatalog, 'topup', true, $publication['version']);
+        $current = app(DigitalPublications::class)->listing()[0];
+        app(DigitalPublications::class)->bulk(['revision' => app(Store::class)->read()['revision'], 'action' => 'price', 'catalogHash' => $updatedCatalog['hash'], 'priceMode' => 'fixed', 'retail' => '5900.125', 'items' => [['providerId' => '71', 'type' => 'topup', 'version' => $current['version']]]]);
+        $state = app(Store::class)->read();
+        app(DigitalPublications::class)->decorate($state);
+        $service = $state['products'][0]['providerServices'][0];
+        $this->assertSame($publication['id'], $service['id']);
+        $this->assertSame('خدمة محلية', $service['title']);
+        $this->assertSame('Local service', $service['translations']['en']['title']);
+        $this->assertSame(['cards/local-fixture.webp'], $service['images']);
+        $this->assertSame('71', app(DigitalPublications::class)->listing()[0]['providerId']);
+        $order = app(OrderFulfillment::class)->reserve($state['customers'][0], ['productId' => 1, 'publicationId' => $service['id'], 'denom' => 0, 'quantity' => 1, 'payment' => 'Manual', 'quotedAmount' => '5900.125', 'reference' => 'display-snapshot-01', 'digital' => ['mobile' => '07700000000', 'confirmMobile' => '07700000000']])['order'];
+        $this->assertSame('خدمة محلية', $order['saleSnapshot']['serviceTitle']);
+        $this->assertSame('Local service', $order['saleSnapshot']['translations']['en']['denominationName']);
+        $this->assertSame('Asiacell', $order['name']);
+        Http::assertNotSent(fn ($request) => str_ends_with($request->url(), '/transactions'));
+    }
+
+    public function test_known_provider_rejection_is_distinct_from_an_uncertain_http_error(): void
+    {
+        [, , , , $order] = $this->order();
+        $this->purchaseMode = 'known-rejection';
+        app(DigitalManualPayments::class)->confirm($this->payment($order));
+        app(DigitalSales::class)->run();
+        $execution = app(DigitalSales::class)->executions()[0];
+        $this->assertSame('failed', $execution['state']);
+        $this->assertSame('provider_rejected', $execution['reason']);
+        $this->assertSame('rejection_confirmed', $execution['dispatchState']);
+        $this->assertSame(400, (int) $execution['dispatches'][0]['httpStatus']);
+        app(DigitalSales::class)->run();
+        $this->assertCount(1, Http::recorded(fn ($request) => str_ends_with($request->url(), '/transactions')));
+    }
+
+    public function test_unknown_http_error_never_claims_a_confirmed_financial_rejection(): void
+    {
+        [, , , , $order] = $this->order();
+        $this->purchaseMode = 'unknown-error';
+        app(DigitalManualPayments::class)->confirm($this->payment($order));
+        app(DigitalSales::class)->run();
+        $execution = app(DigitalSales::class)->executions()[0];
+        $this->assertSame('review', $execution['state']);
+        $this->assertSame('uncertain', $execution['dispatchState']);
+        $this->assertNotSame('provider_rejected', $execution['reason']);
+        app(DigitalSales::class)->run();
+        $this->assertCount(1, Http::recorded(fn ($request) => str_ends_with($request->url(), '/transactions')));
     }
 
     public function test_import_is_private_until_publication_and_equal_value_services_remain_distinct(): void

@@ -8,16 +8,13 @@ use App\Services\AdminAccess;
 use App\Services\AdminPolicy;
 use App\Services\CatalogEditor;
 use App\Services\CatalogOrdering;
-use App\Services\CompanyHierarchy;
+use App\Services\CustomerCatalog;
 use App\Services\CustomerNotifications;
-use App\Services\DigitalPublications;
-use App\Services\DigitalSales;
 use App\Services\ImportCategories;
 use App\Services\Inventory;
 use App\Services\OrderFulfillment;
 use App\Services\OrderVisibility;
 use App\Services\Otp;
-use App\Services\ProductFields;
 use App\Services\Store;
 use App\Services\Takeed;
 use Illuminate\Http\Request;
@@ -105,28 +102,7 @@ class StoreController extends Controller
                 throw $e;
             }
         }
-        $s['categories'] = array_values(array_filter($s['categories'], fn ($c) => $c['active']));
-        $s['products'] = ProductFields::sort($s['products']);
-        $s['products'] = array_values(array_filter($s['products'], fn ($p) => $p['active'] && collect($s['categories'])->contains('name', $p['category'])));
-        $s['products'] = array_values(array_filter($s['products'], function ($product) use ($s) {
-            $id = $product['manufacturerId'] ?? '';
-            if (! $id || ! collect($s['companies'])->contains('id', $id)) {
-                return true; // Preserve legacy unassigned cards.
-            }
-            $path = CompanyHierarchy::path($s['companies'], $id);
-
-            return $path && ! collect($path)->contains(fn ($company) => ! $company['active']);
-        }));
-        foreach ($s['products'] as &$p) {
-            $p['manufacturerPath'] = CompanyHierarchy::path($s['companies'], $p['manufacturerId'] ?? '');
-            unset($p['importFields'], $p['denomImportFields'], $p['denomImportCodes']);
-            $manufacturer = collect($s['companies'])->first(fn ($c) => $c['id'] === ($p['manufacturerId'] ?? ''));
-            $p['manufacturer'] = $manufacturer ? ['id' => $manufacturer['id'], 'name' => $manufacturer['name'], 'image' => $manufacturer['image'] ?? ''] : null;
-            $p['availability'] = array_map(fn ($quantity) => $quantity > 0, $p['stock']);
-            $p['stock'] = array_fill(0, count($p['stock']), 0);
-        } unset($p);
-        app(DigitalSales::class)->decorate($s);
-        app(DigitalPublications::class)->decorate($s);
+        app(CustomerCatalog::class)->decorate($s);
         foreach (['orders', 'tickets'] as $key) {
             $s[$key] = $customer ? array_values(array_filter($s[$key], fn ($item) => $item['customerId'] === $customer['id'])) : [];
         }
@@ -159,6 +135,11 @@ class StoreController extends Controller
             $customer = $this->accounts->customer($req, $s);
 
             return $json(app(Takeed::class)->clientConfig($customer['id']));
+        }
+        if ($req->isMethod('GET') && preg_match('~^/api/notifications/([0-9a-f-]{36})$~iD', $path, $match)) {
+            $customer = $this->accounts->customer($req, $s);
+
+            return $json(['notification' => $notifications->find($customer['id'], $match[1])]);
         }
         if ($path === '/api/notifications/read' && $req->isMethod('POST')) {
             $customer = $this->accounts->customer($req, $s);
@@ -369,18 +350,6 @@ class StoreController extends Controller
 
             return $json($this->publicState($req, $s, true));
         }
-        if ($path === '/api/admin/orders/hide' && $req->isMethod('POST')) {
-            $this->accounts->session($req, 'admin');
-            $this->revision($s, $b);
-            $ids = app(OrderVisibility::class)->hide($s, $b['ids'] ?? null, $b['confirm'] ?? null);
-            if ($ids) {
-                $this->store->event($s, 'حذف '.count($ids).' طلب من قائمة الإدارة');
-                $this->store->save($s);
-                app(AdminAccess::class)->audit('orders.hidden', null, ['ids' => $ids]);
-            }
-
-            return $json($this->publicState($req, $s, true));
-        }
         if ($path === '/api/admin/customers/delete' && $req->isMethod('POST')) {
             $this->accounts->session($req, 'admin');
             $this->revision($s, $b);
@@ -447,7 +416,7 @@ class StoreController extends Controller
                 $notifications->send($item['customerId'], 'تحديث حالة الطلب', $item['name'].' · '.$item['status']);
             }
             if ($collection === 'tickets' && ($previous['reply'] !== $item['reply'] || $previous['status'] !== $item['status'])) {
-                $notifications->send($item['customerId'], 'تحديث تذكرة الدعم', $item['subject'].' · '.$item['status']);
+                $notifications->send($item['customerId'], 'تحديث تذكرة الدعم', $item['subject'].' · '.$item['status'], null, ['image' => $item['replyImage'] ?? null, 'targetPath' => '/support', 'kind' => 'ticket']);
             }
             if ($collection === 'customers' && ! empty($data['password'])) {
                 $this->accounts->setPassword($item['id'], $data['password']);
@@ -460,6 +429,18 @@ class StoreController extends Controller
             $this->accounts->session($req, 'admin');
 
             return $json(['card' => $this->inventory->search($s, $b['serial'] ?? null)]);
+        }
+        if ($path === '/api/admin/orders/hide' && $req->isMethod('POST')) {
+            $this->accounts->session($req, 'admin');
+            $this->revision($s, $b);
+            $ids = app(OrderVisibility::class)->hide($s, $b['ids'] ?? null, $b['confirm'] ?? null);
+            if ($ids) {
+                $this->store->event($s, 'حذف '.count($ids).' طلب من قائمة الإدارة');
+                $this->store->save($s);
+                app(AdminAccess::class)->audit('orders.hidden', null, ['ids' => $ids]);
+            }
+
+            return $json($this->publicState($req, $s, true));
         }
         if ($path === '/api/admin/import' && $req->isMethod('POST')) {
             $this->accounts->session($req, 'admin');

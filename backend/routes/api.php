@@ -2,12 +2,14 @@
 
 use App\Http\Controllers\AdminAccessController;
 use App\Http\Controllers\ProcurementController;
+use App\Http\Controllers\RabiaaActivationController;
 use App\Http\Controllers\StoreController;
 use App\Http\Middleware\AdminAuthorization;
 use App\Http\Middleware\ApiSecurity;
 use App\Http\Middleware\StateValidators;
 use Illuminate\Support\Facades\Route;
 
+Route::match(['GET', 'POST'], '/digital/activations', RabiaaActivationController::class)->middleware([ApiSecurity::class]);
 Route::match(['GET', 'POST'], '/admin/access/{path}', AdminAccessController::class)->where('path', '.*')->middleware([ApiSecurity::class, AdminAuthorization::class]);
 Route::match(['GET', 'POST', 'PUT'], '/admin/procurement/{path}', ProcurementController::class)->where('path', '.*')->middleware([ApiSecurity::class, AdminAuthorization::class]);
 Route::match(['GET', 'POST', 'PUT'], '/{path}', StoreController::class)->where('path', '.*')->middleware([ApiSecurity::class, StateValidators::class, AdminAuthorization::class]);
