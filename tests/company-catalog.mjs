@@ -15,3 +15,5 @@ assert.equal(catalogCompanies([{...product,manufacturerId:'',manufacturer:null}]
 console.log('Company browsing groups linked cards, preserves physical denominations and independent provider services, and keeps existing IDs and legacy cards.');
 
 assert.equal(catalogCompanies([{...product,image:'cards/product.webp',manufacturer:{...product.manufacturer,image:'cards/company.webp'}}])[0].image,'cards/company.webp','Keep the independent company image already deployed in production');
+const independent=catalogCompanies([{...product,image:'company.png',denomImages:['category.png','']}])[0];assert.equal(independent.image,'company.png');const physical=companyDenominations(independent).filter(d=>d.id.startsWith('stock:'));assert.equal(physical[0].image,'category.png');assert.equal(physical[1].image,'','Missing category images must not repeat company logos');
+

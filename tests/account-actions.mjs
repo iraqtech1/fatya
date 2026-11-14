@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {registerHooks} from 'node:module';
+import * as Vue from 'vue/dist/vue.esm-bundler.js';
+registerHooks({load(url,context,next){if(url.endsWith('/view-history.js'))return {format:'module',source:'export function useViewHistory(){return {back(){}};}',shortCircuit:true};if(url.endsWith('.css'))return {format:'module',source:'export default {};',shortCircuit:true};const result=next(url,context);if(url.includes('/src/')&&result.source) return {...result,source:String(result.source).replaceAll('import.meta.env','({BASE_URL:"/",VITE_DATA_MODE:"preview"})')};return result;}});
+globalThis.localStorage={getItem:()=>null,setItem(){}};globalThis.location={hash:'#/app'};globalThis.window={addEventListener(){},removeEventListener(){}};globalThis.document={documentElement:{dataset:{},toggleAttribute(){},lang:'ar',dir:'rtl'},querySelector:()=>null,createElement:()=>({}),title:''};
+const {default:AccountPage}=await import('../src/AccountPage.js');const {language}=await import('../src/i18n.js');
+const renderer=Vue.createRenderer({insert(){},remove(){},createElement:()=>({}),createText:()=>({}),createComment:()=>({}),setText(){},setElementText(){},parentNode:()=>null,nextSibling:()=>null,patchProp(){}});
+let exits=0;const app=renderer.createApp({...AccountPage,render:()=>null},{user:{name:'فحص',email:''},onLogout:()=>exits++});const vm=app.mount({});
+const dialog={open:false,showModal(){this.open=true;},close(){this.open=false;}};vm.accountDialog=dialog;
+vm.popup='language';await Vue.nextTick();await Vue.nextTick();assert.equal(dialog.open,true);vm.chooseLanguage('en');await Vue.nextTick();await Vue.nextTick();assert.equal(language.value,'en');assert.equal(dialog.open,false);assert.equal(exits,0);
+vm.popup='logout';await Vue.nextTick();assert.equal(exits,0,'Opening confirmation must not log out');vm.popup='';await Vue.nextTick();assert.equal(exits,0,'Cancel must preserve session');
+for(const kind of ['logout','delete']){vm.popup=kind;await Vue.nextTick();vm.confirmExit();assert.equal(vm.popup,'');}assert.equal(exits,2,'Deletion preview emits logout only');app.unmount();
+console.log('Language dialog changes locale; logout requires confirmation; account deletion preview only emits logout.');

@@ -22,3 +22,5 @@ const product={...draft,id:1,importFields:{pin:true,serial:true,cvc:true,referen
 let copied;await copyOrderCodes({id:'TEST'},async()=>({codes:[{code:'00001234',serial:'000001',cvc:'007',reference:'000012',expiry:'2030-12-31',detailed:true}]}),{writeText:async text=>copied=text});assert.match(copied,/CVC \/ CVV: 007/);assert.match(copied,/Reference: 000012/);
 await copyOrderCodes({id:'TEST'},async()=>({codes:[{code:'one'},{code:'two'}]}),{writeText:async text=>copied=text});assert.equal(copied,'one\ntwo','Legacy clipboard format stays unchanged');
 console.log('Independent Arabic/Kurdish/English fields and images, Arabic fallback, display ordering, typed CVC/reference imports, required fields and detailed owner copy passed.');
+
+const independent=prepareCatalogDraft({name:'شركة',image:'',values:[5000],prices:[5250],stock:[0],denomImages:['category.png']});syncArabicDraft(independent);assert.equal(independent.image,'','A category image must not become the company logo');

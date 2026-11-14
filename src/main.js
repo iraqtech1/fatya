@@ -129,8 +129,8 @@ const categoryIcons=computed(()=>Object.fromEntries([['الكل',Grid2X2],...sto
 const previewImage=ref('');
 watch(language,()=>{if(selected.value){const raw=store.products.find(p=>p.id===selected.value.id);if(raw)selected.value=presentProduct(raw,language.value);}});
 const denomArt=computed(()=>selected.value?.denomImages?.[denom.value]||'');
-const gallery=computed(()=>selected.value?[...new Set([selected.value.image,...(selected.value.denomImages||[])].filter(Boolean))]:[]);
-const shownImage=computed(()=>previewImage.value||denomArt.value||selected.value?.image||'');
+const gallery=computed(()=>selected.value?[...new Set([...(selected.value.denomImages||[])].filter(Boolean))]:[]);
+const shownImage=computed(()=>previewImage.value||denomArt.value||'');
 watch(denom,()=>{previewImage.value=''});
 function selectGalleryImage(src){const index=(selected.value?.denomImages||[]).findIndex(image=>image===src);if(index>=0)denom.value=index;previewImage.value=src;}
 const nav=[{id:'home',label:'الرئيسية',icon:'Home'},{id:'cards',label:'التصنيفات',icon:'Grid2X2'},{id:'orders',label:'طلباتي',icon:'ShoppingBag'},{id:'support',label:'الدعم',icon:'Headphones'},{id:'account',label:'حسابي',icon:'User'}];

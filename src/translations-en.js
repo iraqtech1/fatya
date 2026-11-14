@@ -2,6 +2,13 @@ export default {
   "معرف العملية الكامل": "Full transaction ID",
   "جاري التحميل...": "Loading...",
   "تعذّر الاتصال بالخادم": "Could not connect to the server",
+"إلغاء":"Cancel",
+"حذف الحساب":"Delete account",
+"سيتم حذف الحساب خلال مدة 24 ساعة، وسيتم تسجيل خروجك من التطبيق.":"Your account will be deleted within 24 hours, and you will be signed out of the app.",
+"هل تريد تسجيل الخروج من التطبيق؟":"Do you want to sign out of the app?",
+"معاينة التصميم فقط؛ حذف الحساب غير مفعّل حالياً.":"Design preview only; account deletion is not enabled yet.",
+"تأكيد والخروج":"Confirm and sign out",
+
 "التصنيفات":"Categories","الشركات":"Companies","الفئات":"Denominations","الكارتات":"Cards","شحن مباشر":"Direct top-up",
   "ابتداءً من":"From",
   "فاتيا — الرئيسية":"Fatya — Home",

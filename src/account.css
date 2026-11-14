@@ -13,3 +13,13 @@ html[data-theme=dark] :is(.account-row,.account-panel){background:linear-gradien
 @media(max-width:700px){.account-menu .account-theme-row{grid-template-columns:40px minmax(0,1fr) 78px}}
 
 .account-information .account-custom-text{white-space:pre-wrap;overflow-wrap:anywhere}
+.account-language-value{margin-inline-start:auto;display:flex;align-items:center;gap:10px;font-size:14px}
+.account-dialog{position:fixed;inset:0;margin:auto;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow:auto;padding:32px;border:1px solid var(--border);border-radius:28px;background:linear-gradient(135deg,#fff,#eef7f1);color:var(--wine);box-shadow:0 24px 90px #03403730;text-align:center}
+.account-dialog::backdrop{background:#032c256b;backdrop-filter:blur(8px)}
+.account-dialog-close{position:absolute;inset-block-start:16px;inset-inline-end:16px;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;color:var(--wine)}
+.account-dialog-icon{display:grid;place-items:center;width:60px;height:60px;margin:8px auto 18px;border-radius:20px;background:#deefe5;color:#087751}.account-dialog-icon svg{width:28px;height:28px}
+.account-dialog h2{font-size:23px;margin:0 0 16px}.account-dialog p{line-height:1.9;color:var(--muted);margin:0}.account-dialog button:focus-visible{outline:3px solid #9bd44d;outline-offset:3px}
+.account-language-options{display:grid;gap:10px;margin-top:24px}.account-language-options button{display:flex;align-items:center;justify-content:space-between;min-height:54px;padding:14px 18px;border:1px solid var(--border);border-radius:16px;color:inherit;background:#ffffff90;font-size:16px}.account-language-options button[aria-pressed=true]{background:#e6f2db;border-color:#5f9c50}
+.account-dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}.account-dialog-actions button{min-height:48px;padding:12px;border-radius:16px}.account-dialog-secondary{border:1px solid var(--border);color:var(--wine);background:transparent}.account-delete-preview{display:block;line-height:1.8;margin-top:14px;color:var(--muted)}.account-delete-row{border-style:dashed}
+html[data-theme=dark] .account-dialog{background:linear-gradient(135deg,#153a2e,#0d251d);color:#dcf7ee;border-color:#397561}html[data-theme=dark] .account-dialog-icon{background:#1c5643;color:#a0ebd2}html[data-theme=dark] .account-language-options button{background:#184335}html[data-theme=dark] .account-language-options button[aria-pressed=true]{background:#28553a;border-color:#a4dc4f}html[data-theme=dark] :is(.account-dialog-close,.account-dialog-secondary){color:#dcf7ee}
+@media(max-width:480px){.account-dialog{padding:28px 22px;border-radius:24px}}

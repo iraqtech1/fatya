@@ -23,5 +23,5 @@ export function validateProductCompanies(companies,product){
 }
 
 export function denominationImage(product,index){
-  return product.denomImages?.[index]||(product.values.length===1?product.image:'')||'';
+  return product.denomImages?.[index]||'';
 }

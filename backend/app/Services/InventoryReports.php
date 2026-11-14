@@ -222,7 +222,7 @@ class InventoryReports
                     $row += ['provider' => $d->provider, 'quotedCost' => $d->quoted_cost, 'actualCost' => $d->actual_cost, 'reference' => $d->provider_reference, 'reason' => $d->reason, 'lastChecked' => date(DATE_ATOM, $d->updated)];
                 }
                 if ($type === 'payments') {
-                    $row = [...$row, 'receiptId' => $item->id, 'provider' => $item->provider, 'reference' => $item->transaction_id, 'amount' => $item->amount, 'status' => $item->outcome, 'reason' => $item->reason];
+                    $row = [...$row, 'receiptId' => $item->id, 'provider' => $item->provider, 'reference' => $item->transaction_id, 'amount' => $item->amount, 'currency' => $item->currency, 'status' => $item->outcome, 'reason' => $item->reason];
                 }
                 $rows[] = $row;
             }
@@ -247,6 +247,13 @@ class InventoryReports
         if (count($rows) > 50000) {
             throw new ApiError('ضيّق فلاتر التقرير إلى 50000 نتيجة أو أقل', 422);
         }
+        // Use a stable readable order in both the table and the full export.
+        usort($rows, static function ($a, $b) {
+            return strcmp($b['date'] ?? '', $a['date'] ?? '')
+                ?: strcmp($a['name'] ?? '', $b['name'] ?? '')
+                ?: (($a['value'] ?? 0) <=> ($b['value'] ?? 0))
+                ?: strcmp((string) ($a['id'] ?? ''), (string) ($b['id'] ?? ''));
+        });
         // These totals and exports use the same filtered rows before pagination.
         $totals = ['rows' => count($rows), 'unknownCost' => 0];
         $moneyKeys = match ($type) {
@@ -266,6 +273,30 @@ class InventoryReports
             if (array_key_exists('cost', $r) && $r['cost'] === null) {
                 $totals['unknownCost']++;
             }
+        }
+        if (in_array($type, ['sales', 'digital'], true)) {
+            $delivered = array_values(array_filter($rows, fn ($r) => $r['deliveryStatus'] === 'delivered' && $r['paymentStatus'] === 'confirmed'));
+            foreach (['deliveredAmount' => 'amount', 'knownDeliveredCost' => 'cost', 'deliveredGrossProfit' => 'grossProfit'] as $total => $field) {
+                $sum = BigDecimal::zero()->toScale(3);
+                $known = 0;
+                foreach ($delivered as $row) {
+                    if (isset($row[$field]) && is_numeric($row[$field])) {
+                        $sum = $sum->plus((string) $row[$field]);
+                        $known++;
+                    }
+                }
+                $totals[$total] = $known || ! $delivered ? (string) $sum : null;
+            }
+            $totals['deliveredUnknownCost'] = count(array_filter($delivered, fn ($r) => $r['cost'] === null));
+        }
+        if ($type === 'payments') {
+            $sum = BigDecimal::zero()->toScale(3);
+            foreach ($rows as $row) {
+                if (in_array($row['status'], ['confirmed', 'delivered', 'processing'], true) && $row['reason'] === null && $row['currency'] === 'IQD') {
+                    $sum = $sum->plus((string) $row['amount']);
+                }
+            }
+            $totals['confirmedAmount'] = (string) $sum;
         }
         foreach (['uploaded', 'accepted', 'rejected', 'added'] as $key) {
             if ($type === 'procurement') {
@@ -301,6 +332,7 @@ class InventoryReports
         if (! is_int($page) || $page < 1) {
             throw new ApiError('رقم الصفحة غير صحيح', 422);
         }
+        $page = min($page, max(1, (int) ceil(count($rows) / 50)));
 
         return ['type' => $type, 'filters' => $f, 'timezone' => 'Asia/Baghdad', 'totals' => $totals, 'page' => $page, 'pages' => max(1, (int) ceil(count($rows) / 50)), 'rows' => ($b['all'] ?? false) === true ? $rows : array_slice($rows, ($page - 1) * 50, 50)];
     }

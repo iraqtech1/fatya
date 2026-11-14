@@ -9,7 +9,7 @@ export function prepareCatalogDraft(d,{category=false,position=0}={}){
  if(!category)for(const key of ['denomNames','denomDescriptions','denomImages'])translations[id][key]=Array.from({length:count},(_,i)=>r[key]?.[i]??(ar?d[key]?.[i]||'':''));}
  d.translations=translations;return d;
 }
-export function syncArabicDraft(d,{category=false}={}){const ar=d.translations.ar;d.name=ar.name.trim();d.image=ar.image||'';if(!d.en)d.en=[...(d.translations.en.name||d.name)].slice(0,category?60:24).join('');if(!category){d.tag=[...ar.description].slice(0,40).join('');for(const key of ['denomNames','denomDescriptions','denomImages'])d[key]=[...ar[key]];if(!d.image)d.image=ar.image=ar.denomImages.find(Boolean)||'';}}
+export function syncArabicDraft(d,{category=false}={}){const ar=d.translations.ar;d.name=ar.name.trim();d.image=ar.image||'';if(!d.en)d.en=[...(d.translations.en.name||d.name)].slice(0,category?60:24).join('');if(!category){d.tag=[...ar.description].slice(0,40).join('');for(const key of ['denomNames','denomDescriptions','denomImages'])d[key]=[...ar[key]];}}
 export function presentProduct(p,locale='ar'){
  const ar=p.translations?.ar||{},r=p.translations?.[locale]||{};
  const shown={...p,name:r.name||ar.name||p.name,tag:r.description||ar.description||p.tag,image:r.image||ar.image||p.image};

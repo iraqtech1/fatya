@@ -190,6 +190,36 @@ class InventoryControlsTest extends TestCase
         $this->assertSame(1, $report['totals']['added']);
     }
 
+    public function test_report_financial_totals_exclude_unpaid_orders_and_review_receipts(): void
+    {
+        $this->stock();
+        $store = app(Store::class);
+        $s = $store->read();
+        foreach (['delivered', 'delivered', 'reserved', 'cancelled'] as $i => $state) {
+            $s['orders'][] = ['id' => 'report-'.$i, 'reference' => 'report-'.$i, 'customerId' => $s['customers'][0]['id'], 'customer' => 'Fixture', 'productId' => 1, 'name' => 'Fixture', 'value' => 5000, 'quantity' => 1, 'price' => 5250, 'date' => '2026-11-14', 'createdAt' => '2026-11-14T10:00:0'.$i.'+03:00', 'costTotal' => $i === 0 ? '4500.001' : null, 'profitBeforeFees' => $i === 0 ? '749.999' : null];
+        }
+        $store->save($s);
+        foreach (['delivered', 'delivered', 'reserved', 'cancelled'] as $i => $state) {
+            DB::table('order_fulfillments')->insert(['order_id' => 'report-'.$i, 'state' => $state, 'payment_status' => $state === 'delivered' ? 'confirmed' : 'pending', 'provider' => 'Qi', 'amount' => '5250', 'quantity' => 1, 'expires' => time()]);
+        }
+        foreach ([['delivered', null, 'IQD'], ['processing', null, 'IQD'], ['review', 'amount_mismatch', 'IQD'], ['review', 'currency_mismatch', 'USD']] as $i => [$outcome, $reason, $currency]) {
+            DB::table('payment_receipts')->insert(['id' => 'receipt-'.$i, 'order_id' => 'report-'.$i, 'provider' => 'Qi', 'transaction_id' => 'transaction-'.$i, 'event_id' => 'event-'.$i, 'amount' => '5250', 'currency' => $currency, 'outcome' => $outcome, 'reason' => $reason, 'received_at' => time() + $i]);
+        }
+        $reports = app(InventoryReports::class);
+        $sales = $reports->read(['type' => 'sales']);
+        $this->assertSame('10500.000', $sales['totals']['deliveredAmount']);
+        $this->assertSame('4500.001', $sales['totals']['knownDeliveredCost']);
+        $this->assertSame('749.999', $sales['totals']['deliveredGrossProfit']);
+        $this->assertSame(1, $sales['totals']['deliveredUnknownCost']);
+        $this->assertSame('report-3', $sales['rows'][0]['id']);
+        $this->assertSame(1, $reports->read(['type' => 'sales', 'page' => 999])['page']);
+        $payments = $reports->read(['type' => 'payments']);
+        $this->assertSame('10500.000', $payments['totals']['confirmedAmount']);
+        $this->assertSame('USD', $payments['rows'][0]['currency']);
+        $this->assertCount(2, $reports->read(['type' => 'payments', 'filters' => ['status' => 'review']])['rows']);
+        $this->assertSame($payments['totals'], $reports->read(['type' => 'payments', 'all' => true])['totals']);
+    }
+
     private function xlsx(string $cell): UploadedFile
     {
         $path = tempnam(sys_get_temp_dir(), 'fatya-');

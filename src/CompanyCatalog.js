@@ -13,7 +13,7 @@ export default {
   const denominations=computed(()=>companyDenominations(company.value));
   const denomination=computed(()=>denominations.value.find(d=>d.id===props.modelValue.denomination));
   function chooseCompany(c){emit('update:modelValue',{company:c.id,denomination:''});}
-  function chooseDenomination(d){emit('update:modelValue',{company:company.value.id,denomination:d.id});}
+  function chooseDenomination(d){if(d.cards.length===1){emit('select',d.cards[0]);return;}emit('update:modelValue',{company:company.value.id,denomination:d.id});}
   function back(){emit('update:modelValue',denomination.value?{company:company.value.id,denomination:''}:{});}
   return{t,companies,company,denominations,denomination,chooseCompany,chooseDenomination,back,number:v=>new Intl.NumberFormat('en-US').format(v)};
  },

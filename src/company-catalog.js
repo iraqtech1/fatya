@@ -18,8 +18,8 @@ export function companyDenominations(company){
   for(const option of denominationOptions(product)){
    if(product.digitalOffers?.[option.index]?.provider==='topup')continue;
    const key='stock:'+product.unit+':'+option.value;
-   if(!groups.has(key))groups.set(key,{id:key,name:option.name||String(option.value),unit:product.unit,image:product.denomImages?.[option.index]||product.image||'',cards:[]});
-   groups.get(key).cards.push({id:'stock:'+product.id+':'+option.index,product,index:option.index,name:product.name,price:product.prices[option.index],image:product.denomImages?.[option.index]||product.image||'',kind:'stock'});
+   if(!groups.has(key))groups.set(key,{id:key,name:option.name||String(option.value),unit:product.unit,image:product.denomImages?.[option.index]||'',cards:[]});
+   groups.get(key).cards.push({id:'stock:'+product.id+':'+option.index,product,index:option.index,name:product.name,price:product.prices[option.index],image:product.denomImages?.[option.index]||'',kind:'stock'});
   }
   for(const service of ['direct','bundles'])for(const [index,offer] of serviceOffers(product,service,false).entries()){
    const key='service:'+product.id+':'+(offer.publicationId||service+':'+offer.index);
