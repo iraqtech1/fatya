@@ -10,3 +10,5 @@ const rows=enrichReportRows([{id:'order',productId:'2',amount:'100',reason:null}
 assert.ok(reportColumns('sales',rows,true).includes('extra'),'Exports include keys absent from the first row');
 assert.equal(reportSummary('sales',{rows:3,amount:'999',deliveredAmount:'100',deliveredUnknownCost:1}).find(t=>t.key==='deliveredAmount').value,'100 د.ع');assert.ok(!reportSummary('sales',{amount:'999'}).some(t=>t.key==='amount'));
 console.log('Reports preserve decimal precision, currencies, missing costs and nested details; tables and full exports share Arabic formatting.');
+
+assert.ok(reportColumns('inventory').includes('id'));assert.ok(reportColumns('inventory').includes('serial'),'Per-card inventory rows need distinct numbers and original serials');

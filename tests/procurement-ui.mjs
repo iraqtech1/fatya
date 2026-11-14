@@ -17,7 +17,7 @@ async function render(c,context){const warnings=[],app=Vue.createSSRApp({...c,se
 const report=component('ReportsCenter.js',{...reportPresentation,...Vue,...icons,useReportFlow,can:()=>true,connected:true,api:async()=>({rows:[{id:'0001',status:'available'}],totals:{rows:1},page:1,pages:1}),store:{products:[],companies:[]},exportWorkbook:async()=>{}});
 let r=report.setup();assert.ok((await render(report,r)).includes('report-card'));
 await r.open(r.cards.value[0]);await r.open(r.visibleCards.value[0]);r.tablesOpen.value=true;
-const reportHtml=await render(report,r);assert.ok(reportHtml.includes('الفلترة والجداول'));assert.ok(!reportHtml.includes('0001'),'Technical IDs stay in details rather than crowding the main table');r.detail.value=r.rows.value[0];assert.ok((await render(report,r)).includes('0001'),'All original fields remain available in details');assert.ok(reportHtml.includes('aria-expanded="true"'));
+const reportHtml=await render(report,r);assert.ok(reportHtml.includes('الفلترة والجداول'));assert.ok(reportHtml.includes('0001'),'Inventory card numbers distinguish otherwise identical cards');r.detail.value=r.rows.value[0];assert.ok((await render(report,r)).includes('0001'),'All original fields remain available in details');assert.ok(reportHtml.includes('aria-expanded="true"'));
 const scope=Vue.effectScope();
 await scope.run(async()=>{
  const exports=[],requests=[],store={products:[],companies:[],orders:[]},connection=Vue.reactive({revision:1});let fail=false;
