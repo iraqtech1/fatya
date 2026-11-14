@@ -8,6 +8,7 @@ use App\Services\AdminAccess;
 use App\Services\AdminPolicy;
 use App\Services\CatalogEditor;
 use App\Services\CatalogOrdering;
+use App\Services\CompanyHierarchy;
 use App\Services\CustomerNotifications;
 use App\Services\DigitalPublications;
 use App\Services\DigitalSales;
@@ -107,7 +108,17 @@ class StoreController extends Controller
         $s['categories'] = array_values(array_filter($s['categories'], fn ($c) => $c['active']));
         $s['products'] = ProductFields::sort($s['products']);
         $s['products'] = array_values(array_filter($s['products'], fn ($p) => $p['active'] && collect($s['categories'])->contains('name', $p['category'])));
+        $s['products'] = array_values(array_filter($s['products'], function ($product) use ($s) {
+            $id = $product['manufacturerId'] ?? '';
+            if (! $id || ! collect($s['companies'])->contains('id', $id)) {
+                return true; // Preserve legacy unassigned cards.
+            }
+            $path = CompanyHierarchy::path($s['companies'], $id);
+
+            return $path && ! collect($path)->contains(fn ($company) => ! $company['active']);
+        }));
         foreach ($s['products'] as &$p) {
+            $p['manufacturerPath'] = CompanyHierarchy::path($s['companies'], $p['manufacturerId'] ?? '');
             unset($p['importFields'], $p['denomImportFields'], $p['denomImportCodes']);
             $manufacturer = collect($s['companies'])->first(fn ($c) => $c['id'] === ($p['manufacturerId'] ?? ''));
             $p['manufacturer'] = $manufacturer ? ['id' => $manufacturer['id'], 'name' => $manufacturer['name'], 'image' => $manufacturer['image'] ?? ''] : null;

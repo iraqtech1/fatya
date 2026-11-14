@@ -8,12 +8,14 @@ use App\Services\DigitalManualPayments;
 use App\Services\DigitalProviders;
 use App\Services\DigitalPublications;
 use App\Services\DigitalSales;
+use App\Services\InventoryReports;
 use App\Services\OrderFulfillment;
 use App\Services\StockOrders;
 use App\Services\Store;
 use App\Services\VerifiedPayment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -25,6 +27,8 @@ class DigitalPublicationTest extends TestCase
     private int $providerCost = 4500;
 
     private bool $purchaseTimeout = false;
+
+    private bool $partialCatalog = false;
 
     protected function beforeRefreshingDatabase(): void
     {
@@ -57,6 +61,10 @@ class DigitalPublicationTest extends TestCase
 
     private function catalog(int $cost = 4500): array
     {
+        if ($this->partialCatalog) {
+            return ['status' => 'ok', 'products' => [], 'meta' => ['pagination' => ['pageCount' => 2]]];
+        }
+
         return ['status' => 'ok', 'products' => [['id' => 70, 'type' => 'topup', 'title' => 'Parent', 'price' => 0, 'show2site' => 1, 'image' => '/media/parent.png'], ['id' => 71, 'parent_id' => 70, 'type' => 'topup', 'title' => 'Direct 5000', 'price' => $cost, 'show2site' => 1, 'description' => 'Fixture description', 'duration_days' => 7, 'customInfo' => 'stored privately'], ['id' => 71, 'type' => 'bundle', 'title' => 'Bundle 5000', 'price' => $cost, 'show2site' => 1]]];
     }
 
@@ -78,6 +86,22 @@ class DigitalPublicationTest extends TestCase
     private function payment(array $o): array
     {
         return ['orderId' => $o['id'], 'password' => 'fixture-only-password-12345', 'amount' => '5250', 'received' => true, 'receiptReference' => 'cash-receipt-01', 'note' => 'Cash received in fixture only', 'requestId' => 'manual-approval-01'];
+    }
+
+    public function test_new_sale_keeps_its_service_snapshot_after_catalog_edits(): void
+    {
+        [$s, $catalog, $pub, $body, $order] = $this->order();
+        $this->assertSame('Direct 5000', $order['saleSnapshot']['serviceTitle']);
+        $this->assertSame('5250.000', $order['saleSnapshot']['total']);
+        $this->assertNull($order['saleSnapshot']['denominationValue']);
+        $state = app(Store::class)->read();
+        $state['products'][0]['name'] = 'Changed after sale';
+        $state['products'][0]['prices'][0] = 9999;
+        app(Store::class)->save($state);
+        $repeated = app(OrderFulfillment::class)->reserve($state['customers'][0], $body)['order'];
+        $this->assertSame($order['saleSnapshot'], $repeated['saleSnapshot']);
+        $this->assertSame($order['name'], $repeated['name']);
+        $this->assertArrayNotHasKey('cost', $repeated['saleSnapshot']);
     }
 
     public function test_import_is_private_until_publication_and_equal_value_services_remain_distinct(): void
@@ -136,6 +160,30 @@ class DigitalPublicationTest extends TestCase
         $this->assertSame('Manual', DB::table('payment_receipts')->value('provider'));
         $retry = app(OrderFulfillment::class)->reserve($s['customers'][0], $b);
         $this->assertFalse($retry['created']);
+    }
+
+    public function test_catalog_lock_and_partial_responses_preserve_existing_snapshot(): void
+    {
+        [, $catalog] = $this->fixture();
+        $lock = Cache::lock('digital-catalog:topup:all', 120);
+        $this->assertTrue($lock->get());
+        try {
+            app(DigitalProviders::class)->catalog('topup');
+            $this->fail('Concurrent sync accepted');
+        } catch (ApiError $error) {
+            $this->assertSame(409, $error->status);
+        } finally {
+            $lock->release();
+        }
+        $before = DB::table('digital_catalog')->value('snapshot');
+        $this->partialCatalog = true;
+        try {
+            app(DigitalProviders::class)->catalog('topup');
+            $this->fail('Partial catalog accepted');
+        } catch (ApiError $error) {
+            $this->assertSame(502, $error->status);
+        }
+        $this->assertSame($before, DB::table('digital_catalog')->value('snapshot'));
     }
 
     public function test_stale_checkout_price_cannot_create_a_differently_priced_order(): void
@@ -240,6 +288,61 @@ class DigitalPublicationTest extends TestCase
         $this->assertSame('pending', DB::table('order_fulfillments')->value('payment_status'));
     }
 
+    public function test_financial_dispatch_journal_prevents_replay_even_if_worker_state_is_reset(): void
+    {
+        [,,,,$order] = $this->order();
+        app(DigitalManualPayments::class)->confirm($this->payment($order));
+        $dispatch = DB::table('digital_dispatches')->sole();
+        $this->assertSame('response_received', $dispatch->outcome);
+        $this->assertSame(200, (int) $dispatch->http_status);
+        $this->assertNotNull($dispatch->response_hash);
+        $this->assertNotNull($dispatch->finished_at);
+        $publicEvidence = app(DigitalSales::class)->executions()[0]['dispatches'][0];
+        $this->assertSame(200, $publicEvidence['httpStatus']);
+        $this->assertStringNotContainsString('fixture-key', json_encode($publicEvidence));
+        DB::table('digital_executions')->where('order_id', $order['id'])->update(['state' => 'queued']);
+        DB::table('order_fulfillments')->where('order_id', $order['id'])->update(['state' => 'processing']);
+        app(DigitalSales::class)->run();
+        $this->assertSame('financial_dispatch_already_recorded', DB::table('digital_executions')->value('reason'));
+        $this->assertDatabaseCount('digital_dispatches', 1);
+        $this->assertCount(1, Http::recorded(fn ($request) => str_ends_with($request->url(), '/transactions')));
+    }
+
+    public function test_provider_and_second_precise_report_scopes_share_all_rows_and_totals(): void
+    {
+        [,,,,$order] = $this->order();
+        app(DigitalManualPayments::class)->confirm($this->payment($order));
+        $store = app(Store::class);
+        $state = $store->read();
+        $state['orders'][0]['createdAt'] = '2026-11-13T21:00:01+00:00';
+        $state['orders'][0]['price'] = 1; // Summary must use the trusted fulfillment amount.
+        $other = [...$state['orders'][0], 'id' => 'ORDER-other-fixture', 'reference' => 'other-fixture', 'digitalProvider' => 'rabiaa'];
+        $other['saleSnapshot']['serviceType'] = 'standard';
+        $state['orders'][] = $other;
+        $store->save($state);
+        foreach (['order_fulfillments', 'digital_executions'] as $table) {
+            $copy = (array) DB::table($table)->where('order_id', $order['id'])->sole();
+            $copy['order_id'] = $other['id'];
+            if ($table === 'digital_executions') {
+                $copy['provider'] = 'rabiaa';
+            }
+            DB::table($table)->insert($copy);
+        }
+        $reports = app(InventoryReports::class);
+        $filters = ['provider' => 'topup', 'serviceType' => 'topup', 'from' => '2026-11-14T00:00:01', 'to' => '2026-11-14T00:00:01'];
+        $table = $reports->read(['type' => 'digital', 'filters' => $filters]);
+        $export = $reports->read(['type' => 'digital', 'filters' => $filters, 'all' => true]);
+        $this->assertSame($table['rows'], $export['rows']);
+        $this->assertSame($table['totals'], $export['totals']);
+        $this->assertCount(1, $table['rows']);
+        $this->assertSame($order['id'], $table['rows'][0]['id']);
+        $this->assertSame('5250.000', $table['rows'][0]['amount']);
+        $this->assertNull($table['rows'][0]['value']);
+        $this->assertSame('Asia/Baghdad', $table['timezone']);
+        $this->assertCount(0, $reports->read(['type' => 'digital', 'filters' => [...$filters, 'to' => '2026-11-14T00:00:00', 'from' => '2026-11-14T00:00:00']])['rows']);
+        $this->assertCount(1, $reports->read(['type' => 'digital', 'filters' => ['provider' => 'rabiaa']])['rows']);
+    }
+
     public function test_lost_purchase_response_stays_for_review_without_second_charge(): void
     {
         [,,,,$o] = $this->order();
@@ -251,6 +354,9 @@ class DigitalPublicationTest extends TestCase
         app(DigitalSales::class)->run();
         $this->assertDatabaseCount('digital_manual_payments', 1);
         $this->assertSame('review', DB::table('digital_executions')->value('state'));
+        $this->assertSame('provider_transport_uncertain', DB::table('digital_executions')->value('reason'));
+        $this->assertSame('transport_uncertain', DB::table('digital_dispatches')->value('outcome'));
+        $this->assertDatabaseCount('digital_dispatches', 1);
     }
 
     public function test_unpublished_and_expired_orders_cannot_be_approved_and_manual_dto_is_not_a_bypass(): void

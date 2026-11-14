@@ -1,6 +1,6 @@
 import {ref,computed} from 'vue/dist/vue.esm-bundler.js';
 
-export const emptyReportFilters=()=>({from:'',to:'',productId:'',manufacturerId:'',supplier:'',status:'',actor:'',channel:'',batchId:'',serial:'',denomination:''});
+export const emptyReportFilters=()=>({from:'',to:'',productId:'',manufacturerId:'',supplier:'',status:'',actor:'',channel:'',batchId:'',serial:'',denomination:'',provider:'',serviceType:'',orderId:'',customerId:'',query:''});
 const tree=[
  {id:'stock',name:'المخزون والتوريد',description:'الأرصدة وحركة البطاقات والطلبيات',children:[
   {id:'inventory',name:'المخزون',description:'الكميات والحالات والتكلفة المتاحة'},

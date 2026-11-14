@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {presentOrder,orderDenomination} from '../src/order-display.js';
 import {readFileSync} from 'node:fs';
 import {createSSRApp,computed,reactive} from 'vue';
 import {renderToString} from '@vue/server-renderer';
@@ -63,3 +64,14 @@ for(const tableRow of source.matchAll(/<tr v-for="o in (?:orderRows|visibleAdmin
 }
 assert.equal([...source.matchAll(/<tr v-for="o in (?:orderRows|visibleAdminOrders\.slice\(0,5\))"/g)].length,2);
 console.log('Both dashboard order tables highlight exactly the orders counted for follow-up.');
+
+const frozen={name:'Original sale',value:5000,unit:'IQD',saleSnapshot:{version:1,name:'Original sale',unit:'IQD',denominationValue:5000,denominationName:'Original category',total:'5250.001',translations:{en:{name:'Frozen English',denominationName:'Frozen category'}}}};
+assert.equal(presentOrder(frozen,'en').name,'Frozen English');
+assert.equal(orderDenomination(presentOrder(frozen,'en')),'Frozen category');
+assert.equal(orderDenomination({...frozen,saleSnapshot:undefined}),'5000');
+assert.equal(presentOrder({name:'Legacy name'},'en').name,'Legacy name');
+for(const value of [null,0,undefined])assert.equal(orderDenomination({digitalProvider:'topup',value}),'خدمة رقمية');
+assert.equal(orderDenomination({digitalProvider:'topup',value:0,saleSnapshot:{serviceTitle:'Weekly bundle'}}),'Weekly bundle');
+assert.equal(orderDenomination({value:null}),'—');
+assert.equal(frozen.name,'Original sale','Locale presentation must not mutate the stored snapshot');
+console.log('Frozen multilingual sales and service labels preserve historical identity.');

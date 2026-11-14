@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiError;
 use App\Services\Accounts;
+use App\Services\CardLifecycle;
 use App\Services\CatalogSources;
 use App\Services\DigitalConnections;
 use App\Services\DigitalManualPayments;
@@ -14,6 +15,7 @@ use App\Services\ImportCategories;
 use App\Services\ImportFileReader;
 use App\Services\InventoryExports;
 use App\Services\InventoryReports;
+use App\Services\StockOrderCatalog;
 use App\Services\StockOrders;
 use App\Services\StockWorkflow;
 use Illuminate\Http\Request;
@@ -24,7 +26,7 @@ class ProcurementController extends Controller
     public function __invoke(Request $request, string $path)
     {
         app(Accounts::class)->session($request, 'admin');
-        if (in_array($path, ['digital/manual-payment', 'exports', 'exports/review', 'exports/renew', 'exports/download'], true) && ! $request->isMethod('GET')) {
+        if (in_array($path, ['digital/manual-payment', 'exports', 'exports/review', 'exports/renew', 'exports/download', 'lookup'], true) && ! $request->isMethod('GET')) {
             $key = 'private-exports:'.$path.':'.$request->ip();
             if (RateLimiter::tooManyAttempts($key, 12)) {
                 throw new ApiError('انتظر دقيقة قبل إعادة محاولة تصدير الأكواد', 429);
@@ -50,7 +52,8 @@ class ProcurementController extends Controller
             RateLimiter::hit($key, 60);
         }
         $data = match ([$request->method(), $path]) {
-            ['GET', 'stock-orders'] => ['sources' => CatalogSources::storedOptions(), 'batches' => $stock->batches(), 'submissions' => app(StockWorkflow::class)->submissions(), 'policy' => app(StockWorkflow::class)->policy(), ...app(ImportCategories::class)->read()],
+            ['GET', 'stock-orders'] => ['apiDenominations' => StockOrderCatalog::apiDenominations(), 'sources' => CatalogSources::storedOptions(), 'batches' => $stock->batches(), 'submissions' => app(StockWorkflow::class)->submissions(), 'policy' => app(StockWorkflow::class)->policy(), ...app(ImportCategories::class)->read()],
+            ['POST', 'lookup'] => app(CardLifecycle::class)->read($b),
             ['POST', 'reports'] => app(InventoryReports::class)->read($b),
             ['GET', 'exports'] => app(InventoryExports::class)->listing(),
             ['POST', 'exports'] => app(InventoryExports::class)->create($b),

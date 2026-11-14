@@ -30,8 +30,10 @@ class Inventory
         if (! $key) {
             throw new ApiError('اكتب سيريل الكارت');
         }
-        $row = DB::table('inventory_cards')->where('serial', $key)->first()
-            ?? DB::table('inventory_cards')->whereNull('serial')->where('code_hash', hash('sha256', $key))->first();
+        $row = DB::table('inventory_cards')->where('serial', $key)->first();
+        if (! $row && (! request()->attributes->has('adminAccess') || app(AdminAccess::class)->can('inventory.codes'))) {
+            $row = DB::table('inventory_cards')->whereNull('serial')->where('code_hash', hash('sha256', $key))->first();
+        }
         $p = $row ? collect($s['products'])->first(fn ($p) => (string) $p['id'] === $row->product_id) : null;
         if (! $p) {
             return null;
@@ -40,7 +42,7 @@ class Inventory
         $orderId = $row->sold_order_id ?? $row->reserved_order_id;
         $fulfillment = $orderId ? DB::table('order_fulfillments')->where('order_id', $orderId)->first() : null;
 
-        return ['productId' => $p['id'], 'name' => $p['name'], 'value' => (float) $row->denomination, 'unit' => $p['unit'], 'serial' => $row->serial ?? $key, 'inventoryStatus' => InventoryReports::state($row), 'orderId' => $orderId, 'reservationExpiresAt' => $row->reserved_order_id && $fulfillment ? $fulfillment->expires * 1000 : null];
+        return ['productId' => $p['id'], 'name' => $p['name'], 'value' => (float) $row->denomination, 'unit' => $p['unit'], 'serial' => $row->serial ?? '', 'inventoryStatus' => InventoryReports::state($row), 'orderId' => $orderId, 'reservationExpiresAt' => $row->reserved_order_id && $fulfillment ? $fulfillment->expires * 1000 : null];
     }
 
     public function import(array &$s, array $b): array

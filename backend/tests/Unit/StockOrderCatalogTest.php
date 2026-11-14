@@ -4,6 +4,8 @@ namespace Tests\Unit;
 
 use App\Exceptions\ApiError;
 use App\Services\Accounts;
+use App\Services\CardLifecycle;
+use App\Services\StockOrderCatalog;
 use App\Services\StockOrders;
 use App\Services\StockWorkflow;
 use App\Services\Store;
@@ -187,5 +189,49 @@ class StockOrderCatalogTest extends TestCase
         $this->postJson('/api/admin/procurement/stock-orders/submit', $body)->assertOk()->assertJsonPath('status', 'approved');
         $this->assertDatabaseCount('stock_submissions', 0);
         $this->assertDatabaseCount('inventory_cards', 1);
+    }
+
+    public function test_no_expiry_is_explicit_and_ambiguous_dates_are_rejected_in_preview(): void
+    {
+        $state = $this->fixture();
+        $line = $this->line(['expiry' => '2030-01-01', 'rows' => [['pin' => 'no-expiry-fixture', 'serial' => '01', 'expiry' => '', 'noExpiry' => true], ['pin' => 'ambiguous-fixture', 'serial' => '02', 'expiry' => '', 'expiryError' => 'Ambiguous']]]);
+        $preview = app(StockOrders::class)->preview(['revision' => $state['revision'], 'supplier' => 'Fixture', 'source' => 'Dates fixture', 'lines' => [$line]]);
+        $this->assertSame(1, $preview['rejected']);
+        app(StockOrders::class)->approve(['requestId' => 'date-policy-fixture', 'previewId' => $preview['previewId'], 'previewHash' => $preview['previewHash'], 'excludeRejected' => true]);
+        $this->assertDatabaseCount('inventory_cards', 1);
+        $this->assertNull(DB::table('inventory_cards')->value('expires_on'));
+    }
+
+    public function test_api_denomination_is_excluded_while_physical_denomination_of_same_product_can_import(): void
+    {
+        $state = $this->fixture();
+        DB::table('digital_offers')->insert(['id' => 'fee735df-6f14-4118-9da6-43d69a2433f9', 'product_id' => '1', 'denom_index' => 0, 'connection' => 'topup', 'provider_id' => '71', 'snapshot' => '{}', 'retail' => 5250, 'active' => false, 'updated' => time()]);
+        try {
+            app(StockOrderCatalog::class)->prepare($this->line(['denom' => 0]), $state);
+            $this->fail('API import accepted');
+        } catch (ApiError $error) {
+            $this->assertSame(422, $error->status);
+        }
+        $plan = app(StockOrderCatalog::class)->prepare($this->line(), $state);
+        $this->assertSame(1, $plan['line']['denom']);
+        $this->assertSame([5000, 10000.0], $state['products'][0]['values']);
+    }
+
+    public function test_card_lookup_links_import_evidence_without_exposing_pin_or_inventing_sales(): void
+    {
+        $state = $this->fixture();
+        $preview = app(StockOrders::class)->preview(['revision' => $state['revision'], 'supplier' => 'Fixture', 'source' => 'Lookup fixture', 'lines' => [$this->line()]]);
+        $batch = app(StockOrders::class)->approve(['requestId' => 'lookup-fixture', 'previewId' => $preview['previewId'], 'previewHash' => $preview['previewHash'], 'excludeRejected' => false]);
+        $lookup = app(CardLifecycle::class);
+        $serial = $lookup->read(['query' => '0000001', 'kind' => 'serial']);
+        $this->assertSame(1, $serial['count']);
+        $this->assertSame($batch['id'], $serial['rows'][0]['batchId']);
+        $this->assertNull($serial['rows'][0]['orderId']);
+        $this->assertCount(1, $serial['rows'][0]['timeline']);
+        $this->assertSame('استيراد إلى المخزن', $serial['rows'][0]['timeline'][0]['event']);
+        $this->assertSame($serial['rows'], $lookup->read(['query' => 'E10K', 'kind' => 'importCode'])['rows']);
+        $this->assertSame($serial['rows'], $lookup->read(['query' => '000000000123', 'kind' => 'pin'])['rows']);
+        $this->assertStringNotContainsString('000000000123', json_encode($serial));
+        $this->assertStringNotContainsString('000000000123', DB::table('procurement_audit')->pluck('details')->implode(' '));
     }
 }

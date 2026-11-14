@@ -30,8 +30,15 @@ export function allowedOrderStatuses(order){
   return [...new Set(statuses)];
 }
 export function paymentReviewLabel(reason){
+  if(executionReasons[reason])return executionReasons[reason];
   return ({amount_mismatch:'المبلغ غير مطابق',currency_mismatch:'العملة غير مطابقة',provider_mismatch:'بوابة الدفع غير مطابقة',additional_payment:'دفعة إضافية لنفس الطلب',reservation_expired:'وصل الدفع بعد انتهاء الحجز',reservation_cancelled:'وصل الدفع بعد إلغاء الطلب',reservation_review:'الحجز يحتاج مراجعة',customer_inactive:'الحساب موقوف',allocation_incomplete:'تخصيص المخزون غير مكتمل',legacy_order_without_reservation:'طلب سابق بدون حجز موثّق'}[reason]|| (reason?'دفع يحتاج مراجعة':'—'));
 }
 export function orderTime(timestamp){
   return Number(timestamp)>0?new Date(Number(timestamp)).toLocaleString('en-GB',{timeZone:'Asia/Baghdad',hour12:false}):'—';
 }
+
+export const executionReasons={connection_changed:'تغير مفتاح الربط قبل التنفيذ',quote_changed:'تغير السعر أو توفر الخدمة قبل الشراء',eligibility_not_confirmed:'لم تتأكد أهلية المستفيد؛ لم يبدأ الشراء',invalid_subscriber_province:'محافظة المشترك غير مقبولة',invalid_hold_evidence:'دليل حجز الشركة غير مكتمل',hold_price_or_expiry_changed:'تغير سعر الحجز أو انتهت صلاحيته',invalid_provider_response:'رد الشركة غير مفهوم',provider_result_uncertain:'لم يتأكد نجاح العملية من رد الشركة',recipient_mismatch:'المستفيد في الرد غير مطابق',missing_provider_reference:'لا يوجد مرجع شركة صالح',purchase_evidence_incomplete:'دليل شراء البطاقة غير مكتمل',premium_delivery_uncertain:'تسليم Premium غير مؤكد',financial_dispatch_already_recorded:'يوجد إرسال سابق؛ مُنعت إعادة العملية',financial_dispatch_not_authorized:'إرسال العملية غير مخوّل',provider_transport_uncertain:'انقطع الاتصال؛ نتيجة الشركة غير مؤكدة',provider_http_error:'وصل رد HTTP غير ناجح؛ لا يثبت رفض الخصم',provider_invalid_response:'وصل رد لا يمكن قراءته',interrupted_execution:'توقف العامل أثناء التنفيذ؛ يلزم فحص الأدلة',provider_result_requires_review:'نتيجة الشركة تحتاج مراجعة الأدلة'};
+export const executionReasonLabel=reason=>executionReasons[reason]||(reason?'سبب غير مصنف؛ راجع الأدلة':'—');
+export const dispatchOutcomeLabel=outcome=>({dispatch_started:'سُجّلت نية الإرسال؛ لم يُحفظ رد',transport_uncertain:'لا يوجد رد مؤكد',http_error:'وصل رد HTTP غير ناجح',invalid_response:'وصل رد غير مفهوم',response_received:'وصل رد؛ نتيجة التنفيذ تُراجع بصورة مستقلة'}[outcome]||'حالة غير معروفة');
+
+export const dispatchStateLabel=state=>({legacy_unknown:'غير متاح في السجل القديم',not_sent:'لم يُرسل طلب مالي إلى المزود',not_requested:'لم تبدأ مرحلة الطلب المالي',success_confirmed:'نجاح مؤكد بدليل التنفيذ',uncertain:'نتيجة غير محسومة؛ لا يُعاد إرسال طلب مالي'}[state]||'غير متاح في السجل القديم');

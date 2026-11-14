@@ -4,10 +4,16 @@ namespace App\Services;
 
 use App\Exceptions\ApiError;
 use Brick\Math\BigDecimal;
+use Illuminate\Support\Facades\DB;
 
 /** Plan catalog changes in memory; persist them only with an approved stock batch. */
 class StockOrderCatalog
 {
+    public static function apiDenominations(): array
+    {
+        return DB::table('digital_offers')->get(['product_id', 'denom_index'])->map(fn ($row) => ['productId' => $row->product_id, 'denom' => (int) $row->denom_index])->all();
+    }
+
     public function fingerprint(array $product): string
     {
         unset($product['stock']);
@@ -76,6 +82,9 @@ class StockOrderCatalog
             if (! is_int($di) || ! isset($product['values'][$di])) {
                 throw new ApiError('اختر الفئة أو أدخل فئة جديدة', 422);
             }
+        }
+        if (DB::table('digital_offers')->where('product_id', (string) $product['id'])->where('denom_index', $di)->exists()) {
+            throw new ApiError('هذه فئة API؛ لا تستورد لها ملفات بطاقات. اختر الفئة المخزنية التابعة للشركة', 422);
         }
         if ($new && array_key_exists('supplierCompanyId', $line)) {
             CatalogSources::resolve($state, $line['supplierCompanyId']);

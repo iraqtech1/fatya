@@ -54,7 +54,7 @@ class CatalogEditor
                 if (! $name || $name === 'الكل' || ! $en || ! in_array($d['icon'] ?? '', ['Signal', 'Wifi', 'Gamepad2', 'ShoppingBag', 'Smartphone', 'Layers', 'CreditCard', 'Headphones']) || ! is_bool($d['active'] ?? null)) {
                     throw new ApiError('اكتب اسم التصنيف والاسم الإنجليزي واختر أيقونة صحيحة');
                 }
-                if (collect($s['categories'])->contains(fn ($c) => $c['id'] !== $id && $c['name'] === $name)) {
+                if (collect($s['categories'])->contains(fn ($c) => $c['id'] !== $id && $c['name'] === $name && ($c['parentId'] ?? '') === ($d['parentId'] ?? $old['parentId'] ?? ''))) {
                     throw new ApiError('اسم التصنيف موجود بالفعل');
                 }
                 if ($old) {
@@ -104,6 +104,7 @@ class CatalogEditor
                 if ($item['sourceId'] === $id) {
                     throw new ApiError('لا يمكن اختيار الشركة نفسها مصدراً لها', 422);
                 }
+                $item += CompanyHierarchy::fields($item, $d, $old, $s['companies']);
                 break;
             case 'settings':
                 $socialLinks = [];

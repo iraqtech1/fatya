@@ -1,16 +1,25 @@
 import {denominationOptions} from './product-metadata.js';
 import {serviceOffers} from './asiacell-services.js';
 
-export function catalogCompanies(products,query=''){
- const groups=new Map(),search=query.trim().toLowerCase();
+export function catalogCompanies(products,query='',locale='ar'){
+ const roots=[],nodes=new Map(),search=query.trim().toLowerCase();
+ const translated=company=>{const ar=company.translations?.ar||{},row=company.translations?.[locale]||{};return {...company,name:row.name||ar.name||company.name,image:row.image||ar.image||company.image||'',description:row.description||ar.description||''};};
  for(const product of products){
-  const company=product.manufacturer;
-  const id=company?.id?'company:'+company.id:product.manufacturerId?'company:'+product.manufacturerId:'product:'+product.id;
-  if(!groups.has(id))groups.set(id,{id,name:company?.name||product.name,en:company?.name||product.en,image:company?.image||product.image||'',color:product.color,products:[]});
-  groups.get(id).products.push(product);
+  const path=product.manufacturerPath?.length?product.manufacturerPath:[product.manufacturer?{...product.manufacturer,image:product.manufacturer.image||product.image||''}:{id:product.manufacturerId||'',name:product.name,image:product.image,en:product.en}];
+  if(path.some(company=>company.active===false))continue;
+  let parent=null;
+  for(const raw of path){
+   const company=translated(raw),id=company.id?'company:'+company.id:'product:'+product.id;
+   let node=nodes.get(id);
+   if(!node){node={...company,id,parentId:parent?.id||'',en:company.en||company.name,color:product.color,products:[],children:[]};nodes.set(id,node);(parent?parent.children:roots).push(node);}
+   parent=node;
+  }
+  parent.products.push(product);
  }
- return [...groups.values()].filter(g=>!search||[g.name,g.en,...g.products.flatMap(p=>[p.name,p.en,...(p.denomNames||[])])].join(' ').toLowerCase().includes(search));
+ function filter(nodes){return nodes.flatMap(node=>{const children=filter(node.children),matches=!search||[node.name,node.en,...node.products.flatMap(p=>[p.name,p.en,...(p.denomNames||[])])].join(' ').toLowerCase().includes(search);return matches||children.length?[{...node,children:matches?node.children:children}]:[];}).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));}
+ return filter(roots);
 }
+export function companyPath(companies,id){for(const company of companies){if(company.id===id)return [company];const nested=companyPath(company.children||[],id);if(nested.length)return [company,...nested];}return [];}
 
 export function companyDenominations(company){
  const groups=new Map();

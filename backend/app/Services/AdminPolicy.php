@@ -62,6 +62,14 @@ class AdminPolicy
 
             return;
         }
+        if ($path === 'procurement/lookup' && $method === 'POST') {
+            $this->access->require('products.search_serial');
+            if (($b['kind'] ?? '') === 'pin') {
+                $this->access->require('inventory.codes');
+            }
+
+            return;
+        }
         if ($path === 'procurement/stock-orders/review' && $method === 'POST') {
             $this->access->require('stock_orders.'.match ($b['decision'] ?? '') {
                 'approve' => 'approve', 'return' => 'return', 'reject' => 'reject', default => throw new ApiError('قرار غير صحيح', 422)
@@ -248,14 +256,14 @@ class AdminPolicy
         $maps = match ($collection) {
             'products' => ['update' => ['name', 'en', 'tag', 'unit', 'category', 'color', 'displayOrder', 'denomNames', 'denomDescriptions', 'denomOrder'], 'images' => ['image', 'denomImages'], 'denominations' => ['values'], 'prices' => ['prices'], 'visibility' => ['active'], 'companies' => ['manufacturerId', 'supplierCompanyId', 'denomSupplierIds'], 'import_fields' => ['importFields', 'denomImportFields', 'denomImportCodes']],
             'categories' => ['update' => ['name', 'en', 'icon'], 'images' => ['image'], 'visibility' => ['active']],
-            'companies' => ['update' => ['name', 'role', 'phone', 'address', 'sourceId'], 'images' => ['image'], 'status' => ['active']],
+            'companies' => ['update' => ['name', 'role', 'phone', 'address', 'sourceId', 'parentId', 'displayOrder'], 'images' => ['image'], 'status' => ['active']],
             'customers' => ['update' => ['name', 'phone', 'email'], 'status' => ['active']],
             'suppliers' => ['update' => ['name', 'method', 'url'], 'status' => ['active']],
         };
         if ($old) {
             $this->changes($group, $old, $data, $maps);
         }
-        if ($old && ($collection === 'products' || $collection === 'categories')) {
+        if ($old && in_array($collection, ['products', 'categories', 'companies'], true)) {
             foreach (['ar', 'ku', 'en'] as $locale) {
                 $this->changes($group, $old['translations'][$locale] ?? [], $data['translations'][$locale] ?? [], ['update' => ['name', 'description', 'denomNames', 'denomDescriptions'], 'images' => ['image', 'denomImages']]);
             }

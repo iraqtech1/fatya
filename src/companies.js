@@ -7,8 +7,11 @@ export function upsertCompany(companies,d,makeId=()=>crypto.randomUUID()){
   if(d.id&&!old)throw Error('الشركة غير موجودة');
   const name=typeof d.name==='string'?d.name.trim():'';
   if(!name||name.length>80||!Object.hasOwn(COMPANY_ROLES,d.role)||typeof d.active!=='boolean')throw Error('اكتب اسم الشركة واختر نوعها');
-  if(companies.some(c=>c.id!==d.id&&c.name===name))throw Error('اسم الشركة موجود بالفعل');
+  if(companies.some(c=>c.id!==d.id&&c.name===name&&(c.parentId||'')===(d.parentId||'')))throw Error('اسم الشركة موجود بالفعل');
   const item={id:old?.id||makeId(),name,role:d.role,active:d.active,image:d.image??old?.image??'',phone:d.phone??old?.phone??'',address:d.address??old?.address??'',sourceId:d.sourceId??old?.sourceId??''};
+  item.parentId=d.parentId??old?.parentId??'';item.displayOrder=d.displayOrder??old?.displayOrder??0;item.translations=structuredClone(d.translations??old?.translations??{});
+  const seen=new Set([item.id]);let cursor=item.parentId;
+  while(cursor){if(seen.has(cursor)||seen.size>=20)throw Error('لا يمكن ربط الفرع بنفسه أو بأحد أبنائه');seen.add(cursor);const parent=companies.find(c=>c.id===cursor);if(!parent||!['manufacturer','both'].includes(parent.role)||!['manufacturer','both'].includes(item.role))throw Error('اختر شركة مصنّعة أو فرعاً أباً صحيحاً');cursor=parent.parentId||'';}
   if(old)Object.assign(old,item);else companies.push(item);
   return item;
 }

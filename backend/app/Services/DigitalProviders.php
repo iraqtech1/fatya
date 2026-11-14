@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use App\Exceptions\ApiError;
+use App\Exceptions\ProviderTransportError;
 use Brick\Math\BigDecimal;
+use Illuminate\Contracts\Cache\Lock;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -66,25 +69,45 @@ class DigitalProviders
     public function request(string $provider, string $path, array $query = [], bool $post = false, ?string $manualOrderId = null): mixed
     {
         $c = $this->settings($provider);
+        $allowed = ['topup' => ['/api/v1/inventory', '/api/v1/products', '/api/v1/checkEligibility', '/api/v1/transactions'], 'rabiaa' => ['/vendor/provinces', '/vendor/bein/provinces', '/vendor/catalog', '/vendor/hold', '/vendor/purchase', '/vendor/transactions']];
+        $financial = in_array($path, ['/api/v1/transactions', '/vendor/hold', '/vendor/purchase'], true);
+        if (! in_array($path, $allowed[$provider], true) || $post !== ($financial || $path === '/api/v1/checkEligibility')) {
+            throw new ApiError('مسار الشركة غير معتمد', 422);
+        }
+        if ($financial && (! $manualOrderId || (! config('digital.purchases_enabled') && ! DigitalManualPayments::approved($manualOrderId, $provider)))) {
+            throw new ApiError('تنفيذ المشتريات الخارجية غير مفعّل لهذا الطلب', 409);
+        }
+        $dispatch = $financial ? DigitalDispatches::begin($manualOrderId, $provider, $c['version'], $path) : null;
+        $status = null;
+        $responseHash = null;
+        $outcome = 'transport_uncertain';
         try {
             $http = Http::acceptJson()->withHeaders([$provider === 'topup' ? 'x-api-key' : 'X-API-Key' => $c['key']])->connectTimeout(8)->timeout(25)->withoutRedirecting();
             $url = rtrim($c['base'], '/').$path;
-            $allowed = ['topup' => ['/api/v1/inventory', '/api/v1/products', '/api/v1/checkEligibility', '/api/v1/transactions'], 'rabiaa' => ['/vendor/provinces', '/vendor/bein/provinces', '/vendor/catalog', '/vendor/hold', '/vendor/purchase', '/vendor/transactions']];
-            if (! in_array($path, $allowed[$provider], true)) {
-                throw new \RuntimeException;
-            }
-            if ($post && $path !== '/api/v1/checkEligibility' && ! config('digital.purchases_enabled') && ! DigitalManualPayments::approved($manualOrderId, $provider)) {
-                throw new ApiError('تنفيذ المشتريات الخارجية غير مفعّل', 409);
-            }
+            // No retries: even an HTTP error can follow an accepted financial request.
             $r = $post ? $http->post($url, $query) : $http->get($url, $query);
-            if (! $r->successful() || strlen($r->body()) > 4 * 1024 * 1024) {
+            $status = $r->status();
+            $responseHash = hash('sha256', $r->body());
+            $outcome = 'http_error';
+            if (! $r->successful()) {
                 throw new \RuntimeException;
+            }
+            $outcome = 'invalid_response';
+            if (strlen($r->body()) > 4 * 1024 * 1024) {
+                throw new \RuntimeException;
+            }
+            $data = json_decode($r->body(), true, 512, JSON_THROW_ON_ERROR | JSON_BIGINT_AS_STRING);
+            if ($dispatch) {
+                DigitalDispatches::finish($dispatch, 'response_received', $status, $responseHash);
             }
 
-            return json_decode($r->body(), true, 512, JSON_THROW_ON_ERROR | JSON_BIGINT_AS_STRING);
+            return $data;
         } catch (\Throwable) {
-            // Never echo provider responses, URLs with credentials, PINs or transport exceptions.
-            throw new ApiError('تعذّر قراءة بيانات الشركة؛ تحقق من الحساب والاتصال', 502);
+            if ($dispatch) {
+                DigitalDispatches::finish($dispatch, $outcome, $status, $responseHash);
+            }
+            // Provider bodies and transport exception messages may contain PINs or credentials.
+            throw new ProviderTransportError('provider_'.$outcome);
         }
     }
 
@@ -164,20 +187,41 @@ class DigitalProviders
         if ($provider === 'rabiaa' && (! is_string($province) || ! preg_match('/^[0-9]{1,10}$/D', $province))) {
             throw new ApiError('اختر المحافظة أولاً', 422);
         }
+        $lock = Cache::lock('digital-catalog:'.$provider.':'.($province ?? 'all'), 120);
+        if (! $lock->get()) {
+            throw new ApiError('توجد مزامنة لنفس المزود والمنطقة؛ انتظر اكتمالها', 409);
+        }
+        try {
+            return $this->fetchCatalog($provider, $province, $version, $lock);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    private function fetchCatalog(string $provider, mixed $province, int $version, Lock $lock): array
+    {
         $raw = $this->read($provider, $provider === 'topup' ? '/api/v1/products' : '/vendor/catalog', $provider === 'topup' ? [] : ['provinceId' => $province]);
         $rows = $provider === 'topup' ? ($raw['products'] ?? null) : ($raw['data'] ?? null);
         if (($provider === 'topup' && ($raw['status'] ?? null) !== 'ok') || ! is_array($rows) || ! array_is_list($rows) || count($rows) > 5000) {
             throw new ApiError('رد كتالوج الشركة غير مفهوم', 502);
         }
+        // Never retire existing products on an explicitly partial/paginated response.
+        $pagination = $raw['meta']['pagination'] ?? $raw['pagination'] ?? [];
+        if (($raw['partial'] ?? false) === true || ($raw['complete'] ?? true) === false || (int) ($pagination['pageCount'] ?? 1) > 1 || ! empty($pagination['nextPage']) || ! empty($raw['links']['next'])) {
+            throw new ApiError('رد الكتالوج جزئي؛ حُفظ الكتالوج السابق دون إيقاف فئاته', 502);
+        }
         $offers = [];
         $identities = [];
         foreach ($rows as $row) {
             if (! is_array($row)) {
+                throw new ApiError('الكتالوج يحتوي صفاً غير مفهوم؛ حُفظ الكتالوج السابق', 502);
+            }
+            if ($provider === 'topup' && (string) ($row['show2site'] ?? '0') !== '1') {
                 continue;
             }
             $id = $provider === 'topup' ? ($row['id'] ?? $row['product_id'] ?? null) : ($row['catalogId'] ?? null);
-            if (! is_scalar($id) || ! preg_match('/^[0-9]{1,100}$/D', (string) $id) || ($provider === 'topup' && (string) ($row['show2site'] ?? '0') !== '1')) {
-                continue;
+            if (! is_scalar($id) || ! preg_match('/^[0-9]{1,100}$/D', (string) $id)) {
+                throw new ApiError('معرّف فئة الشركة غير مفهوم؛ حُفظ الكتالوج السابق', 502);
             }
             $type = $provider === 'topup' ? ($row['type'] ?? '') : ($row['packageType'] ?? '');
             if (! in_array($type, $provider === 'topup' ? ['topup', 'bundle', 'bill'] : ['standard', 'premium', 'Premium'], true)) {
@@ -208,8 +252,11 @@ class DigitalProviders
         } unset($o);
         $snapshot = ['provider' => $provider, 'offers' => $offers, 'provinceId' => $province, 'syncedAt' => now()->toIso8601String()];
         $snapshot['hash'] = hash('sha256', Store::json($snapshot));
-        DB::transaction(function () use ($provider, $snapshot, $version, $province, $raw) {
+        DB::transaction(function () use ($provider, $snapshot, $version, $province, $raw, $lock) {
             app(Store::class)->read(true);
+            if (! $lock->isOwnedByCurrentProcess()) {
+                throw new ApiError('انتهت مهلة المزامنة؛ لم يُستبدل الكتالوج ببيانات أقدم', 409);
+            }
             if ($this->settings($provider)['version'] !== $version) {
                 throw new ApiError('مفتاح الربط تغير أثناء جلب الكتالوج', 409);
             }

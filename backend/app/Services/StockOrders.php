@@ -96,8 +96,8 @@ class StockOrders
                     }
                     $pin = $row['pin'] ?? '';
                     $serial = $row['serial'] ?? '';
-                    $expiry = ($row['expiry'] ?? '') !== '' ? $row['expiry'] : ($line['expiry'] ?? '');
-                    $reason = '';
+                    $expiry = ($row['noExpiry'] ?? false) === true ? null : (($row['expiry'] ?? '') !== '' ? $row['expiry'] : ($line['expiry'] ?? ''));
+                    $reason = ! empty($row['expiryError']) ? 'تاريخ غير محسوم؛ اختر صيغة التاريخ أو انتهاءً يدوياً صحيحاً' : '';
                     $details = [];
                     try {
                         $details = CardFields::extra($p, [...$row, 'serial' => $serial], $di);

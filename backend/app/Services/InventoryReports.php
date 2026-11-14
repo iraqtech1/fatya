@@ -12,19 +12,22 @@ class InventoryReports
     public function filters(array $input): array
     {
         $out = [];
-        foreach (['from', 'to', 'productId', 'manufacturerId', 'supplier', 'status', 'actor', 'channel', 'batchId', 'serial', 'denomination'] as $key) {
+        foreach (['from', 'to', 'productId', 'manufacturerId', 'supplier', 'status', 'actor', 'channel', 'batchId', 'serial', 'denomination', 'provider', 'serviceType', 'orderId', 'customerId', 'query'] as $key) {
             $out[$key] = CatalogEditor::text($input[$key] ?? '', 256);
         }
         if ($out['denomination'] !== '' && ! preg_match('/^\d{1,16}(\.\d{1,3})?$/D', $out['denomination'])) {
             throw new ApiError('قيمة الفئة غير صحيحة', 422);
         }
         foreach (['from', 'to'] as $key) {
-            if ($out[$key] !== '' && (! preg_match('/^\d{4}-\d{2}-\d{2}$/D', $out[$key]) || ! ($date = \DateTimeImmutable::createFromFormat('!Y-m-d', $out[$key])) || $date->format('Y-m-d') !== $out[$key])) {
-                throw new ApiError('اكتب تاريخاً صحيحاً بصيغة YYYY-MM-DD', 422);
+            if ($out[$key] !== '') {
+                $this->boundary($out[$key]);
             }
         }
-        if ($out['from'] && $out['to'] && $out['from'] > $out['to']) {
+        if ($out['from'] && $out['to'] && $this->boundary($out['from']) >= $this->boundary($out['to'], true)) {
             throw new ApiError('تاريخ البداية بعد تاريخ النهاية', 422);
+        }
+        if (! in_array($out['provider'], ['', 'topup', 'rabiaa'], true) || ! in_array($out['serviceType'], ['', 'topup', 'bundle', 'bill', 'standard', 'premium'], true)) {
+            throw new ApiError('فلتر مزود أو نوع الخدمة غير صحيح', 422);
         }
 
         return $out;
@@ -32,9 +35,18 @@ class InventoryReports
 
     private function boundary(string $day, bool $end = false): int
     {
-        $d = CarbonImmutable::parse($day, 'Asia/Baghdad')->startOfDay();
+        $format = match (true) {
+            (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/D', $day) => 'Y-m-d',
+            (bool) preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/D', $day) => 'Y-m-d\TH:i',
+            (bool) preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/D', $day) => 'Y-m-d\TH:i:s',
+            default => null,
+        };
+        $date = $format ? \DateTimeImmutable::createFromFormat('!'.$format, $day, new \DateTimeZone('Asia/Baghdad')) : false;
+        if (! $date || $date->format($format) !== $day) {
+            throw new ApiError('اكتب تاريخاً ووقتاً صحيحين بتوقيت بغداد', 422);
+        }
 
-        return ($end ? $d->addDay() : $d)->timestamp;
+        return $date->getTimestamp() + ($end ? ($format === 'Y-m-d' ? 86400 : 1) : 0);
     }
 
     private function inPeriod(?int $timestamp, array $f): bool
@@ -55,7 +67,8 @@ class InventoryReports
             }
         }
         if ($f['manufacturerId']) {
-            $ids = collect(app(Store::class)->read()['products'])->filter(fn ($p) => (string) ($p['manufacturerId'] ?? '') === $f['manufacturerId'])->pluck('id')->map(fn ($v) => (string) $v)->all();
+            $catalog = app(Store::class)->read();
+            $ids = collect($catalog['products'])->filter(fn ($p) => ((string) ($p['manufacturerId'] ?? '') === $f['manufacturerId'] || in_array($f['manufacturerId'], array_column(CompanyHierarchy::path($catalog['companies'], $p['manufacturerId'] ?? ''), 'id'), true)))->pluck('id')->map(fn ($v) => (string) $v)->all();
             $q->whereIn('product_id', $ids);
         }
         if ($f['supplier'] || $f['actor']) {
@@ -103,11 +116,14 @@ class InventoryReports
     {
         $type = $b['type'] ?? 'inventory';
         $f = $this->filters($b['filters'] ?? []);
+        if (! in_array($type, ['sales', 'digital', 'payments'], true) && ($f['provider'] || $f['serviceType'] || $f['orderId'] || $f['customerId'] || $f['query'])) {
+            throw new ApiError('فلاتر المزود والطلبات تخص المبيعات والدفع والتنفيذ', 422);
+        }
         if (! in_array($type, ['inventory', 'movements', 'procurement', 'sales', 'digital', 'payments', 'exports', 'audit'], true)) {
             throw new ApiError('التقرير غير موجود', 422);
         }
         $supported = match ($type) {
-            'inventory','movements' => ['from', 'to', 'productId', 'manufacturerId', 'supplier', 'status', 'actor', 'batchId', 'serial', 'denomination'],'procurement' => ['from', 'to', 'productId', 'manufacturerId', 'supplier', 'status', 'actor', 'batchId', 'denomination'],'sales','digital','payments' => ['from', 'to', 'productId', 'manufacturerId', 'status', 'channel', 'denomination'],'exports' => ['from', 'to', 'status', 'actor'],'audit' => ['from', 'to', 'actor']
+            'inventory','movements' => ['from', 'to', 'productId', 'manufacturerId', 'supplier', 'status', 'actor', 'batchId', 'serial', 'denomination'],'procurement' => ['from', 'to', 'productId', 'manufacturerId', 'supplier', 'status', 'actor', 'batchId', 'denomination'],'sales','digital','payments' => ['from', 'to', 'productId', 'manufacturerId', 'status', 'channel', 'denomination', 'provider', 'serviceType', 'orderId', 'customerId', 'query'],'exports' => ['from', 'to', 'status', 'actor'],'audit' => ['from', 'to', 'actor']
         };
         foreach ($f as $k => $v) {
             if ($v !== '' && ! in_array($k, $supported, true)) {
@@ -192,7 +208,7 @@ class InventoryReports
                 }
                 foreach ($v['lines'] ?? [] as $l) {
                     $p = $products[$l['productId']] ?? null;
-                    if (($f['productId'] && $l['productId'] !== $f['productId']) || ($f['denomination'] !== '' && (float) $l['value'] !== (float) $f['denomination']) || ($f['manufacturerId'] && ($p['manufacturerId'] ?? '') !== $f['manufacturerId'])) {
+                    if (($f['productId'] && $l['productId'] !== $f['productId']) || ($f['denomination'] !== '' && (float) $l['value'] !== (float) $f['denomination']) || ($f['manufacturerId'] && ! in_array($f['manufacturerId'], [...($o['saleSnapshot']['companyPath'] ?? []), $o['saleSnapshot']['companyId'] ?? $p['manufacturerId'] ?? ''], true))) {
                         continue;
                     }
                     $rows[] = ['id' => $v['id'], 'status' => $v['status'], 'supplier' => $v['supplier'], 'source' => $v['source'], 'actor' => $v['actor'] ?? null, 'date' => CarbonImmutable::createFromTimestamp($v['timestamp'])->setTimezone('Asia/Baghdad')->toDateTimeString(), 'file' => $l['fileName'] ?? null, 'line' => $l['line'], 'productId' => $l['productId'], 'name' => $l['name'], 'value' => $l['value'], 'uploaded' => $l['uploaded'] ?? null, 'accepted' => $l['accepted'], 'rejected' => $l['rejected'] ?? null, 'added' => $v['status'] === 'approved' ? $l['accepted'] : 0, 'cost' => $l['cost'], 'costTotal' => $l['costTotal'], 'retail' => $l['retail']];
@@ -209,15 +225,26 @@ class InventoryReports
                 }$p = $products[(string) $o['productId']] ?? [];
                 $d = $digital[$o['id']] ?? null;
                 $a = $fulfillments[$o['id']] ?? null;
-                $time = $type === 'payments' ? (int) $item->received_at : (isset($o['createdAt']) ? strtotime($o['createdAt']) : CarbonImmutable::parse($o['date'], 'Asia/Baghdad')->timestamp);
-                if (! $this->inPeriod($time, $f) || ($f['productId'] && (string) $o['productId'] !== $f['productId']) || ($f['denomination'] !== '' && (float) $o['value'] !== (float) $f['denomination']) || ($f['manufacturerId'] && ($p['manufacturerId'] ?? '') !== $f['manufacturerId']) || ($f['channel'] && ($o['channel'] ?? 'unknown') !== $f['channel'])) {
+                $knownTime = $type === 'payments' || (is_string($o['createdAt'] ?? null) && preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})$/iD', $o['createdAt']) && strtotime($o['createdAt']) !== false);
+                $time = $type === 'payments' ? (int) $item->received_at : ($knownTime ? strtotime($o['createdAt']) : CarbonImmutable::parse($o['date'], 'Asia/Baghdad')->timestamp);
+                if (! $knownTime && (str_contains($f['from'], 'T') || str_contains($f['to'], 'T'))) {
+                    continue; // A date-only legacy sale cannot prove a second-level time match.
+                }
+
+                if (! $this->inPeriod($time, $f) || ($f['productId'] && (string) $o['productId'] !== $f['productId']) || ($f['denomination'] !== '' && (float) $o['value'] !== (float) $f['denomination']) || ($f['manufacturerId'] && ! in_array($f['manufacturerId'], [...($o['saleSnapshot']['companyPath'] ?? []), $o['saleSnapshot']['companyId'] ?? $p['manufacturerId'] ?? ''], true)) || ($f['channel'] && ($o['channel'] ?? 'unknown') !== $f['channel'])) {
+                    continue;
+                }
+                if (($f['provider'] && $d?->provider !== $f['provider']) || ($f['serviceType'] && ($o['saleSnapshot']['serviceType'] ?? null) !== $f['serviceType']) || ($f['orderId'] && $o['id'] !== $f['orderId']) || ($f['customerId'] && ($o['customerId'] ?? '') !== $f['customerId'])) {
+                    continue;
+                }
+                if ($f['query'] && ! str_contains(mb_strtolower(implode(' ', [$o['id'], $o['reference'] ?? '', $o['name'], $o['customer'], $o['recipient'] ?? '', $d?->provider_reference ?? ''])), mb_strtolower($f['query']))) {
                     continue;
                 }
                 $status = $type === 'payments' ? $item->outcome : ($type === 'digital' ? $d?->state : ($a?->state ?? 'unknown'));
                 if (($type === 'digital' && ! $d) || ($f['status'] && $status !== $f['status'])) {
                     continue;
                 }
-                $row = ['id' => $o['id'], 'date' => CarbonImmutable::createFromTimestamp($time)->setTimezone('Asia/Baghdad')->toDateTimeString(), 'name' => $o['name'], 'productId' => (string) $o['productId'], 'value' => $o['value'], 'quantity' => $o['quantity'], 'customer' => $o['customer'], 'channel' => $o['channel'] ?? 'unknown', 'amount' => (string) $o['price'], 'currency' => 'IQD', 'paymentStatus' => $a?->payment_status ?? 'unknown', 'executionStatus' => $d?->state ?? ($a?->state ?? 'unknown'), 'deliveryStatus' => $a?->state ?? 'unknown', 'cost' => $o['costTotal'] ?? null, 'grossProfit' => $o['profitBeforeFees'] ?? null, 'paymentFee' => null, 'netProfit' => null];
+                $row = ['id' => $o['id'], 'date' => $knownTime ? CarbonImmutable::createFromTimestamp($time)->setTimezone('Asia/Baghdad')->toDateTimeString() : $o['date'], 'timePrecision' => $knownTime ? 'second' : 'day', 'name' => $o['saleSnapshot']['name'] ?? $o['name'], ...isset($o['saleSnapshot']) ? ['companyId' => $o['saleSnapshot']['companyId'], 'company' => $o['saleSnapshot']['companyName'] ?? null] : [], 'productId' => (string) $o['productId'], 'value' => ! empty($o['digitalProvider']) && ! ($o['value'] > 0) ? null : $o['value'], 'serviceTitle' => $o['saleSnapshot']['serviceTitle'] ?? null, 'quantity' => $o['quantity'], 'customer' => $o['customer'], 'channel' => $o['channel'] ?? 'unknown', 'amount' => StockOrders::money((string) ($a?->amount ?? $o['saleSnapshot']['total'] ?? $o['price'])), 'currency' => 'IQD', 'paymentStatus' => $a?->payment_status ?? 'unknown', 'executionStatus' => $d?->state ?? ($a?->state ?? 'unknown'), 'deliveryStatus' => $a?->state ?? 'unknown', 'cost' => $o['costTotal'] ?? null, 'grossProfit' => $o['profitBeforeFees'] ?? null, 'paymentFee' => null, 'netProfit' => null];
                 if ($type === 'digital') {
                     $row += ['provider' => $d->provider, 'quotedCost' => $d->quoted_cost, 'actualCost' => $d->actual_cost, 'reference' => $d->provider_reference, 'reason' => $d->reason, 'lastChecked' => date(DATE_ATOM, $d->updated)];
                 }
@@ -334,6 +361,6 @@ class InventoryReports
         }
         $page = min($page, max(1, (int) ceil(count($rows) / 50)));
 
-        return ['type' => $type, 'filters' => $f, 'timezone' => 'Asia/Baghdad', 'totals' => $totals, 'page' => $page, 'pages' => max(1, (int) ceil(count($rows) / 50)), 'rows' => ($b['all'] ?? false) === true ? $rows : array_slice($rows, ($page - 1) * 50, 50)];
+        return ['type' => $type, 'filters' => $f, 'timezone' => 'Asia/Baghdad', 'generatedAt' => now()->utc()->toIso8601String(), 'totals' => $totals, 'page' => $page, 'pages' => max(1, (int) ceil(count($rows) / 50)), 'rows' => ($b['all'] ?? false) === true ? $rows : array_slice($rows, ($page - 1) * 50, 50)];
     }
 }

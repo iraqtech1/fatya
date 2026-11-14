@@ -403,4 +403,19 @@ class AdminAccessTest extends TestCase
         $staffRequest->attributes->set('adminAccess', ['owner' => true, 'permissions' => AdminAccess::keys()]);
         $this->assertSame($payload, app(AdminPolicy::class)->filter($payload, 'api/admin/procurement/reports'));
     }
+
+    public function test_lifecycle_lookup_and_pin_search_have_independent_server_permissions(): void
+    {
+        $employee = $this->employee(['products.search_serial']);
+        $this->asEmployee($employee);
+        $this->postJson('/api/admin/procurement/lookup', ['kind' => 'serial', 'query' => 'fixture'])->assertOk()->assertJsonPath('count', 0);
+        $this->postJson('/api/admin/procurement/lookup', ['kind' => 'pin', 'query' => 'never-log-this-pin'])->assertForbidden();
+        $this->assertSame(0, DB::table('procurement_audit')->where('details', 'like', '%never-log-this-pin%')->count());
+        $employee = $this->employee(['inventory.codes']);
+        $this->asEmployee($employee);
+        $this->postJson('/api/admin/procurement/lookup', ['kind' => 'pin', 'query' => 'fixture'])->assertForbidden();
+        $employee = $this->employee(['products.search_serial', 'inventory.codes']);
+        $this->asEmployee($employee);
+        $this->postJson('/api/admin/procurement/lookup', ['kind' => 'pin', 'query' => 'fixture'])->assertOk();
+    }
 }

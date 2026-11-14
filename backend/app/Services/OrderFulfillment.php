@@ -170,6 +170,9 @@ class OrderFulfillment
             $id = 'ORDER-'.Str::uuid();
             $minutes = max(1, min(60, (int) config('fatya.reservation_minutes', 15)));
             $o = ['id' => $id, 'reference' => $reference, 'customerId' => $customer['id'], 'customer' => $customer['name'], 'phone' => $customer['phone'], 'email' => $customer['email'], ...isset($customer['previewId']) ? ['previewId' => $customer['previewId']] : [], 'productId' => $p['id'], 'name' => $p['name'], 'unit' => $p['unit'], 'value' => $p['values'][$denom], 'denomIndex' => $denom, 'quantity' => $quantity, 'price' => (float) $amount, 'createdAt' => now()->toIso8601String(), 'channel' => in_array($b['channel'] ?? null, ['web', 'app'], true) ? $b['channel'] : 'unknown', 'date' => now('Asia/Baghdad')->toDateString(), 'kind' => $customer['kind'], 'status' => 'قيد المراجعة', 'payment' => $b['payment']];
+            $o['saleSnapshot'] = SaleSnapshots::capture($p, $denom, $quantity, $amount);
+            $o['saleSnapshot']['companyName'] = collect($s['companies'])->firstWhere('id', $p['manufacturerId'] ?? '')['name'] ?? null;
+            $o['saleSnapshot']['companyPath'] = array_column(CompanyHierarchy::path($s['companies'], $p['manufacturerId'] ?? ''), 'id');
             array_unshift($s['orders'], $o);
             // Insert the order before FK-constrained reservations; save again after allocation.
             $this->store->save($s);

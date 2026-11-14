@@ -19,7 +19,9 @@ export async function readInventory(file){
   if(!['product_id','denomination','code'].every(h=>headers.includes(h)))throw Error("استخدم أعمدة القالب: product_id denomination code");
   const rows=[];for(let i=2;i<=sheet.rowCount;i++){const row=sheet.getRow(i);if(!row.hasValues)continue;const item={};for(const header of ['product_id','denomination','code',...['serial','expiry','cvc','reference'].filter(h=>headers.includes(h))]){const cell=row.getCell(headers.indexOf(header)+1),v=cell.value;const typed=v instanceof Date?{kind:'date',iso:v.toISOString().slice(0,10)}:typeof v==='number'?{kind:'number',value:v,format:cell.numFmt||'General',date1904:!!book.properties.date1904}:v;if(v!==null&&typeof v==='object'&&!(v instanceof Date))throw Error('الخلايا لازم تكون قيم نصية أو أرقام بدون معادلات');item[header]=header==='expiry'?stockExpiryCell(typed):['code','serial','cvc','reference'].includes(header)?stockCodeCell(typed):v;}rows.push(item);}return rows;
 }
-export async function exportWorkbook(name,headers,rows){
+export async function exportWorkbook(name,headers,rows,options={}){
   const book=await workbook(),sheet=book.addWorksheet('Fatya');sheet.views=[{rightToLeft:true}];sheet.addRow(headers);rows.forEach(r=>sheet.addRow(r));sheet.columns.forEach(c=>c.width=24);sheet.getRow(1).font={bold:true,color:{argb:'FFFFFFFF'}};sheet.getRow(1).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF034037'}};
+  if(options.columns)options.columns.forEach((format,index)=>{sheet.getColumn(index+1).numFmt=format;});
+  if(options.metadata?.length){const metadata=book.addWorksheet('بيانات التقرير');metadata.views=[{rightToLeft:true}];options.metadata.forEach(row=>metadata.addRow(row));metadata.columns.forEach(column=>column.width=38);}
   const blob=new Blob([await book.xlsx.writeBuffer()],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }

@@ -35,3 +35,21 @@ export function orderNeedsAttention(order,now=Date.now()){
   if(order.fulfillmentStatus)return true;
   return !['مكتمل','ملغي'].includes(order.status);
 }
+
+// Never resolve historical sales against today's mutable catalog.
+export function presentOrder(order,locale='ar'){
+  const saved=order?.saleSnapshot;
+  if(!saved||saved.version!==1)return {...order};
+  const ar=saved.translations?.ar||{},row=saved.translations?.[locale]||{};
+  return {...order,name:row.name||ar.name||saved.name,nameLocalized:true,unit:saved.unit,
+    denominationName:row.denominationName||ar.denominationName||saved.denominationName||'',
+    denominationDescription:row.denominationDescription||ar.denominationDescription||saved.denominationDescription||''};
+}
+export function orderDenomination(order,format=String){
+  const saved=order?.saleSnapshot;
+  const title=order?.offerLabel||saved?.serviceTitle||order?.denominationName||saved?.denominationName;
+  if(title)return title;
+  const value=saved?.denominationValue??order?.value;
+  if(order?.digitalProvider||saved?.source==='api')return Number(value)>0?format(value):'خدمة رقمية';
+  return value===null||value===undefined?'—':format(value);
+}

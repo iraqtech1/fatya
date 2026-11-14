@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\ApiError;
+use App\Exceptions\ProviderTransportError;
 use Brick\Math\BigDecimal;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Crypt;
@@ -122,6 +123,9 @@ class DigitalSales
         $amount = StockOrders::money((string) $mapping->retail);
         $id = 'ORDER-'.Str::uuid();
         $o = ['id' => $id, 'reference' => $b['reference'], 'customerId' => $customer['id'], 'customer' => $customer['name'], 'phone' => $customer['phone'], 'email' => $customer['email'], 'productId' => $p['id'], 'name' => $p['name'], 'unit' => $p['unit'], 'value' => $p['values'][$denom], 'denomIndex' => $denom, 'quantity' => 1, 'price' => (float) $amount, 'createdAt' => now()->toIso8601String(), 'channel' => in_array($b['channel'] ?? null, ['web', 'app'], true) ? $b['channel'] : 'unknown', 'date' => now('Asia/Baghdad')->toDateString(), 'kind' => $customer['kind'], 'status' => 'قيد المراجعة', 'payment' => $b['payment'], 'digitalProvider' => $mapping->connection, 'recipient' => $input['mobile'] ?? ($input['phoneNumber'] ?? '')];
+        $o['saleSnapshot'] = SaleSnapshots::capture($p, $denom, 1, $amount, $offer);
+        $o['saleSnapshot']['companyName'] = collect($s['companies'])->firstWhere('id', $p['manufacturerId'] ?? '')['name'] ?? null;
+        $o['saleSnapshot']['companyPath'] = array_column(CompanyHierarchy::path($s['companies'], $p['manufacturerId'] ?? ''), 'id');
         array_unshift($s['orders'], $o);
         if (isset($b['publicationId'])) {
             $s['orders'][0]['publicationId'] = $b['publicationId'];
@@ -129,7 +133,7 @@ class DigitalSales
         app(Store::class)->save($s);
         $expires = $b['payment'] === 'Manual' ? now()->addDay()->timestamp : now()->addMinutes(15)->timestamp;
         DB::table('order_fulfillments')->insert(['order_id' => $id, 'state' => 'reserved', 'provider' => $b['payment'], 'amount' => $amount, 'currency' => 'IQD', 'quantity' => 1, 'expires' => $expires]);
-        DB::table('digital_executions')->insert(['order_id' => $id, 'provider' => $mapping->connection, 'offer_id' => $mapping->id, 'connection_version' => $c['version'], 'state' => 'awaiting_payment', 'encrypted_input' => Crypt::encryptString(Store::json(['input' => $input, 'offer' => $offer, 'retail' => $amount, 'customerId' => $customer['id'], 'customerName' => $customer['name']])), 'request_hash' => hash('sha256', Store::json($input)), 'quoted_cost' => $offer['cost'], 'updated' => time()]);
+        DB::table('digital_executions')->insert(['order_id' => $id, 'provider' => $mapping->connection, 'offer_id' => $mapping->id, 'connection_version' => $c['version'], 'state' => 'awaiting_payment', 'journal_version' => 1, 'encrypted_input' => Crypt::encryptString(Store::json(['input' => $input, 'offer' => $offer, 'retail' => $amount, 'customerId' => $customer['id'], 'customerName' => $customer['name']])), 'request_hash' => hash('sha256', Store::json($input)), 'quoted_cost' => $offer['cost'], 'updated' => time()]);
         $s['orders'][0] += ['paymentStatus' => 'pending', 'fulfillmentStatus' => 'reserved', 'codesAvailable' => false, 'reservationExpiresAt' => $expires * 1000];
         app(Store::class)->event($s, 'طلب خدمة رقمية بانتظار الدفع');
         app(Store::class)->save($s);
@@ -153,7 +157,10 @@ class DigitalSales
 
     public function executions(): array
     {
-        return DB::table('digital_executions')->orderByDesc('updated')->limit(100)->get()->map(fn ($r) => ['orderId' => $r->order_id, 'provider' => $r->provider, 'state' => $r->state, 'reference' => $r->provider_reference, 'quotedCost' => $r->quoted_cost, 'actualCost' => $r->actual_cost, 'reason' => $r->reason, 'updatedAt' => date(DATE_ATOM, $r->updated)])->all();
+        $rows = DB::table('digital_executions')->orderByDesc('updated')->limit(100)->get();
+        $dispatches = DigitalDispatches::forOrders($rows->pluck('order_id')->all());
+
+        return $rows->map(fn ($r) => ['orderId' => $r->order_id, 'provider' => $r->provider, 'state' => $r->state, 'reference' => $r->provider_reference, 'quotedCost' => $r->quoted_cost, 'actualCost' => $r->actual_cost, 'reason' => $r->reason, 'dispatches' => $dispatches[$r->order_id] ?? [], 'dispatchState' => $r->journal_version === null ? 'legacy_unknown' : ($r->state === 'delivered' ? 'success_confirmed' : (empty($dispatches[$r->order_id]) ? (in_array($r->state, ['review', 'failed'], true) ? 'not_sent' : 'not_requested') : 'uncertain')), 'updatedAt' => date(DATE_ATOM, $r->updated)])->all();
     }
 
     private function stage(string $id, string $state, array $evidence): void
@@ -186,7 +193,7 @@ class DigitalSales
                 throw new ApiError('missing_provider_reference', 409);
             }
 
-            return ['reference' => (string) $ref, 'cost' => null, 'costBasis' => 'catalog_snapshot', 'codes' => []];
+            return ['reference' => (string) $ref, 'cost' => null, 'costBasis' => 'unknown', 'codes' => []];
         }
         $d = $data['data'] ?? null;
         $hold = $evidence['hold'] ?? [];
@@ -197,7 +204,15 @@ class DigitalSales
             throw new ApiError('premium_delivery_uncertain', 409);
         }
 
-        return ['reference' => (string) $d['transactionId'], 'cost' => StockOrders::money((string) ($d['vendorPrice'] ?? '')), 'costBasis' => 'provider_response', 'codes' => [['code' => $d['code'], 'serial' => $d['serialNumber']]]];
+        // A zero/missing provider price is not proof of a free card.
+        try {
+            $cost = isset($d['vendorPrice']) ? StockOrders::money((string) $d['vendorPrice']) : null;
+        } catch (ApiError) {
+            $cost = null;
+        }
+        $cost = $cost !== null && BigDecimal::of($cost)->isPositive() ? $cost : null;
+
+        return ['reference' => (string) $d['transactionId'], 'cost' => $cost, 'costBasis' => 'provider_response', 'codes' => [['code' => $d['code'], 'serial' => $d['serialNumber']]]];
     }
 
     private function finish(string $id, ?array $result, string $reason = ''): void
@@ -230,7 +245,7 @@ class DigitalSales
             if ($result) {
                 $s['orders'][$i] += ['providerReference' => $result['reference'], 'costBasis' => $result['costBasis']];
                 $s['orders'][$i]['costTotal'] = $result['cost'];
-                $s['orders'][$i]['profitBeforeFees'] = $result['cost'] !== null ? (string) BigDecimal::of($s['orders'][$i]['price'])->minus($result['cost']) : null;
+                $s['orders'][$i]['profitBeforeFees'] = $result['cost'] !== null ? (string) BigDecimal::of($fulfillment->amount)->minus($result['cost']) : null;
             }
             $store->event($s, $result ? 'تسليم خدمة رقمية: '.$id : 'خدمة رقمية تحتاج مراجعة: '.$id);
             $store->save($s);
@@ -268,7 +283,7 @@ class DigitalSales
             if (! $r || $r->state !== 'queued' || ! $f || $f->payment_status !== 'confirmed' || $f->state !== 'processing') {
                 return null;
             }
-            DB::table('digital_executions')->where('order_id', $id)->update(['state' => 'processing', 'updated' => time()]);
+            DB::table('digital_executions')->where('order_id', $id)->update(['state' => 'processing', 'journal_version' => 1, 'updated' => time()]);
 
             return $r;
         });
@@ -306,7 +321,7 @@ class DigitalSales
                     }
                 }
                 $this->stage($id, 'hold_started', []);
-                $hold = $providers->request('rabiaa', '/vendor/hold', $saved['input'], true)['data'] ?? null;
+                $hold = $providers->request('rabiaa', '/vendor/hold', $saved['input'], true, $id)['data'] ?? null;
                 if (! is_array($hold) || ! preg_match('/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iD', (string) ($hold['holdToken'] ?? '')) || ! preg_match('/^[1-9][0-9]{0,99}$/D', (string) ($hold['cardId'] ?? '')) || ! is_int($hold['expiresInMinutes'] ?? null) || $hold['expiresInMinutes'] < 1 || $hold['expiresInMinutes'] > 60 || ! is_string($hold['heldAt'] ?? null)) {
                     throw new ApiError('invalid_hold_evidence', 409);
                 }
@@ -317,7 +332,7 @@ class DigitalSales
                 $evidence = ['hold' => $hold];
                 $this->stage($id, 'held', $evidence);
                 $this->stage($id, 'purchase_started', $evidence);
-                $response = $providers->request('rabiaa', '/vendor/purchase', ['holdToken' => $hold['holdToken']], true);
+                $response = $providers->request('rabiaa', '/vendor/purchase', ['holdToken' => $hold['holdToken']], true, $id);
             }
             if (! is_array($response)) {
                 throw new ApiError('invalid_provider_response', 409);
@@ -325,8 +340,13 @@ class DigitalSales
             $evidence['response'] = $response;
             DB::table('digital_executions')->where('order_id', $id)->update(['encrypted_evidence' => Crypt::encryptString(Store::json($evidence)), 'updated' => time()]);
             $this->finish($id, $this->result($r->provider, $response, $saved, $evidence));
-        } catch (\Throwable) {
-            $this->finish($id, null, 'provider_result_requires_review');
+        } catch (\Throwable $error) {
+            // Only our own allowlisted reason codes reach the administrator.
+            $reason = $error instanceof ProviderTransportError ? $error->reason : null;
+            if ($error instanceof ApiError && in_array($error->getMessage(), ['connection_changed', 'quote_changed', 'eligibility_not_confirmed', 'invalid_subscriber_province', 'invalid_hold_evidence', 'hold_price_or_expiry_changed', 'invalid_provider_response', 'provider_result_uncertain', 'recipient_mismatch', 'missing_provider_reference', 'purchase_evidence_incomplete', 'premium_delivery_uncertain', 'financial_dispatch_already_recorded', 'financial_dispatch_not_authorized'], true)) {
+                $reason = $error->getMessage();
+            }
+            $this->finish($id, null, $reason ?? 'provider_result_requires_review');
         }
     }
 

@@ -1,4 +1,8 @@
 export default {
+  "الفروع": "Branches",
+  "الفروع والفئات": "Branches and categories",
+  "خدمة رقمية": "Digital service",
+
   "معرف العملية الكامل": "Full transaction ID",
   "جاري التحميل...": "Loading...",
   "تعذّر الاتصال بالخادم": "Could not connect to the server",
