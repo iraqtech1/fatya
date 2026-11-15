@@ -23,7 +23,16 @@ class StockOrders
 
     public function batches(): array
     {
-        return DB::table('stock_batches')->orderByDesc('created')->get()->map(fn ($r) => json_decode($r->summary, true))->all();
+        $expiry = DB::table('inventory_cards')->whereNotNull('batch_id')
+            ->selectRaw('batch_id, COUNT(*) AS cards, COUNT(expires_on) AS dated, MIN(expires_on) AS first_expiry, MAX(expires_on) AS last_expiry')
+            ->groupBy('batch_id')->get()->keyBy('batch_id');
+
+        return DB::table('stock_batches')->orderByDesc('created')->get()->map(function ($row) use ($expiry) {
+            $summary = json_decode($row->summary, true);
+            $dates = $expiry->get($row->id);
+
+            return [...$summary, 'cardExpiry' => ['first' => $dates?->first_expiry, 'last' => $dates?->last_expiry, 'dated' => (int) ($dates?->dated ?? 0), 'withoutDate' => (int) ($dates?->cards ?? 0) - (int) ($dates?->dated ?? 0)]];
+        })->all();
     }
 
     public function preview(array $b): array

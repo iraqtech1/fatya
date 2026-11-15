@@ -37,6 +37,24 @@ class ProcurementTest extends TestCase
         $this->assertSame('batch-0', $rows[104]['id']);
     }
 
+    public function test_batch_expiry_uses_only_its_actual_cards_without_changing_history(): void
+    {
+        $this->fixture();
+        foreach (['a', 'b', 'empty'] as $id) {
+            DB::table('stock_batches')->insert(['id' => $id, 'request_id' => 'expiry-'.$id, 'request_hash' => str_repeat('a', 64), 'summary' => json_encode(['id' => $id, 'status' => 'approved']), 'created' => 1]);
+        }
+        $before = DB::table('stock_batches')->orderBy('id')->pluck('summary')->all();
+        foreach ([['a', '2030-01-01'], ['a', '2031-02-01'], ['a', null], ['b', '2032-03-01']] as $index => [$batch, $expiry]) {
+            DB::table('inventory_cards')->insert(['product_id' => '1', 'denomination' => 5000, 'code_hash' => hash('sha256', 'expiry-'.$index), 'encrypted_code' => Crypt::encryptString('private-fixture-'.$index), 'batch_id' => $batch, 'expires_on' => $expiry]);
+        }
+        $rows = collect(app(StockOrders::class)->batches())->keyBy('id');
+        $this->assertSame(['first' => '2030-01-01', 'last' => '2031-02-01', 'dated' => 2, 'withoutDate' => 1], $rows['a']['cardExpiry']);
+        $this->assertSame('2032-03-01', $rows['b']['cardExpiry']['first']);
+        $this->assertSame(['first' => null, 'last' => null, 'dated' => 0, 'withoutDate' => 0], $rows['empty']['cardExpiry']);
+        $this->assertSame($before, DB::table('stock_batches')->orderBy('id')->pluck('summary')->all());
+        $this->assertStringNotContainsString('encrypted_code', json_encode($rows));
+    }
+
     private function fixture(): array
     {
         Http::preventStrayRequests();

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {stockHistoryColumns,stockHistoryCell,stockHistoryExpiry} from '../src/stock-order-history.js';
 import {stockOrderTotals,stockOrderDate,filterStockOrders,stockOrderHeaders,stockOrderExportRows} from '../src/stock-order-history.js';
 const rows=[{id:'a',status:'approved',supplier:'Alpha',createdAt:'2026-11-03T21:00:00Z',quantity:10,costTotal:'90.125',retailTotal:'100.000'},{id:'b',status:'approved',supplier:'Beta',createdAt:'2026-11-04T20:59:59Z'},{id:'c',status:'approved',supplier:'Alpha',createdAt:'2026-11-04T21:00:00Z'},{id:'p',status:'pending',supplier:'Alpha',createdAt:'2026-11-04T10:00:00Z'}];
 assert.equal(stockOrderDate(rows[0].createdAt),'2026-11-04');
@@ -20,3 +21,9 @@ assert.deepEqual(stockOrderTotals(totalsRows),{orders:3,quantity:9,cost:'1,000.3
 assert.equal(stockOrderTotals([{costTotal:'9999999999999999.999'},{costTotal:'0.001'}]).cost,'10,000,000,000,000,000');
 assert.equal(stockOrderTotals(filterStockOrders(rows,{supplier:'missing'})).orders,0);
 assert.equal(stockOrderTotals(filterStockOrders(rows,{supplier:'Alpha',to:'2026-11-04'})).cost,'90.125');
+assert.equal(stockHistoryExpiry({}),'غير مسجل');
+assert.equal(stockHistoryExpiry({cardExpiry:{first:null,last:null,dated:0,withoutDate:3}}),'بدون تاريخ انتهاء محفوظ');
+assert.equal(stockHistoryExpiry({cardExpiry:{first:'2030-01-01',last:'2031-01-01',dated:2,withoutDate:1}}),'2030-01-01 — 2031-01-01 · 1 بدون تاريخ');
+assert.equal(stockHistoryCell('company',{lines:[{productId:'1',manufacturerId:'asia'},{productId:'2',manufacturerId:'zain'}]},1,[],[{id:'asia',name:'آسياسيل'},{id:'zain',name:'زين'}]),'آسياسيل، زين');
+assert.equal(stockHistoryCell('agent',{},1),'غير مسجل');
+assert.equal(stockHistoryColumns.length,13);
