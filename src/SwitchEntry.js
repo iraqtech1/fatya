@@ -1,0 +1,9 @@
+import {ref,onMounted} from 'vue/dist/vue.esm-bundler.js';
+export default {
+ setup(){
+  const state=ref('loading'),busy=ref(false);
+  async function load(){if(busy.value)return;busy.value=true;state.value='loading';try{const r=await fetch('/api/switch/session',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'},referrerPolicy:'no-referrer'});if(!r.ok)throw Error();const data=await r.json();state.value=['pending_activation','missing','expired'].includes(data.state)?data.state:'unavailable';}catch{state.value='unavailable';}finally{busy.value=false;}}
+  onMounted(load);return {state,busy,load};
+ },
+ template:`<main class="switch-entry" dir="rtl"><section class="switch-entry-card" aria-labelledby="switch-title"><img class="switch-entry-icon" src="/brand/fatya-app-icon-green.png" alt="فاتيا" width="96" height="96"/><p class="switch-entry-brand">FATYA</p><h1 id="switch-title">فاتيا داخل سويتش</h1><div role="status" aria-live="polite" :aria-busy="busy"><template v-if="state==='loading'"><h2>جاري التحقق من فتح الخدمة</h2><p>يرجى الانتظار لحظات.</p></template><template v-else-if="state==='pending_activation'"><h2>بانتظار تفعيل الخدمة</h2><p>تم استلام طلب فتح فاتيا. الخدمة بانتظار استكمال التفعيل مع سويتش.</p><p>الدفع غير متاح حالياً.</p></template><template v-else-if="state==='expired'"><h2>انتهت جلسة الدخول</h2><p>ارجع إلى التطبيق وافتح خدمة فاتيا مرة أخرى.</p></template><template v-else-if="state==='missing'"><h2>افتح فاتيا من تطبيق سويتش</h2><p>رابط الخدمة يحتاج جلسة دخول من التطبيق. إذا فتحته من هناك، ارجع وافتح الخدمة مرة أخرى.</p></template><template v-else><h2>تعذّر الاتصال بالخدمة</h2><p>تحقق من الاتصال وحاول مرة أخرى.</p></template></div><button type="button" @click="load" :disabled="busy">{{busy?'يرجى الانتظار':'إعادة التحقق'}}</button><a href="/app" referrerpolicy="no-referrer">فتح تطبيق فاتيا المعتاد</a></section></main>`
+};

@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
 const imageLayout=JSON.parse(readFileSync(new URL('./docs/mobile-image-layout-2026-10-26.json',import.meta.url),'utf8'));
 function shellDependencies(entries){
   const manifest=JSON.parse(readFileSync(new URL('./dist/.vite/manifest.json',import.meta.url),'utf8'));
@@ -14,7 +15,7 @@ function shellDependencies(entries){
 export default defineConfig({
   server:{proxy:{'/api':{target:process.env.FATYA_API_PROXY||'http://127.0.0.1:3001'}}},
   resolve: {alias: [{find: /^vue$/, replacement: 'vue/dist/vue.esm-bundler.js'}]},
-  build: {manifest:true},
+  build: {manifest:true,rollupOptions:{input:{main:fileURLToPath(new URL('./index.html',import.meta.url)),switch:fileURLToPath(new URL('./switch.html',import.meta.url))}}},
   base: process.env.GITHUB_ACTIONS ? '/' + (process.env.GITHUB_REPOSITORY?.split('/')[1] || 'fatya') + '/' : '/',
   plugins: [VitePWA({
     registerType: 'autoUpdate',
